@@ -10,6 +10,7 @@ import { useCrumb } from "@/lib/crumb/store";
 import type { HoleRef, Project, TerminalCol } from "@/lib/crumb/types";
 import { jumperPath } from "@/lib/crumb/wire-path";
 import { leadHoles } from "@/lib/crumb/mutate";
+import { leadedMarkup } from "@/lib/crumb/part-draw";
 import { useMemo, useState, type PointerEvent as ReactPointerEvent } from "react";
 
 const COLS: TerminalCol[] = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j"];
@@ -416,39 +417,24 @@ function LeadedBody({
     .filter((h): h is NonNullable<typeof h> => !!h)
     .map((h) => geom.holeXY(h));
   if (pts.length < 2) return null;
-  const mid = pts[Math.floor((pts.length - 1) / 2)];
-  const mx = mid.x;
-  const my = mid.y;
-  const isLed = def?.class === "led";
-  const d = pts.map((p, i) => `${i === 0 ? "M" : "L"}${p.x} ${p.y}`).join(" ");
   return (
     <g
       className="cursor-grab"
       transform={dRow ? `translate(0 ${dRow * PITCH})` : undefined}
       onPointerDown={onPointerDown}
       onClick={() => setSelected(partId)}
-    >
-      <path d={d} fill="none" className="stroke-lead" strokeWidth="1.4" />
-      {isLed ? (
-        <g transform={`translate(${mx} ${my})`}>
-          <circle r="6.5" className={selected ? "fill-led stroke-accent" : "fill-led stroke-dip-edge"} strokeWidth="1" />
-        </g>
-      ) : (
-        <rect
-          x={mx - 11}
-          y={my - 5}
-          width="22"
-          height="10"
-          rx="2"
-          className={selected ? "fill-passive stroke-accent" : "fill-passive stroke-dip-edge"}
-          strokeWidth="1"
-        />
-      )}
-      <text x={mx} y={my + 18} textAnchor="middle" className="fill-ink-soft font-mono" style={{ fontSize: 7 }}>
-        {part.id}
-        {part.value ? ` ${part.value}` : ""}
-      </text>
-    </g>
+      dangerouslySetInnerHTML={{
+        __html: leadedMarkup({
+          defId: part.def,
+          partClass: def?.class ?? "passive",
+          polar: def?.polar,
+          value: part.value,
+          id: part.id,
+          points: pts,
+          selected,
+        }),
+      }}
+    />
   );
 }
 
