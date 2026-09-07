@@ -72,6 +72,7 @@ export function resolveEndpoint(project: Project, raw: string): HoleRef | null {
     }
     return parseHole(part.from);
   }
+  // Any kind: "module" — pin list comes from the catalog def, not a per-part special case.
   if (part.kind === "module") {
     const found = findPartPin(getPart(part.def), pin.pin);
     if (!found) return null;

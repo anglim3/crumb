@@ -72,7 +72,7 @@ Boards: `mini` (17 rows), `half` (30, split rails), `full` (63, split rails).
 | `LP-10` / `LM-10` | Left + / − rail at row 10 |
 | `RP-10` / `RM-10` | Right + / − rail |
 | `u1.8` or `u1.VCC` | Pin on a placed part |
-| `m1.5v` | Pin on an off-board module |
+| `m1.5v` / `m1.pos` | Pin on any off-board module (`kind: "module"`, any catalog def). Same jumper as a hole. |
 
 Columns `a`–`e` on a row are one strip. `f`–`j` are another. The gutter isolates them. Split rails break at mid-board.
 
