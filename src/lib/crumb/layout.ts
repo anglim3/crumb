@@ -2,6 +2,7 @@ import { BOARD_SPECS } from "./board.ts";
 import { getPart } from "./catalog.ts";
 import { holeId, isLeftCol, parseHole, parsePinRef } from "./holes.ts";
 import { nextId } from "./ids.ts";
+import { leadHoles } from "./mutate.ts";
 import type { HoleRef, PlacedDip, PlacedPart, Project, TerminalCol } from "./types.ts";
 
 export function dipPinHole(part: PlacedDip, pinNumber: number): HoleRef | null {
@@ -78,9 +79,7 @@ export function occupiedHoles(project: Project): Map<string, string> {
       const count = def?.dipPins ?? 0;
       for (let n = 1; n <= count; n++) mark(dipPinHole(part, n), part.id);
     } else if (part.kind === "leaded") {
-      mark(parseHole(part.from), part.id);
-      if (part.mid) mark(parseHole(part.mid), part.id);
-      mark(parseHole(part.to), part.id);
+      for (const hole of leadHoles(part)) mark(parseHole(hole), part.id);
     }
   }
   return map;

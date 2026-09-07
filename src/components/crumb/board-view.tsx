@@ -8,7 +8,8 @@ import { detectShorts, shortHoles } from "@/lib/crumb/shorts";
 import { useCrumb } from "@/lib/crumb/store";
 import type { HoleRef, Project, TerminalCol } from "@/lib/crumb/types";
 import { jumperPath } from "@/lib/crumb/wire-path";
-import { useMemo, useState } from "react";
+import { leadHoles } from "@/lib/crumb/mutate";
+import { useMemo, useState, type PointerEvent as ReactPointerEvent } from "react";
 
 const COLS: TerminalCol[] = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j"];
 
@@ -111,6 +112,10 @@ export function BoardView() {
           );
         })}
 
+        {wireFrom && hoverHole && wireFrom !== hoverHole && (
+          <RubberBand project={project} geom={geom} from={wireFrom} to={hoverHole} />
+        )}
+
         {project.parts.map((part) => {
           if (part.kind === "dip") {
             return <DipBody key={part.id} project={project} partId={part.id} />;
@@ -162,6 +167,66 @@ export function BoardView() {
   );
 }
 
+function RubberBand({
+  project,
+  geom,
+  from,
+  to,
+}: {
+  project: Project;
+  geom: ReturnType<typeof boardGeom>;
+  from: string;
+  to: string;
+}) {
+  const a = resolveEndpoint(project, from) ?? parseHole(from);
+  const b = resolveEndpoint(project, to) ?? parseHole(to);
+  if (!a || !b) return null;
+  const pa = geom.holeXY(a);
+  const pb = geom.holeXY(b);
+  return (
+    <line
+      x1={pa.x}
+      y1={pa.y}
+      x2={pb.x}
+      y2={pb.y}
+      className="stroke-hole-active"
+      strokeWidth="1.6"
+      strokeDasharray="4 3"
+    />
+  );
+}
+
+function usePartDrag(partId: string) {
+  const tool = useCrumb((s) => s.tool);
+  const moveSelected = useCrumb((s) => s.moveSelected);
+  const setSelected = useCrumb((s) => s.setSelected);
+  const [dRow, setDRow] = useState(0);
+
+  const onPointerDown = (e: ReactPointerEvent<SVGGElement>) => {
+    if (tool !== "select") return;
+    e.stopPropagation();
+    e.currentTarget.setPointerCapture(e.pointerId);
+    setSelected(partId);
+    const startY = e.clientY;
+    const svg = e.currentTarget.ownerSVGElement;
+    const scale = svg?.getScreenCTM()?.a || 1;
+    const move = (ev: PointerEvent) => {
+      setDRow(Math.round((ev.clientY - startY) / (PITCH * scale)));
+    };
+    const up = (ev: PointerEvent) => {
+      const next = Math.round((ev.clientY - startY) / (PITCH * scale));
+      setDRow(0);
+      moveSelected(next);
+      window.removeEventListener("pointermove", move);
+      window.removeEventListener("pointerup", up);
+    };
+    window.addEventListener("pointermove", move);
+    window.addEventListener("pointerup", up);
+  };
+
+  return { dRow, onPointerDown };
+}
+
 function allHoles(rows: number): HoleRef[] {
   const holes: HoleRef[] = [];
   for (let row = 1; row <= rows; row++) {
@@ -204,6 +269,7 @@ function RailStrip({
 
 function DipBody({ project, partId }: { project: Project; partId: string }) {
   const selected = useCrumb((s) => s.selected) === partId;
+  const { dRow, onPointerDown } = usePartDrag(partId);
   const setSelected = useCrumb((s) => s.setSelected);
   const part = project.parts.find((p) => p.id === partId);
   if (!part || part.kind !== "dip") return null;
@@ -220,7 +286,12 @@ function DipBody({ project, partId }: { project: Project; partId: string }) {
   const top = Math.min(a.y, b.y) - 9;
   const bottom = Math.max(a.y, b.y) + 9;
   return (
-    <g className="cursor-pointer" onClick={() => setSelected(partId)}>
+    <g
+      className="cursor-grab"
+      transform={dRow ? `translate(0 ${dRow * PITCH})` : undefined}
+      onPointerDown={onPointerDown}
+      onClick={() => setSelected(partId)}
+    >
       <rect
         x={left}
         y={top}
@@ -265,24 +336,28 @@ function DipBody({ project, partId }: { project: Project; partId: string }) {
 function LeadedBody({ project, partId }: { project: Project; partId: string }) {
   const selected = useCrumb((s) => s.selected) === partId;
   const setSelected = useCrumb((s) => s.setSelected);
+  const { dRow, onPointerDown } = usePartDrag(partId);
   const part = project.parts.find((p) => p.id === partId);
   if (!part || part.kind !== "leaded") return null;
   const def = getPart(part.def);
-  const from = parseHole(part.from);
-  const to = parseHole(part.to);
-  const mid = part.mid ? parseHole(part.mid) : null;
-  if (!from || !to) return null;
-  const geom = boardGeom(project.board);
-  const a = geom.holeXY(from);
-  const b = geom.holeXY(to);
-  const c = mid ? geom.holeXY(mid) : null;
-  const mx = c ? c.x : (a.x + b.x) / 2;
-  const my = c ? c.y : (a.y + b.y) / 2;
+  const pts = leadHoles(part)
+    .map((h) => parseHole(h))
+    .filter((h): h is NonNullable<typeof h> => !!h)
+    .map((h) => boardGeom(project.board).holeXY(h));
+  if (pts.length < 2) return null;
+  const mid = pts[Math.floor((pts.length - 1) / 2)];
+  const mx = mid.x;
+  const my = mid.y;
   const isLed = def?.class === "led";
+  const d = pts.map((p, i) => `${i === 0 ? "M" : "L"}${p.x} ${p.y}`).join(" ");
   return (
-    <g className="cursor-pointer" onClick={() => setSelected(partId)}>
-      <line x1={a.x} y1={a.y} x2={c ? c.x : b.x} y2={c ? c.y : b.y} className="stroke-lead" strokeWidth="1.4" />
-      {c && <line x1={c.x} y1={c.y} x2={b.x} y2={b.y} className="stroke-lead" strokeWidth="1.4" />}
+    <g
+      className="cursor-grab"
+      transform={dRow ? `translate(0 ${dRow * PITCH})` : undefined}
+      onPointerDown={onPointerDown}
+      onClick={() => setSelected(partId)}
+    >
+      <path d={d} fill="none" className="stroke-lead" strokeWidth="1.4" />
       {isLed ? (
         <g transform={`translate(${mx} ${my})`}>
           <circle r="6.5" className={selected ? "fill-led stroke-accent" : "fill-led stroke-dip-edge"} strokeWidth="1" />
@@ -310,6 +385,7 @@ function ModuleCard({ project, partId }: { project: Project; partId: string }) {
   const selected = useCrumb((s) => s.selected) === partId;
   const setSelected = useCrumb((s) => s.setSelected);
   const clickHole = useCrumb((s) => s.clickHole);
+  const { dRow, onPointerDown } = usePartDrag(partId);
   const part = project.parts.find((p) => p.id === partId);
   if (!part || part.kind !== "module") return null;
   const def = getPart(part.def);
@@ -321,7 +397,7 @@ function ModuleCard({ project, partId }: { project: Project; partId: string }) {
   const x = part.slot === 0 ? 8 : geom.width - w - 8;
   const y = geom.rowY(Math.min(spec.rows, Math.max(1, part.offsetRow))) - 10;
   return (
-    <g>
+    <g transform={dRow ? `translate(0 ${dRow * PITCH})` : undefined} onPointerDown={onPointerDown} className="cursor-grab">
       <rect
         x={x}
         y={y}

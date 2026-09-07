@@ -1,7 +1,8 @@
 import { BOARD_SPECS } from "@/lib/crumb/board";
 import { CLASS_LABEL, CLASS_ORDER, getPart, searchParts } from "@/lib/crumb/catalog";
 import { EMPTY_PROJECT, EXAMPLES } from "@/lib/crumb/examples";
-import { downloadText, renderProjectSvg } from "@/lib/crumb/render-svg";
+import { decodeShare, encodeShare } from "@/lib/crumb/mutate";
+import { downloadPng, downloadText, renderProjectSvg } from "@/lib/crumb/render-svg";
 import { buildSteps } from "@/lib/crumb/steps";
 import { useCrumb, WIRE_COLORS } from "@/lib/crumb/store";
 import type { BoardSize, PartDef, Project } from "@/lib/crumb/types";
@@ -10,7 +11,7 @@ import { detectShorts } from "@/lib/crumb/shorts";
 import { validateProject } from "@/lib/crumb/validate";
 import { cn } from "@/lib/utils";
 import { BoardView } from "./board-view";
-import { Cable, Check, Download, FileJson, FolderOpen, Redo2, Trash2, Undo2 } from "lucide-react";
+import { Cable, Check, FolderOpen, Redo2, Undo2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 export function Workspace() {
@@ -30,8 +31,13 @@ export function Workspace() {
 
   useEffect(() => {
     try {
-      const raw = localStorage.getItem("crumb.project.v1");
-      if (raw) useCrumb.getState().loadJson(raw);
+      const hash = window.location.hash.replace(/^#/, "");
+      if (hash.startsWith("c=")) {
+        useCrumb.getState().loadJson(JSON.stringify(decodeShare(hash.slice(2))));
+      } else {
+        const raw = localStorage.getItem("crumb.project.v1");
+        if (raw) useCrumb.getState().loadJson(raw);
+      }
     } catch {
       /* ignore */
     }
@@ -208,64 +214,59 @@ function Header() {
             Wire
           </span>
         </button>
-        <button type="button" className="h-10 rounded-md bg-surface px-3 text-sm" onClick={duplicateSelected}>
-          Duplicate
-        </button>
-        <button type="button" className="h-10 rounded-md bg-surface px-3 text-sm" onClick={deleteSelected}>
-          <span className="inline-flex items-center gap-1.5">
-            <Trash2 className="size-3.5" />
-            Delete
-          </span>
-        </button>
-        <label className="h-10 rounded-md bg-surface px-3 text-sm inline-flex items-center gap-1.5 cursor-pointer">
-          <FolderOpen className="size-3.5" />
-          Open
-          <input
-            type="file"
-            accept="application/json,.json"
-            className="sr-only"
-            onChange={(e) => {
-              const file = e.target.files?.[0];
-              if (!file) return;
-              file.text().then((text) => loadJson(text)).catch(() => undefined);
-              e.target.value = "";
-            }}
-          />
-        </label>
-        <button
-          type="button"
-          className="h-10 rounded-md bg-surface px-3 text-sm"
-          onClick={() => setProject({ ...EMPTY_PROJECT, name: "Untitled" })}
-        >
-          New
-        </button>
-        <button
-          type="button"
-          className={cn("h-10 rounded-md px-3 text-sm", jsonOpen ? "bg-accent text-accent-fg" : "bg-surface")}
-          onClick={() => setJsonOpen(!jsonOpen)}
-        >
-          <span className="inline-flex items-center gap-1.5">
-            <FileJson className="size-3.5" />
-            JSON
-          </span>
-        </button>
-        <button
-          type="button"
-          className="h-10 rounded-md bg-surface px-3 text-sm"
-          onClick={() => downloadText(`${project.name.replace(/\s+/g, "-").toLowerCase()}.json`, JSON.stringify(project, null, 2), "application/json")}
-        >
-          <span className="inline-flex items-center gap-1.5">
-            <Download className="size-3.5" />
-            .json
-          </span>
-        </button>
-        <button
-          type="button"
-          className="h-10 rounded-md bg-surface px-3 text-sm"
-          onClick={() => downloadText(`${project.name.replace(/\s+/g, "-").toLowerCase()}.svg`, renderProjectSvg(project), "image/svg+xml")}
-        >
-          SVG
-        </button>
+        <details className="relative">
+          <summary className="h-10 list-none rounded-md bg-surface px-3 text-sm cursor-pointer inline-flex items-center">
+            More
+          </summary>
+          <div className="absolute right-0 z-20 mt-1 flex w-44 flex-col gap-1 rounded-md border border-border bg-bg p-2">
+            <button type="button" className="h-10 rounded-md bg-surface px-3 text-sm" onClick={duplicateSelected}>
+              Duplicate
+            </button>
+            <button type="button" className="h-10 rounded-md bg-surface px-3 text-sm" onClick={deleteSelected}>
+              Delete
+            </button>
+            <label className="h-10 rounded-md bg-surface px-3 text-sm inline-flex items-center gap-1.5 cursor-pointer">
+              <FolderOpen className="size-3.5" />
+              Open
+              <input
+                type="file"
+                accept="application/json,.json"
+                className="sr-only"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  file.text().then((text) => loadJson(text)).catch(() => undefined);
+                  e.target.value = "";
+                }}
+              />
+            </label>
+            <button type="button" className="h-10 rounded-md bg-surface px-3 text-sm" onClick={() => setProject({ ...EMPTY_PROJECT, name: "Untitled" })}>
+              New
+            </button>
+            <button type="button" className={cn("h-10 rounded-md px-3 text-sm", jsonOpen ? "bg-accent text-accent-fg" : "bg-surface")} onClick={() => setJsonOpen(!jsonOpen)}>
+              JSON
+            </button>
+            <button type="button" className="h-10 rounded-md bg-surface px-3 text-sm" onClick={() => downloadText(`${project.name.replace(/\s+/g, "-").toLowerCase()}.json`, JSON.stringify(project, null, 2), "application/json")}>
+              .json
+            </button>
+            <button type="button" className="h-10 rounded-md bg-surface px-3 text-sm" onClick={() => downloadText(`${project.name.replace(/\s+/g, "-").toLowerCase()}.svg`, renderProjectSvg(project), "image/svg+xml")}>
+              SVG
+            </button>
+            <button type="button" className="h-10 rounded-md bg-surface px-3 text-sm" onClick={() => downloadPng(`${project.name.replace(/\s+/g, "-").toLowerCase()}.png`, project)}>
+              PNG
+            </button>
+            <button
+              type="button"
+              className="h-10 rounded-md bg-surface px-3 text-sm"
+              onClick={() => {
+                const url = `${window.location.origin}${window.location.pathname}#c=${encodeShare(project)}`;
+                void navigator.clipboard.writeText(url);
+              }}
+            >
+              Copy link
+            </button>
+          </div>
+        </details>
       </div>
     </header>
   );
@@ -488,6 +489,23 @@ function Inspector({
             ))}
           </ul>
         )}
+      </section>
+      <section>
+        <p className="text-xs font-medium uppercase tracking-wide text-muted">BOM</p>
+        <ul className="mt-2 font-mono text-xs text-muted">
+          {Object.entries(
+            project.parts.reduce<Record<string, number>>((acc, part) => {
+              const def = getPart(part.def);
+              const key = `${def?.name ?? part.def}${part.kind === "leaded" && part.value ? ` ${part.value}` : ""}`;
+              acc[key] = (acc[key] ?? 0) + 1;
+              return acc;
+            }, {}),
+          ).map(([name, count]) => (
+            <li key={name}>
+              {count}× {name}
+            </li>
+          ))}
+        </ul>
       </section>
       <section>
         <p className="text-xs font-medium uppercase tracking-wide text-muted">Nets</p>

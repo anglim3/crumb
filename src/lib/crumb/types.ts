@@ -70,6 +70,8 @@ export type PlacedLeaded = {
   to: string;
   /** Third lead for TO-220 / TO-92 / pots. */
   mid?: string;
+  /** Extra leads after mid (4-pin buttons, DHT22). */
+  legs?: string[];
   value?: string;
 };
 

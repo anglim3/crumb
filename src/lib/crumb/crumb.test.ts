@@ -5,7 +5,7 @@ import { dipPinHole, resolveEndpoint } from "./layout.ts";
 import { computeNets, netForHole } from "./nets.ts";
 import { EXAMPLE_555, EXAMPLE_BUTTON, EXAMPLE_ESP32, EXAMPLE_PICO, EMPTY_PROJECT } from "./examples.ts";
 import { validateProject } from "./validate.ts";
-import { placeDip, addWire, placeLeaded, parseProject } from "./mutate.ts";
+import { placeDip, addWire, placeLeaded, parseProject, movePart, placeLeadedHoles } from "./mutate.ts";
 import { detectShorts } from "./shorts.ts";
 import { getPart } from "./catalog.ts";
 
@@ -97,6 +97,19 @@ test("3-pin regulator occupies mid hole", () => {
 test("parseProject rejects junk", () => {
   assert.throws(() => parseProject({ hello: true }));
   assert.equal(parseProject(EXAMPLE_555).name, "555 blinker");
+});
+
+test("movePart shifts a DIP down a row", () => {
+  const placed = placeDip(EMPTY_PROJECT, "ne555", "10-e", "u1");
+  const moved = movePart(placed, "u1", 2);
+  const dip = moved.parts[0];
+  assert.equal(dip.kind, "dip");
+  if (dip.kind === "dip") assert.equal(dip.anchor, "12-e");
+});
+
+test("4-pin DHT occupies every lead", () => {
+  const project = placeLeadedHoles(EMPTY_PROJECT, "dht22", ["20-j", "21-j", "22-j", "23-j"], undefined, "s1");
+  assert.deepEqual(validateProject(project).filter((i) => i.level === "error"), []);
 });
 
 test("catalog includes core parts", () => {

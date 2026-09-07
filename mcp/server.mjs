@@ -10,6 +10,9 @@ import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { validateProject } from "../src/lib/crumb/validate.ts";
+import { detectShorts } from "../src/lib/crumb/shorts.ts";
+
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const defaultPath = resolve(root, "examples/555-blinker.json");
 
@@ -172,21 +175,10 @@ function handleTool(name, args = {}) {
   }
   if (name === "validate") {
     const project = load(path);
-    const issues = [];
-    const used = new Map();
-    for (const part of project.parts) {
-      if (part.kind === "leaded") {
-        for (const h of [part.from, part.to]) {
-          const list = used.get(h) || [];
-          list.push(part.id);
-          used.set(h, list);
-        }
-      }
-    }
-    for (const [hole, owners] of used) {
-      if (owners.length > 1) issues.push({ level: "error", message: `${hole} used by ${owners.join(", ")}` });
-    }
-    return { issues };
+    return {
+      issues: validateProject(project),
+      shorts: detectShorts(project),
+    };
   }
   if (name === "remove_part") {
     const project = load(path);

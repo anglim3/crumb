@@ -103,4 +103,30 @@ export function downloadText(filename: string, text: string, type: string) {
   URL.revokeObjectURL(url);
 }
 
-void holeId;
+export function downloadPng(filename: string, project: Project) {
+  const svg = renderProjectSvg(project);
+  const blob = new Blob([svg], { type: "image/svg+xml;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const img = new Image();
+  img.onload = () => {
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.max(1, img.width * 2);
+    canvas.height = Math.max(1, img.height * 2);
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    ctx.fillStyle = "#efe6d4";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    canvas.toBlob((out) => {
+      URL.revokeObjectURL(url);
+      if (!out) return;
+      const href = URL.createObjectURL(out);
+      const a = document.createElement("a");
+      a.href = href;
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(href);
+    }, "image/png");
+  };
+  img.src = url;
+}

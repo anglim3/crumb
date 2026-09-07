@@ -45,7 +45,7 @@ export const EXAMPLE_DHT: Project = {
   board: "half",
   parts: [
     { kind: "module", id: "m1", def: "uno", slot: 1, offsetRow: 4 },
-    { kind: "leaded", id: "s1", def: "dht22", from: "20-j", to: "23-j" },
+    { kind: "leaded", id: "s1", def: "dht22", from: "20-j", to: "23-j", mid: "21-j", legs: ["22-j"] },
     { kind: "leaded", id: "rp", def: "resistor", from: "20-f", to: "21-f", value: "10k" },
   ],
   wires: [

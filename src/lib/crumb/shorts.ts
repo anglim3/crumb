@@ -1,6 +1,7 @@
 import { getPart } from "./catalog.ts";
 import { holeId } from "./holes.ts";
 import { dipPinHole, resolveEndpoint } from "./layout.ts";
+import { leadHoles } from "./mutate.ts";
 import { computeNets, netForHole } from "./nets.ts";
 import type { Net, Project } from "./types.ts";
 
@@ -54,7 +55,7 @@ export function detectShorts(project: Project, nets = computeNets(project)): Sho
 
   for (const part of project.parts) {
     if (part.kind === "leaded") {
-      const ends = part.mid ? [part.from, part.mid, part.to] : [part.from, part.to];
+      const ends = leadHoles(part);
       const resolved = ends.map((h) => holeOf(project, h));
       if (resolved.some((h) => !h)) continue;
       for (let i = 0; i < resolved.length; i++) {

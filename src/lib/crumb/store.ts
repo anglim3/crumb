@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { getPart } from "./catalog.ts";
 import { EXAMPLE_555 } from "./examples.ts";
 import { holeId, parseHole } from "./holes.ts";
-import { addWire, parseProject, placeDip, placeLeaded, placeModule, removePart, removeWire, setBoard, updatePart } from "./mutate.ts";
+import { addWire, leadHoles, parseProject, placeDip, placeLeadedHoles, placeModule, removePart, removeWire, setBoard, updatePart, movePart } from "./mutate.ts";
 import type { BoardSize, PlacedPart, Project } from "./types.ts";
 
 export type Tool = "select" | "place" | "wire";
@@ -39,6 +39,7 @@ export type CrumbState = {
   loadJson: (raw: string) => void;
   setName: (name: string) => void;
   duplicateSelected: () => void;
+  moveSelected: (dRow: number) => void;
 };
 
 export const WIRE_COLORS = ["#c45c4a", "#2b2b2b", "#3d6b8a", "#3f7a4e", "#c9a227", "#8a5a2b", "#6b5c8a", "#d8d2c8"];
@@ -53,7 +54,9 @@ function snapDipAnchor(hole: string): string {
 function leadCount(defId: string): number {
   const def = getPart(defId);
   if (!def || def.dipPins || def.class === "module") return 2;
-  return def.pins.length === 3 ? 3 : 2;
+  if (def.pins.length >= 4) return 4;
+  if (def.pins.length === 3) return 3;
+  return 2;
 }
 
 export const useCrumb = create<CrumbState>((set, get) => {
@@ -129,10 +132,12 @@ export const useCrumb = create<CrumbState>((set, get) => {
           set({ placeClicks: clicks, wireFrom: hole });
           return;
         }
-        commit(
-          placeLeaded(s.project, s.pendingDef, clicks[0], clicks[clicks.length - 1], undefined, undefined, clicks[1] && need === 3 ? clicks[1] : undefined),
-          { placeClicks: [], wireFrom: null, tool: "select", pendingDef: null },
-        );
+        commit(placeLeadedHoles(s.project, s.pendingDef, clicks), {
+          placeClicks: [],
+          wireFrom: null,
+          tool: "select",
+          pendingDef: null,
+        });
         return;
       }
       set({ selected: hole });
@@ -206,10 +211,16 @@ export const useCrumb = create<CrumbState>((set, get) => {
         return;
       }
       if (part.kind === "leaded") {
-        commit(placeLeaded(s.project, part.def, bump(part.from, 2), bump(part.to, 2), part.value, undefined, part.mid ? bump(part.mid, 2) : undefined));
+        commit(placeLeadedHoles(s.project, part.def, leadHoles(part).map((h) => bump(h, 2)), part.value));
         return;
       }
       commit(placeModule(s.project, part.def, part.slot, part.offsetRow + 5));
+    },
+    moveSelected: (dRow) => {
+      const s = get();
+      if (!s.selected || !dRow) return;
+      if (!s.project.parts.some((p) => p.id === s.selected)) return;
+      commit(movePart(s.project, s.selected, dRow));
     },
   };
 });

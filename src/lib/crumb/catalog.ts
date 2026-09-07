@@ -512,7 +512,7 @@ export const CATALOG: PartDef[] = [
     name: "ESP32 DevKit",
     class: "dip",
     dipPins: 30,
-    description: "30-pin ESP32-WROOM DevKit across the gutter. Pin 1 is 3V3 at the USB end.",
+    description: "30-pin ESP32-WROOM DevKit across the gutter. Pin 1 is 3V3 at the USB end. 38-pin DevKitC boards do not match this map — park those as a module and jumper by label.",
     pins: dipPins([
       "3V3",
       "EN",

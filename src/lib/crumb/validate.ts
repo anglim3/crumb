@@ -3,6 +3,7 @@ import { BOARD_SPECS } from "./board.ts";
 import { getPart } from "./catalog.ts";
 import { holeId, parseHole } from "./holes.ts";
 import { dipPinHole, holeInBounds, occupiedHoles, resolveEndpoint } from "./layout.ts";
+import { leadHoles } from "./mutate.ts";
 import { computeNets } from "./nets.ts";
 import type { Issue, Project } from "./types.ts";
 
@@ -62,9 +63,7 @@ export function validateProject(project: Project): Issue[] {
       if (!holeInBounds(project, from) || !holeInBounds(project, to)) {
         issues.push({ level: "error", code: "off-board", message: `${part.id} is off the board`, refs: [part.id] });
       }
-      addOcc(part.from, part.id);
-      if (part.mid) addOcc(part.mid, part.id);
-      addOcc(part.to, part.id);
+      for (const hole of leadHoles(part)) addOcc(hole, part.id);
     }
   }
 
