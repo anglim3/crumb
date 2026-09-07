@@ -5,7 +5,8 @@ import { dipPinHole, resolveEndpoint } from "./layout.ts";
 import { computeNets, netForHole } from "./nets.ts";
 import { EXAMPLE_555, EXAMPLE_BUTTON, EMPTY_PROJECT } from "./examples.ts";
 import { validateProject } from "./validate.ts";
-import { placeDip, addWire } from "./mutate.ts";
+import { placeDip, addWire, placeLeaded } from "./mutate.ts";
+import { detectShorts } from "./shorts.ts";
 import { getPart } from "./catalog.ts";
 
 test("parses terminal and rail holes", () => {
@@ -55,11 +56,29 @@ test("button example validates on mini board", () => {
   assert.deepEqual(errors, []);
 });
 
-test("detects vcc-gnd short", () => {
+test("detects vcc-gnd rail short", () => {
   let project = placeDip(EMPTY_PROJECT, "ne555", "10-e", "u1");
   project = addWire(project, "LP-10", "LM-10", "#c45c4a", "wshort");
   const issues = validateProject(project);
-  assert.ok(issues.some((i) => i.code === "vcc-gnd-short"));
+  assert.ok(issues.some((i) => i.code === "rail-short"));
+  assert.ok(detectShorts(project).some((s) => s.kind === "rail-short"));
+});
+
+test("detects IC supply pins shorted", () => {
+  let project = placeDip(EMPTY_PROJECT, "ne555", "10-e", "u1");
+  project = addWire(project, "u1.8", "u1.1", "#c45c4a", "wshort");
+  assert.ok(detectShorts(project).some((s) => s.kind === "supply-short"));
+});
+
+test("detects both leads on the same strip", () => {
+  const project = placeLeaded(EMPTY_PROJECT, "resistor", "10-a", "10-c", "1k", "r1");
+  const shorts = detectShorts(project);
+  assert.ok(shorts.some((s) => s.kind === "lead-short"));
+});
+
+test("intentional 555 trig-thresh tie is not a short", () => {
+  const shorts = detectShorts(EXAMPLE_555);
+  assert.deepEqual(shorts, []);
 });
 
 test("catalog includes core parts", () => {

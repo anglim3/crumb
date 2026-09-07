@@ -4,6 +4,7 @@ import { boardGeom, HOLE_R, PITCH } from "@/lib/crumb/geometry";
 import { holeId, parseHole } from "@/lib/crumb/holes";
 import { dipPinHole, resolveEndpoint } from "@/lib/crumb/layout";
 import { computeNets, netForHole } from "@/lib/crumb/nets";
+import { detectShorts, shortHoles } from "@/lib/crumb/shorts";
 import { useCrumb } from "@/lib/crumb/store";
 import type { HoleRef, Project, TerminalCol } from "@/lib/crumb/types";
 import { jumperPath } from "@/lib/crumb/wire-path";
@@ -25,6 +26,8 @@ export function BoardView() {
   const geom = useMemo(() => boardGeom(project.board), [project.board]);
   const spec = BOARD_SPECS[project.board];
   const nets = useMemo(() => computeNets(project), [project]);
+  const shorts = useMemo(() => detectShorts(project, nets), [project, nets]);
+  const shorted = useMemo(() => shortHoles(shorts), [shorts]);
   const activeNet = highlightNet ? nets.find((n) => n.id === highlightNet) : undefined;
   const hoverNet = hoverHole ? netForHole(nets, hoverHole) : undefined;
   const lit = new Set([...(activeNet?.holes ?? []), ...(hoverNet?.holes ?? [])]);
@@ -76,13 +79,15 @@ export function BoardView() {
           const pa = geom.holeXY(a);
           const pb = geom.holeXY(b);
           const selectedWire = selected === wire.id;
+          const aId = holeId(a);
+          const shortWire = shorted.has(aId);
           return (
             <path
               key={wire.id}
               d={jumperPath(geom, pa.x, pa.y, pb.x, pb.y, i)}
               fill="none"
-              stroke={wire.color}
-              strokeWidth={selectedWire ? 3.4 : 2.4}
+              stroke={shortWire ? "#c9897a" : wire.color}
+              strokeWidth={selectedWire || shortWire ? 3.4 : 2.4}
               strokeLinecap="round"
               className="cursor-pointer"
               onClick={(e) => {
@@ -115,7 +120,15 @@ export function BoardView() {
               cy={y}
               r={HOLE_R}
               className={
-                isFrom ? "fill-hole-active" : on ? "fill-hole-lit" : hole.kind === "rail" ? "fill-hole-rail" : "fill-hole"
+                shorted.has(id)
+                  ? "fill-bad"
+                  : isFrom
+                    ? "fill-hole-active"
+                    : on
+                      ? "fill-hole-lit"
+                      : hole.kind === "rail"
+                        ? "fill-hole-rail"
+                        : "fill-hole"
               }
               onMouseEnter={() => {
                 setHoverHole(id);

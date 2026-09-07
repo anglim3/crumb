@@ -5,6 +5,7 @@ import { downloadText, renderProjectSvg } from "@/lib/crumb/render-svg";
 import { buildSteps } from "@/lib/crumb/steps";
 import { useCrumb, WIRE_COLORS } from "@/lib/crumb/store";
 import type { BoardSize, PartDef, Project } from "@/lib/crumb/types";
+import { detectShorts } from "@/lib/crumb/shorts";
 import { validateProject } from "@/lib/crumb/validate";
 import { cn } from "@/lib/utils";
 import { BoardView } from "./board-view";
@@ -19,6 +20,7 @@ export function Workspace() {
   const deleteSelected = useCrumb((s) => s.deleteSelected);
   const cancelPending = useCrumb((s) => s.cancelPending);
   const issues = useMemo(() => validateProject(project), [project]);
+  const shorts = useMemo(() => detectShorts(project), [project]);
   const steps = useMemo(() => buildSteps(project), [project]);
 
   useEffect(() => {
@@ -55,7 +57,13 @@ export function Workspace() {
                   : "Hover a hole to see its net. Click to select."}
             </p>
             <p className="font-mono tabular-nums">
-              {project.parts.length} parts · {project.wires.length} wires
+              {shorts.length > 0 ? (
+                <span className="text-bad">{shorts.length} short{shorts.length === 1 ? "" : "s"}</span>
+              ) : (
+                <>
+                  {project.parts.length} parts · {project.wires.length} wires
+                </>
+              )}
             </p>
           </div>
           <div className="h-[min(70vh,720px)] px-3 pb-3">
@@ -63,7 +71,7 @@ export function Workspace() {
           </div>
         </main>
         <aside className="order-3 max-h-[40vh] overflow-y-auto border-t border-border lg:max-h-none lg:w-80 lg:border-l lg:border-t-0">
-          <Inspector issues={issues} steps={steps} />
+          <Inspector issues={issues} steps={steps} shorts={shorts} />
         </aside>
       </div>
     </div>
@@ -258,9 +266,11 @@ function groupParts(parts: PartDef[]): Record<string, PartDef[]> {
 function Inspector({
   issues,
   steps,
+  shorts,
 }: {
   issues: ReturnType<typeof validateProject>;
   steps: ReturnType<typeof buildSteps>;
+  shorts: ReturnType<typeof detectShorts>;
 }) {
   const project = useCrumb((s) => s.project);
   const selected = useCrumb((s) => s.selected);
@@ -284,6 +294,16 @@ function Inspector({
               <li key={pin.id}>
                 {pin.number ?? pin.id} {pin.label}
               </li>
+            ))}
+          </ul>
+        </section>
+      )}
+      {shorts.length > 0 && (
+        <section>
+          <p className="text-xs font-medium uppercase tracking-wide text-bad">Shorts</p>
+          <ul className="mt-2 flex flex-col gap-2 text-sm text-bad">
+            {shorts.map((short, i) => (
+              <li key={`${short.kind}-${i}`}>{short.message}</li>
             ))}
           </ul>
         </section>

@@ -4,7 +4,8 @@ export * from "./holes.ts";
 export * from "./catalog.ts";
 export * from "./layout.ts";
 export * from "./nets.ts";
-export * from "./validate.ts";
+export * from "./shorts.ts";
+
 export * from "./examples.ts";
 export * from "./geometry.ts";
 export * from "./steps.ts";

@@ -1,3 +1,4 @@
+import { detectShorts } from "./shorts.ts";
 import { BOARD_SPECS } from "./board.ts";
 import { getPart } from "./catalog.ts";
 import { holeId, parseHole } from "./holes.ts";
@@ -92,13 +93,12 @@ export function validateProject(project: Project): Issue[] {
   }
 
   const nets = computeNets(project);
-  const shorted = nets.find((n) => n.label === "SHORT");
-  if (shorted) {
+  for (const short of detectShorts(project, nets)) {
     issues.push({
       level: "error",
-      code: "vcc-gnd-short",
-      message: "A + rail is connected to a − rail",
-      refs: shorted.holes.slice(0, 6),
+      code: short.kind,
+      message: short.message,
+      refs: short.refs.length ? short.refs : short.holes.slice(0, 8),
     });
   }
 
