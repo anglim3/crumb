@@ -21,7 +21,6 @@
     { "id": "w8", "from": "LM-16", "to": "RM-16", "color": "#2b2b2b" },
     { "id": "w9", "from": "u2.GND", "to": "LM-17", "color": "#2b2b2b" },
     { "id": "w10", "from": "u2.GND2", "to": "LM-23", "color": "#2b2b2b" },
-    { "id": "w11", "from": "RP-15", "to": "RP-16", "color": "#c45c4a" },
     { "id": "w12", "from": "u2.VM", "to": "RP-24", "color": "#c45c4a" },
     { "id": "w13", "from": "u1.D2", "to": "u2.EN", "color": "#3d6b8a" },
     { "id": "w14", "from": "u1.D3", "to": "u2.STEP", "color": "#c9a227" },

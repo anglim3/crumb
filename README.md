@@ -65,7 +65,7 @@ npm test
 | [`examples/homekit-blinds.json`](examples/homekit-blinds.json) | Nano ESP32 + TMC2208 + NEMA 17 + limit switch |
 | [`src/lib/crumb/examples.ts`](src/lib/crumb/examples.ts) | Button LED, Uno + DHT22, ESP32 LED, Pico button |
 
-The blinds bench jumpers the barrel jack (`m1.pos` / `m1.neg`) onto RP / RM (12 V) and the stepper coils onto the TMC2208 taps. LP is 3V3 from the Nano ESP32. Use catalog id `nano-esp32`, not `nano`.
+The blinds bench jumpers the barrel jack (`m1.pos` / `m1.neg`) onto the lower RP / RM half (12 V; not jumped across the mid-board split) and the stepper coils onto the TMC2208 taps. LP is 3V3 from the Nano ESP32 and is jumped across the split so TMC VIO can share it. Use catalog id `nano-esp32`, not `nano`.
 
 ## MCP
 

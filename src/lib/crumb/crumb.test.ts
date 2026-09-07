@@ -195,6 +195,27 @@ test("homekit-blinds example validates", () => {
   assert.ok(resolveEndpoint(fromFile, "m2.M1A"));
   assert.ok(fromFile.wires.some((w) => w.from === "m1.pos" || w.to === "m1.pos"));
   assert.ok(fromFile.wires.some((w) => w.from.startsWith("m2.") || w.to.startsWith("m2.")));
+  assert.ok(
+    !fromFile.wires.some(
+      (w) =>
+        (w.from === "RP-15" && w.to === "RP-16") || (w.from === "RP-16" && w.to === "RP-15"),
+    ),
+    "12 V must stay on the lower RP half",
+  );
+  const nets = computeNets(fromFile);
+  const twelveVolt = netForHole(nets, "RP-18");
+  assert.ok(twelveVolt);
+  assert.ok(twelveVolt.holes.includes("RP-16"));
+  assert.ok(twelveVolt.holes.includes("RP-30"));
+  for (let row = 1; row <= 15; row++) {
+    assert.ok(!twelveVolt.holes.includes(`RP-${row}`), `12 V must not include RP-${row}`);
+  }
+  const threeVolt = netForHole(nets, "LP-2");
+  assert.ok(threeVolt?.holes.includes("LP-16"));
+  assert.ok(threeVolt?.holes.includes("LP-18"));
+  const gnd = netForHole(nets, "LM-12");
+  assert.ok(gnd?.holes.includes("LM-16"));
+  assert.ok(gnd?.holes.includes("RM-16"));
   const svg = renderProjectSvg(fromFile);
   assert.match(svg, /Barrel jack/);
   assert.match(svg, /NEMA 17/);
