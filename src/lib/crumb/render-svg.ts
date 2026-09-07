@@ -3,6 +3,8 @@ import { getPart } from "./catalog.ts";
 import { boardGeom, HOLE_R, MODULE_PIN_R, moduleCardGeom, projectGeom } from "./geometry.ts";
 import { parseHole } from "./holes.ts";
 import { dipPinHole, resolveEndpoint } from "./layout.ts";
+import { leadHoles } from "./mutate.ts";
+import { leadedMarkup } from "./part-draw.ts";
 import type { HoleRef, Project, TerminalCol } from "./types.ts";
 import { jumperPath } from "./wire-path.ts";
 
@@ -45,7 +47,6 @@ function renderModuleCard(project: Project, partId: string, geom: ReturnType<typ
   return chunks.join("");
 }
 
-/** Standalone SVG for export / MCP. */
 export function renderProjectSvg(project: Project): string {
   const geom = projectGeom(project);
   const board = boardGeom(project.board);
@@ -85,12 +86,22 @@ export function renderProjectSvg(project: Project): string {
         `<text x="${(left + right) / 2}" y="${(top + bottom) / 2 + 3}" text-anchor="middle" fill="#efe6d4" font-size="7" font-family="monospace">${esc(part.id)}</text>`,
       );
     } else if (part.kind === "leaded") {
-      const from = parseHole(part.from);
-      const to = parseHole(part.to);
-      if (!from || !to) continue;
-      const a = geom.holeXY(from);
-      const b = geom.holeXY(to);
-      parts.push(`<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="#8a8478" stroke-width="1.4"/>`);
+      const def = getPart(part.def);
+      const pts = leadHoles(part)
+        .map((h) => parseHole(h))
+        .filter((h): h is NonNullable<typeof h> => !!h)
+        .map((h) => geom.holeXY(h));
+      if (pts.length < 2) continue;
+      parts.push(
+        leadedMarkup({
+          defId: part.def,
+          partClass: def?.class ?? "passive",
+          polar: def?.polar,
+          value: part.value,
+          id: part.id,
+          points: pts,
+        }),
+      );
     } else {
       parts.push(renderModuleCard(project, part.id, geom));
     }
