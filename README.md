@@ -1,16 +1,40 @@
-# Crumb
+<p align="center">
+  <img src="docs/wordmark.svg" alt="Crumb" width="220" />
+</p>
 
-Breadboard layouts a person can actually build. You write JSON (or an agent writes it through MCP). Crumb draws a solderless board, checks shorts, and lists build steps.
+<p align="center">
+  <strong>Breadboard layouts a person can actually build.</strong><br />
+  JSON in. A real solderless board out. An MCP server so an agent can place the parts.
+</p>
 
-MIT. The repo is private until public release.
+<p align="center">
+  <img src="https://img.shields.io/badge/license-MIT-c9b896?style=flat-square&labelColor=1c1814" alt="MIT" />
+  <img src="https://img.shields.io/badge/node-22+-8fad8a?style=flat-square&labelColor=1c1814" alt="Node 22+" />
+  <img src="https://img.shields.io/badge/status-private-9a9084?style=flat-square&labelColor=1c1814" alt="Private" />
+</p>
 
-Not SPICE. Not a PCB tool.
+<p align="center">
+  <img src="docs/555-blinker.svg" alt="NE555 blinker laid out on a half-size breadboard" width="560" />
+</p>
 
-## Requirements
+<p align="center"><sub>The 555 blinker example, rendered by Crumb — same SVG the editor and CLI produce.</sub></p>
 
-- [Node.js](https://nodejs.org/) 22 or newer
+---
 
-## Web editor
+Crumb is a **layout tool**, not a simulator. It draws the holes, strips, and jumpers you will use at the bench. It will yell if two parts share a hole or if VCC meets GND. It will not compute LED current.
+
+## Features
+
+- Interactive editor in the browser (zoom, drag, undo, net highlight, short glow)
+- Hole addresses a human can follow (`10-e`, `LP-12`, `u1.VCC`, `m1.pos`)
+- Catalog: DIP chips, Nano / Pico / ESP32 on the board, Uno / Pi off-board, passives, switches, sensors, power
+- Short detection, build steps, BOM, JSON / SVG / PNG export, share links
+- Local MCP server using the same validator as the editor
+- SVG CLI with no `npm install`
+
+## Quick start
+
+**Editor**
 
 ```bash
 git clone https://github.com/anglim3/crumb.git
@@ -19,21 +43,33 @@ npm install
 npm run dev
 ```
 
-Opens the interactive board at the Vite URL (default `http://localhost:5173`). Pick an example, place parts, draw jumpers, export JSON / SVG / PNG. Layouts autosave in the browser. A `#c=...` hash loads a shared project.
+Open the Vite URL (default [http://localhost:5173](http://localhost:5173)). Pick an example, place parts, draw jumpers. Layouts autosave. A `#c=…` hash loads a shared project.
 
-## SVG CLI (no install)
+**CLI** — no install
 
 ```bash
 node --experimental-strip-types scripts/crumb-svg.mjs examples/555-blinker.json blinker.svg
 ```
 
-Examples: `examples/555-blinker.json`, `examples/homekit-blinds.json`, plus the named circuits in `src/lib/crumb/examples.ts` (button LED, Uno + DHT22, ESP32 LED, Pico button, HomeKit blinds).
+**Tests**
 
-The blinds bench jumpers the barrel jack (`m1.pos` / `m1.neg`) onto RP / RM (12 V) and the NEMA 17 coils onto the TMC2208 motor taps. LP is 3V3 from the Nano ESP32. Use `nano-esp32`, not `nano`. Any `kind: "module"` part uses the same `m1.pin` jumpers.
+```bash
+npm test
+```
 
-## MCP (for an AI harness)
+## Examples
 
-Point the harness at this repo root as `cwd`. MCP and the CLI do not need `npm install`.
+| File | What it is |
+| --- | --- |
+| [`examples/555-blinker.json`](examples/555-blinker.json) | Astable 555 + LED |
+| [`examples/homekit-blinds.json`](examples/homekit-blinds.json) | Nano ESP32 + TMC2208 + NEMA 17 + limit switch |
+| [`src/lib/crumb/examples.ts`](src/lib/crumb/examples.ts) | Button LED, Uno + DHT22, ESP32 LED, Pico button |
+
+The blinds bench jumpers the barrel jack (`m1.pos` / `m1.neg`) onto RP / RM (12 V) and the stepper coils onto the TMC2208 taps. LP is 3V3 from the Nano ESP32. Use catalog id `nano-esp32`, not `nano`.
+
+## MCP
+
+Point the harness at this repo root as `cwd`. MCP does not need `npm install`.
 
 ```json
 {
@@ -47,24 +83,20 @@ Point the harness at this repo root as `cwd`. MCP and the CLI do not need `npm i
 }
 ```
 
-Default project file: `examples/555-blinker.json`. Pass `path` on any tool to use another file.
-
 | Tool | What it does |
 | --- | --- |
-| `list_parts` | Search the catalog (`query` optional) |
-| `get_board` | Read the current project JSON |
+| `list_parts` | Search the catalog |
+| `get_board` | Read the project JSON |
 | `set_project` | Replace the whole document |
 | `place_part` | DIP (`anchor`), leaded (`from` / `to` / `mid` / `legs`), module (`slot`, `offsetRow`) |
 | `add_wire` | Jumper between holes or `part.pin` |
-| `remove_part` | Drop a part by `id` |
+| `remove_part` | Drop a part by id |
 | `list_nets` | List jumper endpoints |
 | `validate` | Occupancy + rail / supply / lead shorts |
 
-Agent playbook is in [AGENTS.md](AGENTS.md). Read that before placing parts.
+Read [AGENTS.md](AGENTS.md) before an agent starts placing parts. Default file: `examples/555-blinker.json`.
 
-## Layout rules
-
-Boards: `mini` (17 rows), `half` (30, split rails), `full` (63, split rails).
+## Hole language
 
 | Address | Meaning |
 | --- | --- |
@@ -72,15 +104,20 @@ Boards: `mini` (17 rows), `half` (30, split rails), `full` (63, split rails).
 | `LP-10` / `LM-10` | Left + / − rail at row 10 |
 | `RP-10` / `RM-10` | Right + / − rail |
 | `u1.8` or `u1.VCC` | Pin on a placed part |
-| `m1.5v` / `m1.pos` | Pin on any off-board module (`kind: "module"`, any catalog def). Same jumper as a hole. |
+| `m1.5v` / `m1.pos` | Pin on any off-board module |
 
-Columns `a`–`e` on a row are one strip. `f`–`j` are another. The gutter isolates them. Split rails break at mid-board.
+Boards: `mini` (17 rows), `half` (30, split rails), `full` (63, split rails).
 
-DIP pin 1 sits on the left strip (`a`–`e`). The body crosses the gutter. Pin 1 of `esp32` is 3V3 at the USB end of a **30-pin** DevKit. 38-pin DevKitC boards are modules, not that DIP.
+`a`–`e` on a row are one strip. `f`–`j` are another. The gutter isolates them. Split rails break at mid-board — jumper the two halves if you need them joined.
 
-Leaded parts: two holes (`from` / `to`), three (`mid`), or four (`legs`).
+DIP pin 1 sits on the left strip (`a`–`e`). The body crosses the gutter.
 
-## Project file
+- `esp32` is a **30-pin** DevKit, pin 1 = 3V3. Park a 38-pin DevKitC as a module.
+- `nano-esp32` is ABX00083. Pin 1 is D12, not classic Nano TX.
+- Leaded parts: two holes (`from` / `to`), three (`mid`), or four (`legs`).
+
+<details>
+<summary>Project file shape</summary>
 
 ```json
 {
@@ -95,10 +132,25 @@ Leaded parts: two holes (`from` / `to`), three (`mid`), or four (`legs`).
 }
 ```
 
-Catalog ids live in `src/lib/crumb/catalog.ts` and `mcp/catalog.json` (keep those in sync if you add parts).
+Catalog ids live in [`src/lib/crumb/catalog.ts`](src/lib/crumb/catalog.ts). Keep [`mcp/catalog.json`](mcp/catalog.json) in sync when you add parts.
 
-## Tests
+</details>
 
-```bash
-npm test
-```
+## Repo map
+
+| Path | What |
+| --- | --- |
+| `src/lib/crumb/` | Model, nets, shorts, SVG |
+| `src/components/crumb/` | Editor |
+| `src/main.tsx` | Vite entry |
+| `mcp/server.mjs` | MCP adapter |
+| `scripts/crumb-svg.mjs` | CLI render |
+| `examples/` | Known-good boards |
+
+## Contributing
+
+The repo is private until public release. Agent notes and geometry laws: [AGENTS.md](AGENTS.md). Change the core under `src/lib/crumb` first. Keep MCP thin.
+
+## License
+
+[MIT](LICENSE). Not SPICE. Not a PCB tool.
