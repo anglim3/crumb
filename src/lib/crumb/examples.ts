@@ -109,13 +109,12 @@ export const EXAMPLE_PICO: Project = {
 
 /**
  * Nano ESP32 + TMC2208 blinds bench.
- * LP = 3V3 from the Nano. RP = 12 V to TMC VM. Common GND on LM/RM.
- * Barrel jack and NEMA 17 are visual only — do not jumper module pins
- * (validate cannot resolve m1.pos today). Feed 12 V into RP / RM.
+ * LP = 3V3 from the Nano. RP = 12 V from the barrel jack to TMC VM.
+ * Common GND on LM/RM. NEMA 17 coils jumper to the TMC motor taps.
  */
 export const EXAMPLE_HOMEKIT_BLINDS: Project = {
   version: 1,
-  name: "HomeKit blinds (12V into RP/RM — do not wire barrel-jack pins)",
+  name: "HomeKit blinds",
   board: "half",
   parts: [
     { kind: "dip", id: "u1", def: "nano-esp32", anchor: "1-e" },
@@ -143,6 +142,12 @@ export const EXAMPLE_HOMEKIT_BLINDS: Project = {
     { id: "w15", from: "u1.D4", to: "u2.DIR", color: "#6b5c8a" },
     { id: "w16", from: "sw1.nc", to: "u1.D5", color: "#3f7a4e" },
     { id: "w17", from: "sw1.com", to: "LM-27", color: "#2b2b2b" },
+    { id: "w18", from: "m1.pos", to: "RP-18", color: "#c45c4a" },
+    { id: "w19", from: "m1.neg", to: "RM-18", color: "#2b2b2b" },
+    { id: "w20", from: "m2.M1A", to: "u2.M1A", color: "#8a5a2b" },
+    { id: "w21", from: "m2.M1B", to: "u2.M1B", color: "#c9a227" },
+    { id: "w22", from: "m2.M2A", to: "u2.M2A", color: "#3d6b8a" },
+    { id: "w23", from: "m2.M2B", to: "u2.M2B", color: "#6b5c8a" },
   ],
 };
 

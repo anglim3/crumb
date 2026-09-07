@@ -1,13 +1,15 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { holeId, parseHole, parsePinRef } from "./holes.ts";
-import { dipPinHole, resolveEndpoint } from "./layout.ts";
+import { dipPinHole, occupiedHoles, resolveEndpoint } from "./layout.ts";
 import { computeNets, netForHole } from "./nets.ts";
 import { EXAMPLE_555, EXAMPLE_BUTTON, EXAMPLE_ESP32, EXAMPLE_HOMEKIT_BLINDS, EXAMPLE_PICO, EMPTY_PROJECT } from "./examples.ts";
+import { boardGeom, projectGeom } from "./geometry.ts";
 import { validateProject } from "./validate.ts";
-import { placeDip, addWire, placeLeaded, parseProject, movePart, placeLeadedHoles } from "./mutate.ts";
+import { placeDip, addWire, placeLeaded, parseProject, movePart, placeLeadedHoles, placeModule } from "./mutate.ts";
 import { detectShorts } from "./shorts.ts";
-import { getPart } from "./catalog.ts";
+import { CATALOG, getPart } from "./catalog.ts";
+import { renderProjectSvg } from "./render-svg.ts";
 import { readFileSync } from "node:fs";
 
 test("parses terminal and rail holes", () => {
@@ -125,6 +127,7 @@ test("catalog includes core parts", () => {
     "nano-esp32",
     "tmc2208",
     "nema17",
+    "barrel-jack",
     "limit-switch-nc",
     "pico",
     "pico-w",
@@ -180,8 +183,97 @@ test("homekit-blinds example validates", () => {
   const raw = JSON.parse(readFileSync(new URL("../../../examples/homekit-blinds.json", import.meta.url), "utf8"));
   const fromFile = parseProject(raw);
   assert.deepEqual(validateProject(fromFile).filter((i) => i.level === "error"), []);
+  assert.equal(fromFile.parts.find((p) => p.id === "u1")?.def, "nano-esp32");
+  assert.equal(fromFile.parts.find((p) => p.id === "u2")?.def, "tmc2208");
+  assert.ok(fromFile.parts.some((p) => p.def === "limit-switch-nc"));
+  assert.equal(getPart("limit-switch-nc")?.pins.length, 2);
   assert.equal(resolveEndpoint(fromFile, "u1.D12")?.row, 1);
   assert.equal(resolveEndpoint(fromFile, "u1.3V3")?.row, 2);
   assert.equal(resolveEndpoint(fromFile, "u2.DIR")?.row, 17);
   assert.equal(resolveEndpoint(fromFile, "u2.VM")?.row, 24);
+  assert.ok(resolveEndpoint(fromFile, "m1.pos"));
+  assert.ok(resolveEndpoint(fromFile, "m2.M1A"));
+  assert.ok(fromFile.wires.some((w) => w.from === "m1.pos" || w.to === "m1.pos"));
+  assert.ok(fromFile.wires.some((w) => w.from.startsWith("m2.") || w.to.startsWith("m2.")));
+  const svg = renderProjectSvg(fromFile);
+  assert.match(svg, /Barrel jack/);
+  assert.match(svg, /NEMA 17/);
+  assert.match(svg, /stroke="#c45c4a"/);
+});
+
+test("resolves module pin refs by id and label", () => {
+  const project = placeModule(EMPTY_PROJECT, "barrel-jack", 1, 4, "m1");
+  assert.deepEqual(resolveEndpoint(project, "m1.pos"), { kind: "module", partId: "m1", pin: "pos" });
+  assert.deepEqual(resolveEndpoint(project, "m1.POS"), { kind: "module", partId: "m1", pin: "pos" });
+  assert.deepEqual(resolveEndpoint(project, "m1.neg"), { kind: "module", partId: "m1", pin: "neg" });
+  assert.equal(resolveEndpoint(project, "m1.nope"), null);
+  assert.equal(holeId(resolveEndpoint(project, "m1.pos")!), "m1.pos");
+});
+
+test("any catalog module pin resolves; uno jumpers validate", () => {
+  const modules = CATALOG.filter((d) => d.class === "module");
+  assert.ok(modules.length > 4);
+  for (const def of modules) {
+    const project = placeModule(EMPTY_PROJECT, def.id, 1, 3, "mx");
+    for (const pin of def.pins) {
+      const byId = resolveEndpoint(project, `mx.${pin.id}`);
+      assert.ok(byId, `${def.id} ${pin.id}`);
+      assert.equal(byId!.kind, "module");
+      if (/^[a-z0-9]+$/i.test(pin.label)) {
+        assert.ok(resolveEndpoint(project, `mx.${pin.label}`), `${def.id} label ${pin.label}`);
+      }
+    }
+  }
+  let uno = placeModule(EMPTY_PROJECT, "uno", 1, 4, "m1");
+  uno = addWire(uno, "m1.5v", "RP-8", "#c45c4a", "w5v");
+  uno = addWire(uno, "m1.gnd", "RM-8", "#2b2b2b", "wgnd");
+  uno = addWire(uno, "m1.d2", "10-j", "#3d6b8a", "wd2");
+  assert.deepEqual(validateProject(uno).filter((i) => i.level === "error"), []);
+  assert.equal(resolveEndpoint(uno, "m1.5V")?.pin, "5v");
+  const svg = renderProjectSvg(uno);
+  assert.match(svg, /Arduino Uno/);
+  const snap = placeModule(EMPTY_PROJECT, "9v-snap", 0, 3, "m3");
+  assert.deepEqual(resolveEndpoint(snap, "m3.pos"), { kind: "module", partId: "m3", pin: "pos" });
+});
+
+test("module pins do not occupy terminal strips", () => {
+  const project = placeModule(EMPTY_PROJECT, "nema17", 1, 8, "m2");
+  assert.equal(occupiedHoles(project).size, 0);
+});
+
+test("module pin pads sit off the breadboard", () => {
+  const project = placeModule(EMPTY_PROJECT, "barrel-jack", 1, 4, "m1");
+  const end = resolveEndpoint(project, "m1.pos");
+  assert.ok(end);
+  const geom = projectGeom(project);
+  const xy = geom.holeXY(end!);
+  assert.ok(xy.x > geom.boardX + geom.boardWidth);
+  const left = placeModule(EMPTY_PROJECT, "uno", 0, 4, "m1");
+  const five = resolveEndpoint(left, "m1.5v");
+  assert.ok(five);
+  assert.ok(projectGeom(left).holeXY(five!).x < projectGeom(left).boardX);
+});
+
+test("board-to-module jumpers validate; unknown pins are dangling", () => {
+  let project = placeModule(EMPTY_PROJECT, "barrel-jack", 1, 4, "m1");
+  project = addWire(project, "m1.pos", "RP-10", "#c45c4a", "w1");
+  project = addWire(project, "m1.neg", "RM-10", "#2b2b2b", "w2");
+  assert.deepEqual(validateProject(project).filter((i) => i.level === "error"), []);
+  const bad = addWire(project, "m1.missing", "10-a", "#3d6b8a", "wbad");
+  assert.ok(validateProject(bad).some((i) => i.code === "dangling-wire"));
+});
+
+test("module supply short is detected without occupying holes", () => {
+  let project = placeModule(EMPTY_PROJECT, "barrel-jack", 1, 4, "m1");
+  project = addWire(project, "m1.pos", "10-a", "#c45c4a", "wa");
+  project = addWire(project, "m1.neg", "10-c", "#2b2b2b", "wb");
+  assert.ok(detectShorts(project).some((s) => s.kind === "supply-short"));
+  assert.equal(occupiedHoles(project).size, 0);
+});
+
+test("canvas without modules matches board size", () => {
+  const board = boardGeom(EXAMPLE_555.board);
+  const canvas = projectGeom(EXAMPLE_555);
+  assert.equal(canvas.width, board.width);
+  assert.equal(canvas.boardX, 0);
 });
