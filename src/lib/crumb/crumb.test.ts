@@ -3,11 +3,12 @@ import { test } from "node:test";
 import { holeId, parseHole, parsePinRef } from "./holes.ts";
 import { dipPinHole, resolveEndpoint } from "./layout.ts";
 import { computeNets, netForHole } from "./nets.ts";
-import { EXAMPLE_555, EXAMPLE_BUTTON, EXAMPLE_ESP32, EXAMPLE_PICO, EMPTY_PROJECT } from "./examples.ts";
+import { EXAMPLE_555, EXAMPLE_BUTTON, EXAMPLE_ESP32, EXAMPLE_HOMEKIT_BLINDS, EXAMPLE_PICO, EMPTY_PROJECT } from "./examples.ts";
 import { validateProject } from "./validate.ts";
 import { placeDip, addWire, placeLeaded, parseProject, movePart, placeLeadedHoles } from "./mutate.ts";
 import { detectShorts } from "./shorts.ts";
 import { getPart } from "./catalog.ts";
+import { readFileSync } from "node:fs";
 
 test("parses terminal and rail holes", () => {
   assert.deepEqual(parseHole("10-e"), { kind: "terminal", row: 10, col: "e" });
@@ -121,6 +122,10 @@ test("catalog includes core parts", () => {
     "uno",
     "mega",
     "nano",
+    "nano-esp32",
+    "tmc2208",
+    "nema17",
+    "limit-switch-nc",
     "pico",
     "pico-w",
     "pi4",
@@ -135,4 +140,48 @@ test("catalog includes core parts", () => {
   }
   assert.equal(getPart("esp32")?.dipPins, 30);
   assert.equal(getPart("pico")?.dipPins, 40);
+  assert.equal(getPart("nano-esp32")?.dipPins, 30);
+  assert.equal(getPart("tmc2208")?.dipPins, 16);
+  assert.equal(getPart("nema17")?.class, "module");
+  assert.equal(getPart("limit-switch-nc")?.polar, false);
+});
+
+test("nano-esp32 pin 1 is D12, not classic Nano TX", () => {
+  const neo = getPart("nano-esp32")!;
+  const classic = getPart("nano")!;
+  assert.equal(neo.pins[0]?.label, "D12");
+  assert.equal(classic.pins[0]?.label, "D1");
+  assert.equal(neo.pins[15]?.label, "VIN");
+  assert.equal(neo.pins[28]?.label, "3V3");
+  assert.equal(neo.pins[29]?.label, "D13");
+  const u1 = { kind: "dip" as const, id: "u1", def: "nano-esp32", anchor: "1-e" };
+  assert.deepEqual(dipPinHole(u1, 1), { kind: "terminal", row: 1, col: "e" });
+  assert.deepEqual(dipPinHole(u1, 15), { kind: "terminal", row: 15, col: "e" });
+  assert.deepEqual(dipPinHole(u1, 16), { kind: "terminal", row: 15, col: "f" });
+  assert.deepEqual(dipPinHole(u1, 29), { kind: "terminal", row: 2, col: "f" });
+  assert.deepEqual(dipPinHole(u1, 30), { kind: "terminal", row: 1, col: "f" });
+});
+
+test("tmc2208 SilentStepStick pin 1 is GND, pin 16 is DIR", () => {
+  const def = getPart("tmc2208")!;
+  assert.deepEqual(
+    def.pins.map((p) => p.label),
+    ["GND", "VIO", "M2B", "M2A", "M1A", "M1B", "GND2", "VM", "EN", "MS1", "MS2", "UART", "PDN", "CLK", "STEP", "DIR"],
+  );
+  const u2 = { kind: "dip" as const, id: "u2", def: "tmc2208", anchor: "17-e" };
+  assert.deepEqual(dipPinHole(u2, 1), { kind: "terminal", row: 17, col: "e" });
+  assert.deepEqual(dipPinHole(u2, 8), { kind: "terminal", row: 24, col: "e" });
+  assert.deepEqual(dipPinHole(u2, 9), { kind: "terminal", row: 24, col: "f" });
+  assert.deepEqual(dipPinHole(u2, 16), { kind: "terminal", row: 17, col: "f" });
+});
+
+test("homekit-blinds example validates", () => {
+  assert.deepEqual(validateProject(EXAMPLE_HOMEKIT_BLINDS).filter((i) => i.level === "error"), []);
+  const raw = JSON.parse(readFileSync(new URL("../../../examples/homekit-blinds.json", import.meta.url), "utf8"));
+  const fromFile = parseProject(raw);
+  assert.deepEqual(validateProject(fromFile).filter((i) => i.level === "error"), []);
+  assert.equal(resolveEndpoint(fromFile, "u1.D12")?.row, 1);
+  assert.equal(resolveEndpoint(fromFile, "u1.3V3")?.row, 2);
+  assert.equal(resolveEndpoint(fromFile, "u2.DIR")?.row, 17);
+  assert.equal(resolveEndpoint(fromFile, "u2.VM")?.row, 24);
 });

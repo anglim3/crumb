@@ -3,6 +3,7 @@
     "id": "ne555",
     "name": "NE555 timer",
     "class": "dip",
+    "dipPins": 8,
     "description": "Classic 8-pin timer. Pin 1 at the notch.",
     "pins": [
       {
@@ -45,13 +46,13 @@
         "label": "VCC",
         "number": 8
       }
-    ],
-    "dipPins": 8
+    ]
   },
   {
     "id": "lm358",
     "name": "LM358 dual op-amp",
     "class": "dip",
+    "dipPins": 8,
     "description": "Dual op-amp, single supply.",
     "pins": [
       {
@@ -94,8 +95,7 @@
         "label": "VCC",
         "number": 8
       }
-    ],
-    "dipPins": 8
+    ]
   },
   {
     "id": "lm7805",
@@ -125,6 +125,7 @@
     "id": "74hc595",
     "name": "74HC595 shift register",
     "class": "dip",
+    "dipPins": 16,
     "description": "8-bit serial-in parallel-out.",
     "pins": [
       {
@@ -207,13 +208,13 @@
         "label": "VCC",
         "number": 16
       }
-    ],
-    "dipPins": 16
+    ]
   },
   {
     "id": "atmega328p",
     "name": "ATmega328P",
     "class": "dip",
+    "dipPins": 28,
     "description": "DIP MCU used on Arduino Uno.",
     "pins": [
       {
@@ -356,8 +357,7 @@
         "label": "PC5",
         "number": 28
       }
-    ],
-    "dipPins": 28
+    ]
   },
   {
     "id": "resistor",
@@ -374,7 +374,8 @@
         "label": "B"
       }
     ],
-    "defaultSpan": 4
+    "defaultSpan": 4,
+    "color": "#c4a574"
   },
   {
     "id": "ceramic-cap",
@@ -391,12 +392,14 @@
         "label": "B"
       }
     ],
-    "defaultSpan": 2
+    "defaultSpan": 2,
+    "color": "#c9b896"
   },
   {
     "id": "electrolytic",
     "name": "Electrolytic capacitor",
     "class": "passive",
+    "polar": true,
     "description": "Polarized cap. Stripe marks the negative lead.",
     "pins": [
       {
@@ -409,12 +412,13 @@
       }
     ],
     "defaultSpan": 2,
-    "polar": true
+    "color": "#4a6b8a"
   },
   {
     "id": "led",
     "name": "LED",
     "class": "led",
+    "polar": true,
     "description": "Longer lead is anode (+). Flat side is cathode.",
     "pins": [
       {
@@ -427,12 +431,13 @@
       }
     ],
     "defaultSpan": 2,
-    "polar": true
+    "color": "#c45c4a"
   },
   {
     "id": "diode",
     "name": "1N4148 diode",
     "class": "passive",
+    "polar": true,
     "description": "Stripe marks the cathode.",
     "pins": [
       {
@@ -445,7 +450,7 @@
       }
     ],
     "defaultSpan": 3,
-    "polar": true
+    "color": "#2a2a2a"
   },
   {
     "id": "npn",
@@ -515,6 +520,24 @@
     "defaultSpan": 2
   },
   {
+    "id": "limit-switch-nc",
+    "name": "NC limit switch",
+    "class": "switch",
+    "polar": false,
+    "description": "NC micro endstop (COM, NC). Wire COM→GND, NC→GPIO with INPUT_PULLUP; released = closed to GND.",
+    "pins": [
+      {
+        "id": "com",
+        "label": "COM"
+      },
+      {
+        "id": "nc",
+        "label": "NC"
+      }
+    ],
+    "defaultSpan": 3
+  },
+  {
     "id": "pot",
     "name": "Trimmer pot",
     "class": "passive",
@@ -550,7 +573,8 @@
         "label": "B"
       }
     ],
-    "defaultSpan": 3
+    "defaultSpan": 3,
+    "color": "#c9a227"
   },
   {
     "id": "tmp36",
@@ -651,6 +675,30 @@
       {
         "id": "neg",
         "label": "−"
+      }
+    ]
+  },
+  {
+    "id": "nema17",
+    "name": "NEMA 17 stepper",
+    "class": "module",
+    "description": "NEMA 17 pancake stepper. Off-board; coil leads M1A, M1B, M2A, M2B. Jumper to the driver; do not treat these as breadboard columns.",
+    "pins": [
+      {
+        "id": "m1a",
+        "label": "M1A"
+      },
+      {
+        "id": "m1b",
+        "label": "M1B"
+      },
+      {
+        "id": "m2a",
+        "label": "M2A"
+      },
+      {
+        "id": "m2b",
+        "label": "M2B"
       }
     ]
   },
@@ -918,6 +966,7 @@
     "id": "nano",
     "name": "Arduino Nano",
     "class": "dip",
+    "dipPins": 30,
     "description": "Nano seated across the gutter. Pin 1 is D1 (TX) at the USB end.",
     "pins": [
       {
@@ -1070,13 +1119,261 @@
         "label": "VIN",
         "number": 30
       }
-    ],
-    "dipPins": 30
+    ]
+  },
+  {
+    "id": "nano-esp32",
+    "name": "Arduino Nano ESP32",
+    "class": "dip",
+    "dipPins": 30,
+    "description": "Arduino Nano ESP32 ABX00083 with headers (45×18 mm, 15+15 @ 2.54 mm). Pin 1 is D12 at the USB end on the digital (left) strip — not classic Nano order. Do not use catalog id `nano` for this board; 3V3 is on the analog (right) side.",
+    "pins": [
+      {
+        "id": "1",
+        "label": "D12",
+        "number": 1
+      },
+      {
+        "id": "2",
+        "label": "D11",
+        "number": 2
+      },
+      {
+        "id": "3",
+        "label": "D10",
+        "number": 3
+      },
+      {
+        "id": "4",
+        "label": "D9",
+        "number": 4
+      },
+      {
+        "id": "5",
+        "label": "D8",
+        "number": 5
+      },
+      {
+        "id": "6",
+        "label": "D7",
+        "number": 6
+      },
+      {
+        "id": "7",
+        "label": "D6",
+        "number": 7
+      },
+      {
+        "id": "8",
+        "label": "D5",
+        "number": 8
+      },
+      {
+        "id": "9",
+        "label": "D4",
+        "number": 9
+      },
+      {
+        "id": "10",
+        "label": "D3",
+        "number": 10
+      },
+      {
+        "id": "11",
+        "label": "D2",
+        "number": 11
+      },
+      {
+        "id": "12",
+        "label": "GND",
+        "number": 12
+      },
+      {
+        "id": "13",
+        "label": "RST",
+        "number": 13
+      },
+      {
+        "id": "14",
+        "label": "D1",
+        "number": 14
+      },
+      {
+        "id": "15",
+        "label": "D0",
+        "number": 15
+      },
+      {
+        "id": "16",
+        "label": "VIN",
+        "number": 16
+      },
+      {
+        "id": "17",
+        "label": "GND2",
+        "number": 17
+      },
+      {
+        "id": "18",
+        "label": "BOOT1",
+        "number": 18
+      },
+      {
+        "id": "19",
+        "label": "VUSB",
+        "number": 19
+      },
+      {
+        "id": "20",
+        "label": "A7",
+        "number": 20
+      },
+      {
+        "id": "21",
+        "label": "A6",
+        "number": 21
+      },
+      {
+        "id": "22",
+        "label": "A5",
+        "number": 22
+      },
+      {
+        "id": "23",
+        "label": "A4",
+        "number": 23
+      },
+      {
+        "id": "24",
+        "label": "A3",
+        "number": 24
+      },
+      {
+        "id": "25",
+        "label": "A2",
+        "number": 25
+      },
+      {
+        "id": "26",
+        "label": "A1",
+        "number": 26
+      },
+      {
+        "id": "27",
+        "label": "A0",
+        "number": 27
+      },
+      {
+        "id": "28",
+        "label": "BOOT0",
+        "number": 28
+      },
+      {
+        "id": "29",
+        "label": "3V3",
+        "number": 29
+      },
+      {
+        "id": "30",
+        "label": "D13",
+        "number": 30
+      }
+    ]
+  },
+  {
+    "id": "tmc2208",
+    "name": "TMC2208 SilentStepStick",
+    "class": "dip",
+    "dipPins": 16,
+    "description": "Watterott SilentStepStick / Pololu-form TMC2208 V1.2 (~0.60×0.80 in, 8+8 @ 0.1 in, 0.6 in row spacing). Pin 1 is GND at top-left when seated.",
+    "pins": [
+      {
+        "id": "1",
+        "label": "GND",
+        "number": 1
+      },
+      {
+        "id": "2",
+        "label": "VIO",
+        "number": 2
+      },
+      {
+        "id": "3",
+        "label": "M2B",
+        "number": 3
+      },
+      {
+        "id": "4",
+        "label": "M2A",
+        "number": 4
+      },
+      {
+        "id": "5",
+        "label": "M1A",
+        "number": 5
+      },
+      {
+        "id": "6",
+        "label": "M1B",
+        "number": 6
+      },
+      {
+        "id": "7",
+        "label": "GND2",
+        "number": 7
+      },
+      {
+        "id": "8",
+        "label": "VM",
+        "number": 8
+      },
+      {
+        "id": "9",
+        "label": "EN",
+        "number": 9
+      },
+      {
+        "id": "10",
+        "label": "MS1",
+        "number": 10
+      },
+      {
+        "id": "11",
+        "label": "MS2",
+        "number": 11
+      },
+      {
+        "id": "12",
+        "label": "UART",
+        "number": 12
+      },
+      {
+        "id": "13",
+        "label": "PDN",
+        "number": 13
+      },
+      {
+        "id": "14",
+        "label": "CLK",
+        "number": 14
+      },
+      {
+        "id": "15",
+        "label": "STEP",
+        "number": 15
+      },
+      {
+        "id": "16",
+        "label": "DIR",
+        "number": 16
+      }
+    ]
   },
   {
     "id": "pro-mini",
     "name": "Arduino Pro Mini",
     "class": "dip",
+    "dipPins": 24,
     "description": "Pro Mini across the gutter. No USB; pin 1 is RAW / GND end toward the headers you solder.",
     "pins": [
       {
@@ -1199,13 +1496,13 @@
         "label": "RAW",
         "number": 24
       }
-    ],
-    "dipPins": 24
+    ]
   },
   {
     "id": "attiny85",
     "name": "ATtiny85",
     "class": "dip",
+    "dipPins": 8,
     "description": "8-pin AVR. Pin 1 is PB5 (RESET) at the notch.",
     "pins": [
       {
@@ -1248,13 +1545,13 @@
         "label": "VCC",
         "number": 8
       }
-    ],
-    "dipPins": 8
+    ]
   },
   {
     "id": "pico",
     "name": "Raspberry Pi Pico",
     "class": "dip",
+    "dipPins": 40,
     "description": "Pico seated across the gutter. Pin 1 is GP0 at the USB end. Needs a half or full board.",
     "pins": [
       {
@@ -1457,13 +1754,13 @@
         "label": "VBUS",
         "number": 40
       }
-    ],
-    "dipPins": 40
+    ]
   },
   {
     "id": "pico-w",
     "name": "Raspberry Pi Pico W",
     "class": "dip",
+    "dipPins": 40,
     "description": "Pico W, same breadboard pinout as Pico. Pin 1 is GP0 at the USB end.",
     "pins": [
       {
@@ -1666,8 +1963,7 @@
         "label": "VBUS",
         "number": 40
       }
-    ],
-    "dipPins": 40
+    ]
   },
   {
     "id": "pi4",
@@ -1793,6 +2089,7 @@
     "id": "esp32",
     "name": "ESP32 DevKit",
     "class": "dip",
+    "dipPins": 30,
     "description": "30-pin ESP32-WROOM DevKit across the gutter. Pin 1 is 3V3 at the USB end. 38-pin DevKitC boards do not match this map — park those as a module and jumper by label.",
     "pins": [
       {
@@ -1945,8 +2242,7 @@
         "label": "VIN",
         "number": 30
       }
-    ],
-    "dipPins": 30
+    ]
   },
   {
     "id": "esp32-s3",
@@ -2004,6 +2300,7 @@
     "id": "esp32-c3",
     "name": "XIAO ESP32-C3",
     "class": "dip",
+    "dipPins": 14,
     "description": "Seeed XIAO ESP32-C3 across the gutter. Pin 1 is D0 at the USB end.",
     "pins": [
       {
@@ -2076,8 +2373,7 @@
         "label": "5V",
         "number": 14
       }
-    ],
-    "dipPins": 14
+    ]
   },
   {
     "id": "nodemcu",

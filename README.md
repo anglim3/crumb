@@ -21,7 +21,9 @@ node --experimental-strip-types scripts/crumb-svg.mjs examples/555-blinker.json 
 
 Open `blinker.svg`. That is the same geometry the editor uses.
 
-Examples: `examples/555-blinker.json`, plus the named circuits in `src/lib/crumb/examples.ts` (button LED, Uno + DHT22, ESP32 LED, Pico button).
+Examples: `examples/555-blinker.json`, `examples/homekit-blinds.json`, plus the named circuits in `src/lib/crumb/examples.ts` (button LED, Uno + DHT22, ESP32 LED, Pico button, HomeKit blinds).
+
+The blinds bench feeds **12 V into RP / RM**. The barrel jack is a visual module only — do not jumper `m1.pos` / `m1.neg` (module endpoints do not resolve). LP is 3V3 from the Nano ESP32. Use `nano-esp32`, not `nano`.
 
 ## MCP (for an AI harness)
 
