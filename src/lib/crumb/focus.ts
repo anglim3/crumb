@@ -17,6 +17,12 @@ export function itemOpacity(selected: string | null, id: string, selectable: Set
   return selected === id ? 1 : DIMMED;
 }
 
+/** Full opacity unless isolation is on and this hole is not on the selection. */
+export function holeOpacity(focused: Set<string> | null, id: string): number {
+  if (!focused) return 1;
+  return focused.has(id) ? 1 : DIMMED;
+}
+
 /** Holes that belong to the selected part or wire. Null when nothing is isolated. */
 export function focusedHoles(project: Project, selected: string | null): Set<string> | null {
   if (!selected) return null;

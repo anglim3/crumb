@@ -1,5 +1,6 @@
 import { BOARD_SPECS } from "@/lib/crumb/board";
 import { getPart } from "@/lib/crumb/catalog";
+import { focusedHoles, holeOpacity, itemOpacity, selectableIds } from "@/lib/crumb/focus";
 import { boardGeom, HOLE_R, MODULE_PIN_R, PITCH, moduleCardGeom, projectGeom } from "@/lib/crumb/geometry";
 import { holeId, parseHole } from "@/lib/crumb/holes";
 import { dipPinHole, resolveEndpoint } from "@/lib/crumb/layout";
@@ -30,6 +31,8 @@ export function BoardView() {
   const nets = useMemo(() => computeNets(project), [project]);
   const shorts = useMemo(() => detectShorts(project, nets), [project, nets]);
   const shorted = useMemo(() => shortHoles(shorts), [shorts]);
+  const selectable = useMemo(() => selectableIds(project), [project]);
+  const focus = useMemo(() => focusedHoles(project, selected), [project, selected]);
   const activeNet = highlightNet ? nets.find((n) => n.id === highlightNet) : undefined;
   const hoverNet = hoverHole ? netForHole(nets, hoverHole) : undefined;
   const lit = new Set([...(activeNet?.holes ?? []), ...(hoverNet?.holes ?? [])]);
@@ -95,15 +98,17 @@ export function BoardView() {
           </text>
         ))}
 
-        {project.parts.map((part) => {
-          if (part.kind === "dip") {
-            return <DipBody key={part.id} project={project} partId={part.id} geom={geom} />;
-          }
-          if (part.kind === "leaded") {
-            return <LeadedBody key={part.id} project={project} partId={part.id} geom={geom} />;
-          }
-          return <ModuleCard key={part.id} project={project} partId={part.id} geom={geom} />;
-        })}
+        {project.parts.map((part) => (
+          <g key={part.id} opacity={itemOpacity(selected, part.id, selectable)}>
+            {part.kind === "dip" ? (
+              <DipBody project={project} partId={part.id} geom={geom} />
+            ) : part.kind === "leaded" ? (
+              <LeadedBody project={project} partId={part.id} geom={geom} />
+            ) : (
+              <ModuleCard project={project} partId={part.id} geom={geom} />
+            )}
+          </g>
+        ))}
 
         {project.wires.map((wire, i) => {
           const a = resolveEndpoint(project, wire.from);
@@ -122,6 +127,7 @@ export function BoardView() {
               stroke={shortWire ? "#c9897a" : wire.color}
               strokeWidth={selectedWire || shortWire ? 3.4 : 2.4}
               strokeLinecap="round"
+              opacity={itemOpacity(selected, wire.id, selectable)}
               className="cursor-pointer"
               onClick={(e) => {
                 e.stopPropagation();
@@ -146,6 +152,7 @@ export function BoardView() {
               cx={x}
               cy={y}
               r={HOLE_R}
+              opacity={holeOpacity(focus, id)}
               className={
                 shorted.has(id)
                   ? "fill-bad"
@@ -184,6 +191,7 @@ export function BoardView() {
                 cx={pin.x}
                 cy={pin.y}
                 r={MODULE_PIN_R}
+                opacity={holeOpacity(focus, pin.ref)}
                 className={
                   shorted.has(pin.ref)
                     ? "fill-bad"
