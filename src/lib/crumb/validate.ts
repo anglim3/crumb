@@ -86,7 +86,7 @@ export function validateProject(project: Project): Issue[] {
       issues.push({
         level: "error",
         code: "dangling-wire",
-        message: `Wire ${wire.id} does not resolve to holes`,
+        message: `Wire ${wire.id} does not resolve to holes or module pins`,
         refs: [wire.id],
       });
     }

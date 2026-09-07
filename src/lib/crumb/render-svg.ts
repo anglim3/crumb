@@ -1,7 +1,7 @@
 import { BOARD_SPECS } from "./board.ts";
 import { getPart } from "./catalog.ts";
-import { boardGeom, HOLE_R } from "./geometry.ts";
-import { holeId, parseHole } from "./holes.ts";
+import { boardGeom, HOLE_R, MODULE_PIN_R, moduleCardGeom, projectGeom } from "./geometry.ts";
+import { parseHole } from "./holes.ts";
 import { dipPinHole, resolveEndpoint } from "./layout.ts";
 import type { HoleRef, Project, TerminalCol } from "./types.ts";
 import { jumperPath } from "./wire-path.ts";
@@ -26,15 +26,36 @@ function allHoles(rows: number): HoleRef[] {
   return holes;
 }
 
+function renderModuleCard(project: Project, partId: string, geom: ReturnType<typeof projectGeom>): string {
+  const part = project.parts.find((p) => p.id === partId);
+  if (!part || part.kind !== "module") return "";
+  const def = getPart(part.def);
+  const card = moduleCardGeom(project, part, geom);
+  const labelSide = part.slot === 0 ? "end" : "start";
+  const labelX = part.slot === 0 ? card.pins[0] ? card.pins[0].x - 8 : card.x + 8 : card.pins[0] ? card.pins[0].x + 8 : card.x + 22;
+  const chunks = [
+    `<rect x="${card.x}" y="${card.y}" width="${card.w}" height="${card.h}" rx="6" fill="#3d4a42" stroke="#1c1916" stroke-width="1.2"/>`,
+    `<text x="${card.x + card.w / 2}" y="${card.y + 14}" text-anchor="middle" fill="#efe6d4" font-size="8" font-family="Georgia, serif">${esc(part.id)} ${esc(def?.name ?? part.def)}</text>`,
+  ];
+  for (const pin of card.pins) {
+    chunks.push(
+      `<text x="${labelX}" y="${pin.y + 2.5}" text-anchor="${labelSide}" fill="#efe6d4" font-size="6" font-family="monospace">${esc(pin.label)}</text>`,
+    );
+  }
+  return chunks.join("");
+}
+
 /** Standalone SVG for export / MCP. */
 export function renderProjectSvg(project: Project): string {
-  const geom = boardGeom(project.board);
+  const geom = projectGeom(project);
+  const board = boardGeom(project.board);
   const spec = BOARD_SPECS[project.board];
   const parts: string[] = [];
   parts.push(
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${geom.width} ${geom.height}" width="${geom.width}" height="${geom.height}">`,
-    `<rect width="${geom.width}" height="${geom.height}" rx="14" fill="#c9b896"/>`,
-    `<rect x="10" y="10" width="${geom.width - 20}" height="${geom.height - 20}" rx="10" fill="#efe6d4"/>`,
+    `<rect width="${geom.width}" height="${geom.height}" rx="8" fill="#d8cbb4"/>`,
+    `<rect x="${geom.boardX}" y="0" width="${geom.boardWidth}" height="${board.height}" rx="14" fill="#c9b896"/>`,
+    `<rect x="${geom.boardX + 10}" y="10" width="${geom.boardWidth - 20}" height="${board.height - 20}" rx="10" fill="#efe6d4"/>`,
   );
 
   for (const side of ["L", "R"] as const) {
@@ -45,17 +66,6 @@ export function renderProjectSvg(project: Project): string {
     parts.push(`<rect x="${xP}" y="${y}" width="18" height="${h}" rx="4" fill="#e8c8c2"/>`);
     parts.push(`<rect x="${xM}" y="${y}" width="18" height="${h}" rx="4" fill="#c5d0da"/>`);
   }
-
-  project.wires.forEach((wire, i) => {
-    const a = resolveEndpoint(project, wire.from);
-    const b = resolveEndpoint(project, wire.to);
-    if (!a || !b) return;
-    const pa = geom.holeXY(a);
-    const pb = geom.holeXY(b);
-    parts.push(
-      `<path d="${jumperPath(geom, pa.x, pa.y, pb.x, pb.y, i)}" fill="none" stroke="${esc(wire.color)}" stroke-width="2.4" stroke-linecap="round"/>`,
-    );
-  });
 
   for (const part of project.parts) {
     if (part.kind === "dip") {
@@ -81,12 +91,35 @@ export function renderProjectSvg(project: Project): string {
       const a = geom.holeXY(from);
       const b = geom.holeXY(to);
       parts.push(`<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="#8a8478" stroke-width="1.4"/>`);
+    } else {
+      parts.push(renderModuleCard(project, part.id, geom));
     }
   }
+
+  project.wires.forEach((wire, i) => {
+    const a = resolveEndpoint(project, wire.from);
+    const b = resolveEndpoint(project, wire.to);
+    if (!a || !b) return;
+    const pa = geom.holeXY(a);
+    const pb = geom.holeXY(b);
+    parts.push(
+      `<path d="${jumperPath(geom, pa.x, pa.y, pb.x, pb.y, i)}" fill="none" stroke="${esc(wire.color)}" stroke-width="2.4" stroke-linecap="round"/>`,
+    );
+  });
 
   for (const hole of allHoles(spec.rows)) {
     const { x, y } = geom.holeXY(hole);
     parts.push(`<circle cx="${x}" cy="${y}" r="${HOLE_R}" fill="#3a3228"/>`);
+  }
+
+  for (const part of project.parts) {
+    if (part.kind !== "module") continue;
+    const card = moduleCardGeom(project, part, geom);
+    for (const pin of card.pins) {
+      parts.push(
+        `<circle cx="${pin.x}" cy="${pin.y}" r="${MODULE_PIN_R}" fill="#3a3228" stroke="#c9b896" stroke-width="0.8"/>`,
+      );
+    }
   }
 
   parts.push(`</svg>`);

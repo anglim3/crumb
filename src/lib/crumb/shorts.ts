@@ -78,6 +78,37 @@ export function detectShorts(project: Project, nets = computeNets(project)): Sho
       continue;
     }
 
+    if (part.kind === "module") {
+      const def = getPart(part.def);
+      if (!def) continue;
+      const byNet = new Map<string, { pin: string; polarity: "plus" | "minus"; hole: string; net: Net }[]>();
+      for (const pin of def.pins) {
+        const id = `${part.id}.${pin.id}`;
+        const net = netForHole(nets, id);
+        if (!net) continue;
+        const polarity = pinPolarity(pin.label) ?? pinPolarity(pin.id);
+        if (!polarity) continue;
+        const list = byNet.get(net.id) ?? [];
+        list.push({ pin: pin.label, polarity, hole: id, net });
+        byNet.set(net.id, list);
+      }
+      for (const group of byNet.values()) {
+        const hasPlus = group.some((g) => g.polarity === "plus");
+        const hasMinus = group.some((g) => g.polarity === "minus");
+        if (hasPlus && hasMinus) {
+          const net = group[0].net;
+          push({
+            kind: "supply-short",
+            message: `${part.id} supply pins tied together (${group.map((g) => g.pin).join(", ")})`,
+            netId: net.id,
+            holes: net.holes,
+            refs: [part.id],
+          });
+        }
+      }
+      continue;
+    }
+
     if (part.kind !== "dip") continue;
     const def = getPart(part.def);
     if (!def) continue;

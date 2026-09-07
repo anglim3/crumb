@@ -1,6 +1,6 @@
 import { BOARD_SPECS } from "@/lib/crumb/board";
 import { getPart } from "@/lib/crumb/catalog";
-import { boardGeom, HOLE_R, PITCH } from "@/lib/crumb/geometry";
+import { boardGeom, HOLE_R, MODULE_PIN_R, PITCH, moduleCardGeom, projectGeom } from "@/lib/crumb/geometry";
 import { holeId, parseHole } from "@/lib/crumb/holes";
 import { dipPinHole, resolveEndpoint } from "@/lib/crumb/layout";
 import { computeNets, netForHole } from "@/lib/crumb/nets";
@@ -24,7 +24,8 @@ export function BoardView() {
   const setHighlightNet = useCrumb((s) => s.setHighlightNet);
   const setSelected = useCrumb((s) => s.setSelected);
 
-  const geom = useMemo(() => boardGeom(project.board), [project.board]);
+  const geom = useMemo(() => projectGeom(project), [project]);
+  const board = useMemo(() => boardGeom(project.board), [project.board]);
   const spec = BOARD_SPECS[project.board];
   const nets = useMemo(() => computeNets(project), [project]);
   const shorts = useMemo(() => detectShorts(project, nets), [project, nets]);
@@ -54,8 +55,16 @@ export function BoardView() {
         role="img"
         aria-label={`${spec.label} breadboard`}
       >
-        <rect width={geom.width} height={geom.height} rx="14" className="fill-board" />
-        <rect x="10" y="10" width={geom.width - 20} height={geom.height - 20} rx="10" className="fill-board-inner" />
+        <rect width={geom.width} height={geom.height} rx="8" className="fill-bench" />
+        <rect x={geom.boardX} y="0" width={geom.boardWidth} height={board.height} rx="14" className="fill-board" />
+        <rect
+          x={geom.boardX + 10}
+          y="10"
+          width={geom.boardWidth - 20}
+          height={board.height - 20}
+          rx="10"
+          className="fill-board-inner"
+        />
 
         <RailStrip geom={geom} specRows={spec.rows} side="L" />
         <RailStrip geom={geom} specRows={spec.rows} side="R" />
@@ -86,6 +95,16 @@ export function BoardView() {
           </text>
         ))}
 
+        {project.parts.map((part) => {
+          if (part.kind === "dip") {
+            return <DipBody key={part.id} project={project} partId={part.id} geom={geom} />;
+          }
+          if (part.kind === "leaded") {
+            return <LeadedBody key={part.id} project={project} partId={part.id} geom={geom} />;
+          }
+          return <ModuleCard key={part.id} project={project} partId={part.id} geom={geom} />;
+        })}
+
         {project.wires.map((wire, i) => {
           const a = resolveEndpoint(project, wire.from);
           const b = resolveEndpoint(project, wire.to);
@@ -115,16 +134,6 @@ export function BoardView() {
         {wireFrom && hoverHole && wireFrom !== hoverHole && (
           <RubberBand project={project} geom={geom} from={wireFrom} to={hoverHole} />
         )}
-
-        {project.parts.map((part) => {
-          if (part.kind === "dip") {
-            return <DipBody key={part.id} project={project} partId={part.id} />;
-          }
-          if (part.kind === "leaded") {
-            return <LeadedBody key={part.id} project={project} partId={part.id} />;
-          }
-          return <ModuleCard key={part.id} project={project} partId={part.id} />;
-        })}
 
         {allHoles(spec.rows).map((hole) => {
           const id = holeId(hole);
@@ -161,6 +170,45 @@ export function BoardView() {
               style={{ cursor: "pointer" }}
             />
           );
+        })}
+
+        {project.parts.map((part) => {
+          if (part.kind !== "module") return null;
+          const card = moduleCardGeom(project, part, geom);
+          return card.pins.map((pin) => {
+            const on = lit.has(pin.ref);
+            const isFrom = wireFrom === pin.ref;
+            return (
+              <circle
+                key={pin.ref}
+                cx={pin.x}
+                cy={pin.y}
+                r={MODULE_PIN_R}
+                className={
+                  shorted.has(pin.ref)
+                    ? "fill-bad"
+                    : isFrom
+                      ? "fill-hole-active"
+                      : on
+                        ? "fill-hole-lit"
+                        : "fill-hole"
+                }
+                stroke="#c9b896"
+                strokeWidth="0.8"
+                onMouseEnter={() => {
+                  setHoverHole(pin.ref);
+                  const net = netForHole(nets, pin.ref);
+                  if (net) setHighlightNet(net.id);
+                }}
+                onMouseLeave={() => {
+                  setHoverHole(null);
+                  setHighlightNet(null);
+                }}
+                onClick={() => clickHole(pin.ref)}
+                style={{ cursor: "pointer" }}
+              />
+            );
+          });
         })}
       </svg>
     </div>
@@ -267,7 +315,15 @@ function RailStrip({
   );
 }
 
-function DipBody({ project, partId }: { project: Project; partId: string }) {
+function DipBody({
+  project,
+  partId,
+  geom,
+}: {
+  project: Project;
+  partId: string;
+  geom: ReturnType<typeof projectGeom>;
+}) {
   const selected = useCrumb((s) => s.selected) === partId;
   const { dRow, onPointerDown } = usePartDrag(partId);
   const setSelected = useCrumb((s) => s.setSelected);
@@ -278,7 +334,6 @@ function DipBody({ project, partId }: { project: Project; partId: string }) {
   const p1 = dipPinHole(part, 1);
   const lastLeft = dipPinHole(part, count / 2);
   if (!p1 || !lastLeft) return null;
-  const geom = boardGeom(project.board);
   const a = geom.holeXY(p1);
   const b = geom.holeXY(lastLeft);
   const left = geom.colX("e") - 8;
@@ -333,7 +388,15 @@ function DipBody({ project, partId }: { project: Project; partId: string }) {
   );
 }
 
-function LeadedBody({ project, partId }: { project: Project; partId: string }) {
+function LeadedBody({
+  project,
+  partId,
+  geom,
+}: {
+  project: Project;
+  partId: string;
+  geom: ReturnType<typeof projectGeom>;
+}) {
   const selected = useCrumb((s) => s.selected) === partId;
   const setSelected = useCrumb((s) => s.setSelected);
   const { dRow, onPointerDown } = usePartDrag(partId);
@@ -343,7 +406,7 @@ function LeadedBody({ project, partId }: { project: Project; partId: string }) {
   const pts = leadHoles(part)
     .map((h) => parseHole(h))
     .filter((h): h is NonNullable<typeof h> => !!h)
-    .map((h) => boardGeom(project.board).holeXY(h));
+    .map((h) => geom.holeXY(h));
   if (pts.length < 2) return null;
   const mid = pts[Math.floor((pts.length - 1) / 2)];
   const mx = mid.x;
@@ -381,7 +444,15 @@ function LeadedBody({ project, partId }: { project: Project; partId: string }) {
   );
 }
 
-function ModuleCard({ project, partId }: { project: Project; partId: string }) {
+function ModuleCard({
+  project,
+  partId,
+  geom,
+}: {
+  project: Project;
+  partId: string;
+  geom: ReturnType<typeof projectGeom>;
+}) {
   const selected = useCrumb((s) => s.selected) === partId;
   const setSelected = useCrumb((s) => s.setSelected);
   const clickHole = useCrumb((s) => s.clickHole);
@@ -389,50 +460,46 @@ function ModuleCard({ project, partId }: { project: Project; partId: string }) {
   const part = project.parts.find((p) => p.id === partId);
   if (!part || part.kind !== "module") return null;
   const def = getPart(part.def);
-  const geom = boardGeom(project.board);
-  const spec = BOARD_SPECS[project.board];
-  const pins = def?.pins ?? [];
-  const w = 92;
-  const h = 28 + Math.ceil(pins.length / 2) * 12;
-  const x = part.slot === 0 ? 8 : geom.width - w - 8;
-  const y = geom.rowY(Math.min(spec.rows, Math.max(1, part.offsetRow))) - 10;
+  const card = moduleCardGeom(project, part, geom);
+  const labelAnchor = part.slot === 0 ? "end" : "start";
+  const labelX = card.pins[0] ? (part.slot === 0 ? card.pins[0].x - 8 : card.pins[0].x + 8) : card.x + 10;
   return (
     <g transform={dRow ? `translate(0 ${dRow * PITCH})` : undefined} onPointerDown={onPointerDown} className="cursor-grab">
       <rect
-        x={x}
-        y={y}
-        width={w}
-        height={h}
+        x={card.x}
+        y={card.y}
+        width={card.w}
+        height={card.h}
         rx="6"
         className={selected ? "fill-module stroke-accent" : "fill-module stroke-dip-edge"}
         strokeWidth="1.2"
         onClick={() => setSelected(partId)}
       />
-      <text x={x + w / 2} y={y + 14} textAnchor="middle" className="fill-board-inner font-display" style={{ fontSize: 8 }}>
+      <text
+        x={card.x + card.w / 2}
+        y={card.y + 14}
+        textAnchor="middle"
+        className="fill-board-inner font-display"
+        style={{ fontSize: 8 }}
+      >
         {part.id} {def?.name ?? part.def}
       </text>
-      {pins.map((pin, i) => {
-        const col = i % 2;
-        const row = Math.floor(i / 2);
-        const px = x + 8 + col * 46;
-        const py = y + 28 + row * 12;
-        const ref = `${part.id}.${pin.id}`;
-        return (
-          <text
-            key={pin.id}
-            x={px}
-            y={py}
-            className="fill-board-inner/90 font-mono"
-            style={{ fontSize: 6, cursor: "pointer" }}
-            onClick={(e) => {
-              e.stopPropagation();
-              clickHole(ref);
-            }}
-          >
-            {pin.label}
-          </text>
-        );
-      })}
+      {card.pins.map((pin) => (
+        <text
+          key={pin.id}
+          x={labelX}
+          y={pin.y + 2.5}
+          textAnchor={labelAnchor}
+          className="fill-board-inner/90 font-mono"
+          style={{ fontSize: 6, cursor: "pointer" }}
+          onClick={(e) => {
+            e.stopPropagation();
+            clickHole(pin.ref);
+          }}
+        >
+          {pin.label}
+        </text>
+      ))}
     </g>
   );
 }

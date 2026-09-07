@@ -1,4 +1,14 @@
-import { LEFT_COLS, RIGHT_COLS, TERMINAL_COLS, type HoleRef, type RailPolarity, type RailSide, type TerminalCol } from "./types.ts";
+import {
+  LEFT_COLS,
+  RIGHT_COLS,
+  TERMINAL_COLS,
+  type HoleRef,
+  type RailHole,
+  type RailPolarity,
+  type RailSide,
+  type TerminalCol,
+  type TerminalHole,
+} from "./types.ts";
 
 const TERMINAL_RE = /^(\d{1,2})-([a-j])$/i;
 const RAIL_RE = /^([LR])([PM])-(\d{1,2})$/i;
@@ -29,7 +39,12 @@ export function parseHole(raw: string): HoleRef | null {
 
 export function holeId(ref: HoleRef): string {
   if (ref.kind === "terminal") return `${ref.row}-${ref.col}`;
-  return `${ref.side}${ref.polarity}-${ref.row}`;
+  if (ref.kind === "rail") return `${ref.side}${ref.polarity}-${ref.row}`;
+  return `${ref.partId}.${ref.pin}`;
+}
+
+export function isBoardHole(ref: HoleRef): ref is TerminalHole | RailHole {
+  return ref.kind === "terminal" || ref.kind === "rail";
 }
 
 export function formatHole(raw: string): string {

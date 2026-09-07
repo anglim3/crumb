@@ -22,7 +22,14 @@ export type RailHole = {
   row: number;
 };
 
-export type HoleRef = TerminalHole | RailHole;
+/** Off-board module pad. Not a breadboard hole — never occupies a terminal strip. */
+export type ModulePin = {
+  kind: "module";
+  partId: string;
+  pin: string;
+};
+
+export type HoleRef = TerminalHole | RailHole | ModulePin;
 
 export type PartClass =
   | "dip"

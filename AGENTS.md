@@ -25,12 +25,13 @@ Do not invent catalog ids. If it is not in `list_parts`, pick the closest part o
 - Terminal holes: `{row}-{col}` with `col` in `a`–`j`. Example: `10-e`
 - Rails: `LP-12` left +, `LM-12` left −, `RP` / `RM` on the right
 - Part pins: `{id}.{number}` or `{id}.{LABEL}` (`u1.8`, `u1.VCC`, `m1.5v`)
+- Module pins: any `kind: "module"` catalog part (`uno`, `barrel-jack`, `nema17`, …). Wire `m1.<pinId|label>` (`m1.5v`, `m1.pos`, `m2.M1A`) to a hole or DIP pin. Pads sit beside the board — they are not terminal strips.
 - `a`–`e` on a row = one net. `f`–`j` on a row = another net. Gutter isolates them
 - `half` and `full` boards split each rail at mid-board. A jumper is required to join the two halves
 - DIP `anchor` is **pin 1 on the left strip** (`a`–`e`). The chip spans the gutter
 - Pico is 40 pins → needs 20 free rows. Mini board is only 17 rows — use `half` or `full`
 - 3-pin parts need `from`, `mid`, `to`. 4-pin parts also need `legs: [hole]`
-- Modules (`uno`, `mega`, `pi4`, `pi5`) sit off the board. Wire `m1.5v` → a hole; do not treat header pins as breadboard columns
+- Modules sit off the board. Every module def uses the same `m1.pin` jumpers; do not treat header pins as breadboard columns
 
 ## Electrical checks `validate` already runs
 
