@@ -82,7 +82,26 @@ test("intentional 555 trig-thresh tie is not a short", () => {
 });
 
 test("catalog includes core parts", () => {
-  for (const id of ["ne555", "resistor", "led", "dht22", "uno"]) {
+  for (const id of [
+    "ne555",
+    "resistor",
+    "led",
+    "dht22",
+    "uno",
+    "mega",
+    "nano",
+    "pico",
+    "pico-w",
+    "pi4",
+    "pi5",
+    "esp32",
+    "esp32-s3",
+    "esp32-c3",
+    "nodemcu",
+    "attiny85",
+  ]) {
     assert.ok(getPart(id), id);
   }
+  assert.equal(getPart("esp32")?.dipPins, 30);
+  assert.equal(getPart("pico")?.dipPins, 40);
 });

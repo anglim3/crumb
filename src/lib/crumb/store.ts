@@ -79,9 +79,10 @@ export const useCrumb = create<CrumbState>((set, get) => ({
     }
     if (s.tool === "place" && s.pendingDef) {
       const def = getPart(s.pendingDef);
-      if (def?.class === "module" || s.pendingDef === "9v-snap") {
+      if (def?.class === "module" || def?.class === "power" && !def.defaultSpan) {
+        const modules = s.project.parts.filter((p) => p.kind === "module").length;
         set({
-          project: placeModule(s.project, s.pendingDef, 1, 3),
+          project: placeModule(s.project, s.pendingDef, 1, 3 + modules * 5),
           tool: "select",
           pendingDef: null,
         });

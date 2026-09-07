@@ -47,7 +47,7 @@ export type PartDef = {
   description: string;
   pins: PartPin[];
   /** DIP pin count; body spans gutter. */
-  dipPins?: 8 | 14 | 16 | 20 | 24 | 28 | 40;
+  dipPins?: 8 | 14 | 16 | 20 | 24 | 28 | 30 | 38 | 40;
   /** Two-lead span in rows when placed vertically (hint only). */
   defaultSpan?: number;
   color?: string;
