@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360" width="640" height="360" role="img" aria-label="555 blinker on a breadboard">
-  <rect width="640" height="360" rx="18" fill="#14110e"/>
+  <rect x="1" y="1" width="638" height="358" rx="18" fill="#14110e" stroke="#c9b896" stroke-width="2"/>
   <rect x="48" y="28" width="544" height="304" rx="16" fill="#c9b896"/>
   <rect x="60" y="40" width="520" height="280" rx="12" fill="#efe6d4"/>
   <rect x="78" y="52" width="22" height="256" rx="5" fill="#e8c8c2"/>
