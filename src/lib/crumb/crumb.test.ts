@@ -5,7 +5,7 @@ import { dipPinHole, resolveEndpoint } from "./layout.ts";
 import { computeNets, netForHole } from "./nets.ts";
 import { EXAMPLE_555, EXAMPLE_BUTTON, EMPTY_PROJECT } from "./examples.ts";
 import { validateProject } from "./validate.ts";
-import { placeDip, addWire, placeLeaded } from "./mutate.ts";
+import { placeDip, addWire, placeLeaded, parseProject } from "./mutate.ts";
 import { detectShorts } from "./shorts.ts";
 import { getPart } from "./catalog.ts";
 
@@ -79,6 +79,19 @@ test("detects both leads on the same strip", () => {
 test("intentional 555 trig-thresh tie is not a short", () => {
   const shorts = detectShorts(EXAMPLE_555);
   assert.deepEqual(shorts, []);
+});
+
+test("3-pin regulator occupies mid hole", () => {
+  const project = placeLeaded(EMPTY_PROJECT, "lm7805", "5-a", "7-a", undefined, "reg", "6-a");
+  const holes = validateProject(project);
+  assert.deepEqual(holes.filter((i) => i.level === "error"), []);
+  const shorted = placeLeaded(EMPTY_PROJECT, "lm7805", "5-a", "5-c", undefined, "reg", "5-b");
+  assert.ok(detectShorts(shorted).some((s) => s.kind === "lead-short"));
+});
+
+test("parseProject rejects junk", () => {
+  assert.throws(() => parseProject({ hello: true }));
+  assert.equal(parseProject(EXAMPLE_555).name, "555 blinker");
 });
 
 test("catalog includes core parts", () => {

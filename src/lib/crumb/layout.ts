@@ -53,6 +53,9 @@ export function resolveEndpoint(project: Project, raw: string): HoleRef | null {
     ) {
       return parseHole(part.to);
     }
+    if (pin.pin === "2" || pin.pin === def?.pins[1]?.id || pin.pin === "mid") {
+      return parseHole(part.mid ?? part.from);
+    }
     return parseHole(part.from);
   }
   return null;
@@ -76,6 +79,7 @@ export function occupiedHoles(project: Project): Map<string, string> {
       for (let n = 1; n <= count; n++) mark(dipPinHole(part, n), part.id);
     } else if (part.kind === "leaded") {
       mark(parseHole(part.from), part.id);
+      if (part.mid) mark(parseHole(part.mid), part.id);
       mark(parseHole(part.to), part.id);
     }
   }

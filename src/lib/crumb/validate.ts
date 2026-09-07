@@ -63,6 +63,7 @@ export function validateProject(project: Project): Issue[] {
         issues.push({ level: "error", code: "off-board", message: `${part.id} is off the board`, refs: [part.id] });
       }
       addOcc(part.from, part.id);
+      if (part.mid) addOcc(part.mid, part.id);
       addOcc(part.to, part.id);
     }
   }

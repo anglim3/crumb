@@ -257,16 +257,19 @@ function LeadedBody({ project, partId }: { project: Project; partId: string }) {
   const def = getPart(part.def);
   const from = parseHole(part.from);
   const to = parseHole(part.to);
+  const mid = part.mid ? parseHole(part.mid) : null;
   if (!from || !to) return null;
   const geom = boardGeom(project.board);
   const a = geom.holeXY(from);
   const b = geom.holeXY(to);
-  const mx = (a.x + b.x) / 2;
-  const my = (a.y + b.y) / 2;
+  const c = mid ? geom.holeXY(mid) : null;
+  const mx = c ? c.x : (a.x + b.x) / 2;
+  const my = c ? c.y : (a.y + b.y) / 2;
   const isLed = def?.class === "led";
   return (
     <g className="cursor-pointer" onClick={() => setSelected(partId)}>
-      <line x1={a.x} y1={a.y} x2={b.x} y2={b.y} className="stroke-lead" strokeWidth="1.4" />
+      <line x1={a.x} y1={a.y} x2={c ? c.x : b.x} y2={c ? c.y : b.y} className="stroke-lead" strokeWidth="1.4" />
+      {c && <line x1={c.x} y1={c.y} x2={b.x} y2={b.y} className="stroke-lead" strokeWidth="1.4" />}
       {isLed ? (
         <g transform={`translate(${mx} ${my})`}>
           <circle r="6.5" className={selected ? "fill-led stroke-accent" : "fill-led stroke-dip-edge"} strokeWidth="1" />

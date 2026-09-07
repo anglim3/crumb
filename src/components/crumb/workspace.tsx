@@ -9,7 +9,7 @@ import { detectShorts } from "@/lib/crumb/shorts";
 import { validateProject } from "@/lib/crumb/validate";
 import { cn } from "@/lib/utils";
 import { BoardView } from "./board-view";
-import { Cable, Check, Download, FileJson, Trash2 } from "lucide-react";
+import { Cable, Check, Download, FileJson, FolderOpen, Redo2, Trash2, Undo2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 export function Workspace() {
@@ -17,8 +17,11 @@ export function Workspace() {
   const tool = useCrumb((s) => s.tool);
   const pendingDef = useCrumb((s) => s.pendingDef);
   const wireFrom = useCrumb((s) => s.wireFrom);
+  const placeClicks = useCrumb((s) => s.placeClicks);
   const deleteSelected = useCrumb((s) => s.deleteSelected);
   const cancelPending = useCrumb((s) => s.cancelPending);
+  const undo = useCrumb((s) => s.undo);
+  const redo = useCrumb((s) => s.redo);
   const issues = useMemo(() => validateProject(project), [project]);
   const shorts = useMemo(() => detectShorts(project), [project]);
   const steps = useMemo(() => buildSteps(project), [project]);
@@ -28,6 +31,17 @@ export function Workspace() {
       const tag = (e.target as HTMLElement | null)?.tagName;
       if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
       if (e.key === "Escape") cancelPending();
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "z") {
+        e.preventDefault();
+        if (e.shiftKey) redo();
+        else undo();
+        return;
+      }
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "y") {
+        e.preventDefault();
+        redo();
+        return;
+      }
       if (e.key === "Delete" || e.key === "Backspace") {
         e.preventDefault();
         deleteSelected();
@@ -37,7 +51,7 @@ export function Workspace() {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [cancelPending, deleteSelected]);
+  }, [cancelPending, deleteSelected, undo, redo]);
   return (
     <div className="flex min-h-dvh flex-col bg-bg text-fg">
       <Header />
@@ -49,7 +63,13 @@ export function Workspace() {
           <div className="flex items-center justify-between gap-3 px-4 py-2 text-xs text-muted">
             <p>
               {tool === "place" && pendingDef
-                ? `Placing ${getPart(pendingDef)?.name ?? pendingDef}: click pin-1 hole, or two holes for a leaded part`
+                ? `Placing ${getPart(pendingDef)?.name ?? pendingDef}${
+                    placeClicks.length
+                      ? ` — ${placeClicks.length + 1}/${getPart(pendingDef)?.pins.length ?? 2}`
+                      : getPart(pendingDef)?.dipPins
+                        ? ": click pin-1 hole"
+                        : ": click each lead hole"
+                  }`
                 : tool === "wire"
                   ? wireFrom
                     ? `Wire from ${wireFrom} — click the other hole`
@@ -87,6 +107,11 @@ function Header() {
   const jsonOpen = useCrumb((s) => s.jsonOpen);
   const setJsonOpen = useCrumb((s) => s.setJsonOpen);
   const deleteSelected = useCrumb((s) => s.deleteSelected);
+  const undo = useCrumb((s) => s.undo);
+  const redo = useCrumb((s) => s.redo);
+  const past = useCrumb((s) => s.past);
+  const future = useCrumb((s) => s.future);
+  const loadJson = useCrumb((s) => s.loadJson);
 
   return (
     <header className="flex flex-wrap items-center gap-3 border-b border-border px-4 py-3">
@@ -127,6 +152,18 @@ function Header() {
         </select>
       </label>
       <div className="flex flex-wrap gap-2">
+        <button type="button" className="h-10 rounded-md bg-surface px-3 text-sm disabled:opacity-40" onClick={undo} disabled={!past.length}>
+          <span className="inline-flex items-center gap-1.5">
+            <Undo2 className="size-3.5" />
+            Undo
+          </span>
+        </button>
+        <button type="button" className="h-10 rounded-md bg-surface px-3 text-sm disabled:opacity-40" onClick={redo} disabled={!future.length}>
+          <span className="inline-flex items-center gap-1.5">
+            <Redo2 className="size-3.5" />
+            Redo
+          </span>
+        </button>
         <button
           type="button"
           className={cn("h-10 rounded-md px-3 text-sm", tool === "select" ? "bg-accent text-accent-fg" : "bg-surface")}
@@ -150,6 +187,21 @@ function Header() {
             Delete
           </span>
         </button>
+        <label className="h-10 rounded-md bg-surface px-3 text-sm inline-flex items-center gap-1.5 cursor-pointer">
+          <FolderOpen className="size-3.5" />
+          Open
+          <input
+            type="file"
+            accept="application/json,.json"
+            className="sr-only"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (!file) return;
+              file.text().then((text) => loadJson(text)).catch(() => undefined);
+              e.target.value = "";
+            }}
+          />
+        </label>
         <button
           type="button"
           className="h-10 rounded-md bg-surface px-3 text-sm"
@@ -294,6 +346,8 @@ function Inspector({
   const [jsonErr, setJsonErr] = useState<string | null>(null);
   const selectedPart = project.parts.find((p) => p.id === selected);
   const selectedDef = selectedPart ? getPart(selectedPart.def) : undefined;
+  const updateSelected = useCrumb((s) => s.updateSelected);
+  const patchSelected = useCrumb((s) => s.patchSelected);
 
   return (
     <div className="flex flex-col gap-6 p-4">
@@ -303,6 +357,67 @@ function Inspector({
           <p className="mt-2 text-sm">
             {selectedPart.id} · {selectedDef.name}
           </p>
+          {selectedPart.kind === "leaded" && (
+            <div className="mt-3 flex flex-col gap-2">
+              <label className="text-xs text-muted">
+                Value
+                <input
+                  className="mt-1 h-10 w-full rounded-md border border-border bg-surface px-3 text-sm text-fg"
+                  value={selectedPart.value ?? ""}
+                  placeholder="1k"
+                  onChange={(e) => patchSelected({ value: e.target.value })}
+                  onBlur={() => updateSelected({ value: selectedPart.value })}
+                />
+              </label>
+              <label className="text-xs text-muted">
+                From
+                <input
+                  className="mt-1 h-10 w-full rounded-md border border-border bg-surface px-3 font-mono text-sm text-fg"
+                  value={selectedPart.from}
+                  onChange={(e) => patchSelected({ from: e.target.value })}
+                  onBlur={() => updateSelected({ from: selectedPart.from })}
+                />
+              </label>
+              {selectedPart.mid !== undefined && (
+                <label className="text-xs text-muted">
+                  Mid
+                  <input
+                    className="mt-1 h-10 w-full rounded-md border border-border bg-surface px-3 font-mono text-sm text-fg"
+                    value={selectedPart.mid}
+                    onChange={(e) => patchSelected({ mid: e.target.value })}
+                    onBlur={() => updateSelected({ mid: selectedPart.mid })}
+                  />
+                </label>
+              )}
+              <label className="text-xs text-muted">
+                To
+                <input
+                  className="mt-1 h-10 w-full rounded-md border border-border bg-surface px-3 font-mono text-sm text-fg"
+                  value={selectedPart.to}
+                  onChange={(e) => patchSelected({ to: e.target.value })}
+                  onBlur={() => updateSelected({ to: selectedPart.to })}
+                />
+              </label>
+              <button
+                type="button"
+                className="h-10 rounded-md bg-surface px-3 text-sm"
+                onClick={() => updateSelected({ from: selectedPart.to, to: selectedPart.from })}
+              >
+                Flip leads
+              </button>
+            </div>
+          )}
+          {selectedPart.kind === "dip" && (
+            <label className="mt-3 block text-xs text-muted">
+              Pin 1
+              <input
+                className="mt-1 h-10 w-full rounded-md border border-border bg-surface px-3 font-mono text-sm text-fg"
+                value={selectedPart.anchor}
+                onChange={(e) => patchSelected({ anchor: e.target.value })}
+                onBlur={() => updateSelected({ anchor: selectedPart.anchor })}
+              />
+            </label>
+          )}
           <ul className="mt-2 font-mono text-xs text-muted">
             {selectedDef.pins.map((pin) => (
               <li key={pin.id}>

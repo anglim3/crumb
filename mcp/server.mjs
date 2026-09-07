@@ -55,7 +55,7 @@ const TOOLS = [
         anchor: { type: "string" },
         from: { type: "string" },
         to: { type: "string" },
-        value: { type: "string" },
+        mid: { type: "string" },
         slot: { type: "number" },
         offsetRow: { type: "number" },
       },
@@ -87,31 +87,7 @@ const TOOLS = [
   },
 ];
 
-const CATALOG = [
-  "ne555",
-  "lm358",
-  "lm7805",
-  "74hc595",
-  "atmega328p",
-  "resistor",
-  "ceramic-cap",
-  "electrolytic",
-  "led",
-  "diode",
-  "npn",
-  "button",
-  "slide-switch",
-  "pot",
-  "photoresistor",
-  "tmp36",
-  "dht22",
-  "hcsr04",
-  "9v-snap",
-  "barrel-jack",
-  "uno",
-  "nano",
-  "pico",
-];
+const CATALOG = JSON.parse(readFileSync(resolve(root, "mcp/catalog.json"), "utf8"));
 
 function load(path = defaultPath) {
   const file = resolve(path);
@@ -129,7 +105,14 @@ function handleTool(name, args = {}) {
   const path = args.path || defaultPath;
   if (name === "list_parts") {
     const q = String(args.query || "").toLowerCase();
-    return CATALOG.filter((id) => id.includes(q));
+    return CATALOG.filter(
+      (p) =>
+        !q ||
+        p.id.includes(q) ||
+        String(p.name).toLowerCase().includes(q) ||
+        String(p.class).includes(q) ||
+        String(p.description).toLowerCase().includes(q),
+    );
   }
   if (name === "get_board") return load(path);
   if (name === "set_project") {
@@ -148,6 +131,7 @@ function handleTool(name, args = {}) {
         def: args.def,
         from: args.from,
         to: args.to,
+        mid: args.mid,
         value: args.value,
       });
     } else {

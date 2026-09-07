@@ -1,0 +1,2246 @@
+[
+  {
+    "id": "ne555",
+    "name": "NE555 timer",
+    "class": "dip",
+    "description": "Classic 8-pin timer. Pin 1 at the notch.",
+    "pins": [
+      {
+        "id": "1",
+        "label": "GND",
+        "number": 1
+      },
+      {
+        "id": "2",
+        "label": "TRIG",
+        "number": 2
+      },
+      {
+        "id": "3",
+        "label": "OUT",
+        "number": 3
+      },
+      {
+        "id": "4",
+        "label": "RESET",
+        "number": 4
+      },
+      {
+        "id": "5",
+        "label": "CTRL",
+        "number": 5
+      },
+      {
+        "id": "6",
+        "label": "THRES",
+        "number": 6
+      },
+      {
+        "id": "7",
+        "label": "DISCH",
+        "number": 7
+      },
+      {
+        "id": "8",
+        "label": "VCC",
+        "number": 8
+      }
+    ],
+    "dipPins": 8
+  },
+  {
+    "id": "lm358",
+    "name": "LM358 dual op-amp",
+    "class": "dip",
+    "description": "Dual op-amp, single supply.",
+    "pins": [
+      {
+        "id": "1",
+        "label": "OUT A",
+        "number": 1
+      },
+      {
+        "id": "2",
+        "label": "IN− A",
+        "number": 2
+      },
+      {
+        "id": "3",
+        "label": "IN+ A",
+        "number": 3
+      },
+      {
+        "id": "4",
+        "label": "GND",
+        "number": 4
+      },
+      {
+        "id": "5",
+        "label": "IN+ B",
+        "number": 5
+      },
+      {
+        "id": "6",
+        "label": "IN− B",
+        "number": 6
+      },
+      {
+        "id": "7",
+        "label": "OUT B",
+        "number": 7
+      },
+      {
+        "id": "8",
+        "label": "VCC",
+        "number": 8
+      }
+    ],
+    "dipPins": 8
+  },
+  {
+    "id": "lm7805",
+    "name": "7805 regulator",
+    "class": "power",
+    "description": "TO-220 5 V regulator. Place across three adjacent rows.",
+    "pins": [
+      {
+        "id": "1",
+        "label": "IN",
+        "number": 1
+      },
+      {
+        "id": "2",
+        "label": "GND",
+        "number": 2
+      },
+      {
+        "id": "3",
+        "label": "OUT",
+        "number": 3
+      }
+    ],
+    "defaultSpan": 2
+  },
+  {
+    "id": "74hc595",
+    "name": "74HC595 shift register",
+    "class": "dip",
+    "description": "8-bit serial-in parallel-out.",
+    "pins": [
+      {
+        "id": "1",
+        "label": "QB",
+        "number": 1
+      },
+      {
+        "id": "2",
+        "label": "QC",
+        "number": 2
+      },
+      {
+        "id": "3",
+        "label": "QD",
+        "number": 3
+      },
+      {
+        "id": "4",
+        "label": "QE",
+        "number": 4
+      },
+      {
+        "id": "5",
+        "label": "QF",
+        "number": 5
+      },
+      {
+        "id": "6",
+        "label": "QG",
+        "number": 6
+      },
+      {
+        "id": "7",
+        "label": "QH",
+        "number": 7
+      },
+      {
+        "id": "8",
+        "label": "GND",
+        "number": 8
+      },
+      {
+        "id": "9",
+        "label": "QH'",
+        "number": 9
+      },
+      {
+        "id": "10",
+        "label": "SRCLR",
+        "number": 10
+      },
+      {
+        "id": "11",
+        "label": "SRCLK",
+        "number": 11
+      },
+      {
+        "id": "12",
+        "label": "RCLK",
+        "number": 12
+      },
+      {
+        "id": "13",
+        "label": "OE",
+        "number": 13
+      },
+      {
+        "id": "14",
+        "label": "SER",
+        "number": 14
+      },
+      {
+        "id": "15",
+        "label": "QA",
+        "number": 15
+      },
+      {
+        "id": "16",
+        "label": "VCC",
+        "number": 16
+      }
+    ],
+    "dipPins": 16
+  },
+  {
+    "id": "atmega328p",
+    "name": "ATmega328P",
+    "class": "dip",
+    "description": "DIP MCU used on Arduino Uno.",
+    "pins": [
+      {
+        "id": "1",
+        "label": "PC6",
+        "number": 1
+      },
+      {
+        "id": "2",
+        "label": "PD0",
+        "number": 2
+      },
+      {
+        "id": "3",
+        "label": "PD1",
+        "number": 3
+      },
+      {
+        "id": "4",
+        "label": "PD2",
+        "number": 4
+      },
+      {
+        "id": "5",
+        "label": "PD3",
+        "number": 5
+      },
+      {
+        "id": "6",
+        "label": "PD4",
+        "number": 6
+      },
+      {
+        "id": "7",
+        "label": "VCC",
+        "number": 7
+      },
+      {
+        "id": "8",
+        "label": "GND",
+        "number": 8
+      },
+      {
+        "id": "9",
+        "label": "PB6",
+        "number": 9
+      },
+      {
+        "id": "10",
+        "label": "PB7",
+        "number": 10
+      },
+      {
+        "id": "11",
+        "label": "PD5",
+        "number": 11
+      },
+      {
+        "id": "12",
+        "label": "PD6",
+        "number": 12
+      },
+      {
+        "id": "13",
+        "label": "PD7",
+        "number": 13
+      },
+      {
+        "id": "14",
+        "label": "PB0",
+        "number": 14
+      },
+      {
+        "id": "15",
+        "label": "PB1",
+        "number": 15
+      },
+      {
+        "id": "16",
+        "label": "PB2",
+        "number": 16
+      },
+      {
+        "id": "17",
+        "label": "PB3",
+        "number": 17
+      },
+      {
+        "id": "18",
+        "label": "PB4",
+        "number": 18
+      },
+      {
+        "id": "19",
+        "label": "PB5",
+        "number": 19
+      },
+      {
+        "id": "20",
+        "label": "AVCC",
+        "number": 20
+      },
+      {
+        "id": "21",
+        "label": "AREF",
+        "number": 21
+      },
+      {
+        "id": "22",
+        "label": "GND",
+        "number": 22
+      },
+      {
+        "id": "23",
+        "label": "PC0",
+        "number": 23
+      },
+      {
+        "id": "24",
+        "label": "PC1",
+        "number": 24
+      },
+      {
+        "id": "25",
+        "label": "PC2",
+        "number": 25
+      },
+      {
+        "id": "26",
+        "label": "PC3",
+        "number": 26
+      },
+      {
+        "id": "27",
+        "label": "PC4",
+        "number": 27
+      },
+      {
+        "id": "28",
+        "label": "PC5",
+        "number": 28
+      }
+    ],
+    "dipPins": 28
+  },
+  {
+    "id": "resistor",
+    "name": "Resistor",
+    "class": "passive",
+    "description": "Axial resistor. Set the value after placing.",
+    "pins": [
+      {
+        "id": "a",
+        "label": "A"
+      },
+      {
+        "id": "b",
+        "label": "B"
+      }
+    ],
+    "defaultSpan": 4
+  },
+  {
+    "id": "ceramic-cap",
+    "name": "Ceramic capacitor",
+    "class": "passive",
+    "description": "Small decoupling or timing cap.",
+    "pins": [
+      {
+        "id": "a",
+        "label": "A"
+      },
+      {
+        "id": "b",
+        "label": "B"
+      }
+    ],
+    "defaultSpan": 2
+  },
+  {
+    "id": "electrolytic",
+    "name": "Electrolytic capacitor",
+    "class": "passive",
+    "description": "Polarized cap. Stripe marks the negative lead.",
+    "pins": [
+      {
+        "id": "pos",
+        "label": "+"
+      },
+      {
+        "id": "neg",
+        "label": "−"
+      }
+    ],
+    "defaultSpan": 2,
+    "polar": true
+  },
+  {
+    "id": "led",
+    "name": "LED",
+    "class": "led",
+    "description": "Longer lead is anode (+). Flat side is cathode.",
+    "pins": [
+      {
+        "id": "a",
+        "label": "A"
+      },
+      {
+        "id": "k",
+        "label": "K"
+      }
+    ],
+    "defaultSpan": 2,
+    "polar": true
+  },
+  {
+    "id": "diode",
+    "name": "1N4148 diode",
+    "class": "passive",
+    "description": "Stripe marks the cathode.",
+    "pins": [
+      {
+        "id": "a",
+        "label": "A"
+      },
+      {
+        "id": "k",
+        "label": "K"
+      }
+    ],
+    "defaultSpan": 3,
+    "polar": true
+  },
+  {
+    "id": "npn",
+    "name": "2N2222 NPN",
+    "class": "passive",
+    "description": "TO-92, E-B-C when flat faces you (check your bag).",
+    "pins": [
+      {
+        "id": "e",
+        "label": "E"
+      },
+      {
+        "id": "b",
+        "label": "B"
+      },
+      {
+        "id": "c",
+        "label": "C"
+      }
+    ],
+    "defaultSpan": 2
+  },
+  {
+    "id": "button",
+    "name": "Tactile button",
+    "class": "button",
+    "description": "4-pin 6mm button. Opposite pins are common.",
+    "pins": [
+      {
+        "id": "1",
+        "label": "1"
+      },
+      {
+        "id": "2",
+        "label": "2"
+      },
+      {
+        "id": "3",
+        "label": "3"
+      },
+      {
+        "id": "4",
+        "label": "4"
+      }
+    ],
+    "defaultSpan": 3
+  },
+  {
+    "id": "slide-switch",
+    "name": "SPDT slide switch",
+    "class": "switch",
+    "description": "Three pins in a row. Center is common.",
+    "pins": [
+      {
+        "id": "1",
+        "label": "A"
+      },
+      {
+        "id": "2",
+        "label": "COM"
+      },
+      {
+        "id": "3",
+        "label": "B"
+      }
+    ],
+    "defaultSpan": 2
+  },
+  {
+    "id": "pot",
+    "name": "Trimmer pot",
+    "class": "passive",
+    "description": "10k trimmer. Three pins.",
+    "pins": [
+      {
+        "id": "1",
+        "label": "CW"
+      },
+      {
+        "id": "2",
+        "label": "WIPER"
+      },
+      {
+        "id": "3",
+        "label": "CCW"
+      }
+    ],
+    "defaultSpan": 2
+  },
+  {
+    "id": "photoresistor",
+    "name": "Photoresistor",
+    "class": "sensor",
+    "description": "LDR. Resistance falls with light.",
+    "pins": [
+      {
+        "id": "a",
+        "label": "A"
+      },
+      {
+        "id": "b",
+        "label": "B"
+      }
+    ],
+    "defaultSpan": 3
+  },
+  {
+    "id": "tmp36",
+    "name": "TMP36 temperature",
+    "class": "sensor",
+    "description": "Analog temp sensor. +Vs, Vout, GND.",
+    "pins": [
+      {
+        "id": "1",
+        "label": "+Vs"
+      },
+      {
+        "id": "2",
+        "label": "Vout"
+      },
+      {
+        "id": "3",
+        "label": "GND"
+      }
+    ],
+    "defaultSpan": 2
+  },
+  {
+    "id": "dht22",
+    "name": "DHT22 humidity",
+    "class": "sensor",
+    "description": "4-pin module. Use 1, 2, 4 (leave 3 empty).",
+    "pins": [
+      {
+        "id": "1",
+        "label": "VCC"
+      },
+      {
+        "id": "2",
+        "label": "DATA"
+      },
+      {
+        "id": "3",
+        "label": "NC"
+      },
+      {
+        "id": "4",
+        "label": "GND"
+      }
+    ],
+    "defaultSpan": 3
+  },
+  {
+    "id": "hcsr04",
+    "name": "HC-SR04 ultrasonic",
+    "class": "module",
+    "description": "Off-board module. VCC, Trig, Echo, GND.",
+    "pins": [
+      {
+        "id": "vcc",
+        "label": "VCC"
+      },
+      {
+        "id": "trig",
+        "label": "TRIG"
+      },
+      {
+        "id": "echo",
+        "label": "ECHO"
+      },
+      {
+        "id": "gnd",
+        "label": "GND"
+      }
+    ]
+  },
+  {
+    "id": "9v-snap",
+    "name": "9 V battery snap",
+    "class": "power",
+    "description": "Off-board clip. Red to +, black to −.",
+    "pins": [
+      {
+        "id": "pos",
+        "label": "+"
+      },
+      {
+        "id": "neg",
+        "label": "−"
+      }
+    ]
+  },
+  {
+    "id": "barrel-jack",
+    "name": "Barrel jack",
+    "class": "module",
+    "description": "DC jack breakout. Center positive by convention.",
+    "pins": [
+      {
+        "id": "pos",
+        "label": "+"
+      },
+      {
+        "id": "neg",
+        "label": "−"
+      }
+    ]
+  },
+  {
+    "id": "uno",
+    "name": "Arduino Uno",
+    "class": "module",
+    "description": "Off-board Uno R3. Jumper 5V, GND, and I/O over to the breadboard.",
+    "pins": [
+      {
+        "id": "5v",
+        "label": "5V"
+      },
+      {
+        "id": "3v3",
+        "label": "3V3"
+      },
+      {
+        "id": "gnd",
+        "label": "GND"
+      },
+      {
+        "id": "vin",
+        "label": "VIN"
+      },
+      {
+        "id": "d2",
+        "label": "D2"
+      },
+      {
+        "id": "d3",
+        "label": "D3"
+      },
+      {
+        "id": "d4",
+        "label": "D4"
+      },
+      {
+        "id": "d5",
+        "label": "D5"
+      },
+      {
+        "id": "d6",
+        "label": "D6"
+      },
+      {
+        "id": "d7",
+        "label": "D7"
+      },
+      {
+        "id": "d8",
+        "label": "D8"
+      },
+      {
+        "id": "d9",
+        "label": "D9"
+      },
+      {
+        "id": "d10",
+        "label": "D10"
+      },
+      {
+        "id": "d11",
+        "label": "D11"
+      },
+      {
+        "id": "d12",
+        "label": "D12"
+      },
+      {
+        "id": "d13",
+        "label": "D13"
+      },
+      {
+        "id": "a0",
+        "label": "A0"
+      },
+      {
+        "id": "a1",
+        "label": "A1"
+      },
+      {
+        "id": "a2",
+        "label": "A2"
+      },
+      {
+        "id": "a3",
+        "label": "A3"
+      },
+      {
+        "id": "a4",
+        "label": "A4"
+      },
+      {
+        "id": "a5",
+        "label": "A5"
+      }
+    ]
+  },
+  {
+    "id": "mega",
+    "name": "Arduino Mega 2560",
+    "class": "module",
+    "description": "Off-board Mega. Same power pins as Uno, plus extra digital headers.",
+    "pins": [
+      {
+        "id": "5v",
+        "label": "5V"
+      },
+      {
+        "id": "3v3",
+        "label": "3V3"
+      },
+      {
+        "id": "gnd",
+        "label": "GND"
+      },
+      {
+        "id": "vin",
+        "label": "VIN"
+      },
+      {
+        "id": "d2",
+        "label": "D2"
+      },
+      {
+        "id": "d3",
+        "label": "D3"
+      },
+      {
+        "id": "d4",
+        "label": "D4"
+      },
+      {
+        "id": "d5",
+        "label": "D5"
+      },
+      {
+        "id": "d10",
+        "label": "D10"
+      },
+      {
+        "id": "d13",
+        "label": "D13"
+      },
+      {
+        "id": "d20",
+        "label": "D20"
+      },
+      {
+        "id": "d21",
+        "label": "D21"
+      },
+      {
+        "id": "a0",
+        "label": "A0"
+      },
+      {
+        "id": "a1",
+        "label": "A1"
+      }
+    ]
+  },
+  {
+    "id": "leonardo",
+    "name": "Arduino Leonardo",
+    "class": "module",
+    "description": "Off-board Leonardo. Native USB; pin names match the Uno headers.",
+    "pins": [
+      {
+        "id": "5v",
+        "label": "5V"
+      },
+      {
+        "id": "3v3",
+        "label": "3V3"
+      },
+      {
+        "id": "gnd",
+        "label": "GND"
+      },
+      {
+        "id": "d2",
+        "label": "D2"
+      },
+      {
+        "id": "d3",
+        "label": "D3"
+      },
+      {
+        "id": "d4",
+        "label": "D4"
+      },
+      {
+        "id": "d5",
+        "label": "D5"
+      },
+      {
+        "id": "d6",
+        "label": "D6"
+      },
+      {
+        "id": "d7",
+        "label": "D7"
+      },
+      {
+        "id": "d13",
+        "label": "D13"
+      },
+      {
+        "id": "a0",
+        "label": "A0"
+      }
+    ]
+  },
+  {
+    "id": "micro",
+    "name": "Arduino Micro",
+    "class": "module",
+    "description": "Off-board Micro. 5V ATmega32U4 in a small USB stick.",
+    "pins": [
+      {
+        "id": "5v",
+        "label": "5V"
+      },
+      {
+        "id": "3v3",
+        "label": "3V3"
+      },
+      {
+        "id": "gnd",
+        "label": "GND"
+      },
+      {
+        "id": "d2",
+        "label": "D2"
+      },
+      {
+        "id": "d3",
+        "label": "D3"
+      },
+      {
+        "id": "d4",
+        "label": "D4"
+      },
+      {
+        "id": "d5",
+        "label": "D5"
+      },
+      {
+        "id": "d6",
+        "label": "D6"
+      },
+      {
+        "id": "d13",
+        "label": "D13"
+      },
+      {
+        "id": "a0",
+        "label": "A0"
+      }
+    ]
+  },
+  {
+    "id": "nano",
+    "name": "Arduino Nano",
+    "class": "dip",
+    "description": "Nano seated across the gutter. Pin 1 is D1 (TX) at the USB end.",
+    "pins": [
+      {
+        "id": "1",
+        "label": "D1",
+        "number": 1
+      },
+      {
+        "id": "2",
+        "label": "D0",
+        "number": 2
+      },
+      {
+        "id": "3",
+        "label": "RESET",
+        "number": 3
+      },
+      {
+        "id": "4",
+        "label": "GND",
+        "number": 4
+      },
+      {
+        "id": "5",
+        "label": "D2",
+        "number": 5
+      },
+      {
+        "id": "6",
+        "label": "D3",
+        "number": 6
+      },
+      {
+        "id": "7",
+        "label": "D4",
+        "number": 7
+      },
+      {
+        "id": "8",
+        "label": "D5",
+        "number": 8
+      },
+      {
+        "id": "9",
+        "label": "D6",
+        "number": 9
+      },
+      {
+        "id": "10",
+        "label": "D7",
+        "number": 10
+      },
+      {
+        "id": "11",
+        "label": "D8",
+        "number": 11
+      },
+      {
+        "id": "12",
+        "label": "D9",
+        "number": 12
+      },
+      {
+        "id": "13",
+        "label": "D10",
+        "number": 13
+      },
+      {
+        "id": "14",
+        "label": "D11",
+        "number": 14
+      },
+      {
+        "id": "15",
+        "label": "D12",
+        "number": 15
+      },
+      {
+        "id": "16",
+        "label": "D13",
+        "number": 16
+      },
+      {
+        "id": "17",
+        "label": "3V3",
+        "number": 17
+      },
+      {
+        "id": "18",
+        "label": "AREF",
+        "number": 18
+      },
+      {
+        "id": "19",
+        "label": "A0",
+        "number": 19
+      },
+      {
+        "id": "20",
+        "label": "A1",
+        "number": 20
+      },
+      {
+        "id": "21",
+        "label": "A2",
+        "number": 21
+      },
+      {
+        "id": "22",
+        "label": "A3",
+        "number": 22
+      },
+      {
+        "id": "23",
+        "label": "A4",
+        "number": 23
+      },
+      {
+        "id": "24",
+        "label": "A5",
+        "number": 24
+      },
+      {
+        "id": "25",
+        "label": "A6",
+        "number": 25
+      },
+      {
+        "id": "26",
+        "label": "A7",
+        "number": 26
+      },
+      {
+        "id": "27",
+        "label": "5V",
+        "number": 27
+      },
+      {
+        "id": "28",
+        "label": "RST",
+        "number": 28
+      },
+      {
+        "id": "29",
+        "label": "GND",
+        "number": 29
+      },
+      {
+        "id": "30",
+        "label": "VIN",
+        "number": 30
+      }
+    ],
+    "dipPins": 30
+  },
+  {
+    "id": "pro-mini",
+    "name": "Arduino Pro Mini",
+    "class": "dip",
+    "description": "Pro Mini across the gutter. No USB; pin 1 is RAW / GND end toward the headers you solder.",
+    "pins": [
+      {
+        "id": "1",
+        "label": "D1",
+        "number": 1
+      },
+      {
+        "id": "2",
+        "label": "D0",
+        "number": 2
+      },
+      {
+        "id": "3",
+        "label": "GND",
+        "number": 3
+      },
+      {
+        "id": "4",
+        "label": "GND",
+        "number": 4
+      },
+      {
+        "id": "5",
+        "label": "D2",
+        "number": 5
+      },
+      {
+        "id": "6",
+        "label": "D3",
+        "number": 6
+      },
+      {
+        "id": "7",
+        "label": "D4",
+        "number": 7
+      },
+      {
+        "id": "8",
+        "label": "D5",
+        "number": 8
+      },
+      {
+        "id": "9",
+        "label": "D6",
+        "number": 9
+      },
+      {
+        "id": "10",
+        "label": "D7",
+        "number": 10
+      },
+      {
+        "id": "11",
+        "label": "D8",
+        "number": 11
+      },
+      {
+        "id": "12",
+        "label": "D9",
+        "number": 12
+      },
+      {
+        "id": "13",
+        "label": "D10",
+        "number": 13
+      },
+      {
+        "id": "14",
+        "label": "D11",
+        "number": 14
+      },
+      {
+        "id": "15",
+        "label": "D12",
+        "number": 15
+      },
+      {
+        "id": "16",
+        "label": "D13",
+        "number": 16
+      },
+      {
+        "id": "17",
+        "label": "A0",
+        "number": 17
+      },
+      {
+        "id": "18",
+        "label": "A1",
+        "number": 18
+      },
+      {
+        "id": "19",
+        "label": "A2",
+        "number": 19
+      },
+      {
+        "id": "20",
+        "label": "A3",
+        "number": 20
+      },
+      {
+        "id": "21",
+        "label": "VCC",
+        "number": 21
+      },
+      {
+        "id": "22",
+        "label": "RST",
+        "number": 22
+      },
+      {
+        "id": "23",
+        "label": "GND",
+        "number": 23
+      },
+      {
+        "id": "24",
+        "label": "RAW",
+        "number": 24
+      }
+    ],
+    "dipPins": 24
+  },
+  {
+    "id": "attiny85",
+    "name": "ATtiny85",
+    "class": "dip",
+    "description": "8-pin AVR. Pin 1 is PB5 (RESET) at the notch.",
+    "pins": [
+      {
+        "id": "1",
+        "label": "PB5",
+        "number": 1
+      },
+      {
+        "id": "2",
+        "label": "PB3",
+        "number": 2
+      },
+      {
+        "id": "3",
+        "label": "PB4",
+        "number": 3
+      },
+      {
+        "id": "4",
+        "label": "GND",
+        "number": 4
+      },
+      {
+        "id": "5",
+        "label": "PB0",
+        "number": 5
+      },
+      {
+        "id": "6",
+        "label": "PB1",
+        "number": 6
+      },
+      {
+        "id": "7",
+        "label": "PB2",
+        "number": 7
+      },
+      {
+        "id": "8",
+        "label": "VCC",
+        "number": 8
+      }
+    ],
+    "dipPins": 8
+  },
+  {
+    "id": "pico",
+    "name": "Raspberry Pi Pico",
+    "class": "dip",
+    "description": "Pico seated across the gutter. Pin 1 is GP0 at the USB end. Needs a half or full board.",
+    "pins": [
+      {
+        "id": "1",
+        "label": "GP0",
+        "number": 1
+      },
+      {
+        "id": "2",
+        "label": "GP1",
+        "number": 2
+      },
+      {
+        "id": "3",
+        "label": "GND",
+        "number": 3
+      },
+      {
+        "id": "4",
+        "label": "GP2",
+        "number": 4
+      },
+      {
+        "id": "5",
+        "label": "GP3",
+        "number": 5
+      },
+      {
+        "id": "6",
+        "label": "GP4",
+        "number": 6
+      },
+      {
+        "id": "7",
+        "label": "GP5",
+        "number": 7
+      },
+      {
+        "id": "8",
+        "label": "GND",
+        "number": 8
+      },
+      {
+        "id": "9",
+        "label": "GP6",
+        "number": 9
+      },
+      {
+        "id": "10",
+        "label": "GP7",
+        "number": 10
+      },
+      {
+        "id": "11",
+        "label": "GP8",
+        "number": 11
+      },
+      {
+        "id": "12",
+        "label": "GP9",
+        "number": 12
+      },
+      {
+        "id": "13",
+        "label": "GND",
+        "number": 13
+      },
+      {
+        "id": "14",
+        "label": "GP10",
+        "number": 14
+      },
+      {
+        "id": "15",
+        "label": "GP11",
+        "number": 15
+      },
+      {
+        "id": "16",
+        "label": "GP12",
+        "number": 16
+      },
+      {
+        "id": "17",
+        "label": "GP13",
+        "number": 17
+      },
+      {
+        "id": "18",
+        "label": "GND",
+        "number": 18
+      },
+      {
+        "id": "19",
+        "label": "GP14",
+        "number": 19
+      },
+      {
+        "id": "20",
+        "label": "GP15",
+        "number": 20
+      },
+      {
+        "id": "21",
+        "label": "GP16",
+        "number": 21
+      },
+      {
+        "id": "22",
+        "label": "GP17",
+        "number": 22
+      },
+      {
+        "id": "23",
+        "label": "GND",
+        "number": 23
+      },
+      {
+        "id": "24",
+        "label": "GP18",
+        "number": 24
+      },
+      {
+        "id": "25",
+        "label": "GP19",
+        "number": 25
+      },
+      {
+        "id": "26",
+        "label": "GP20",
+        "number": 26
+      },
+      {
+        "id": "27",
+        "label": "GP21",
+        "number": 27
+      },
+      {
+        "id": "28",
+        "label": "GND",
+        "number": 28
+      },
+      {
+        "id": "29",
+        "label": "GP22",
+        "number": 29
+      },
+      {
+        "id": "30",
+        "label": "RUN",
+        "number": 30
+      },
+      {
+        "id": "31",
+        "label": "GP26",
+        "number": 31
+      },
+      {
+        "id": "32",
+        "label": "GP27",
+        "number": 32
+      },
+      {
+        "id": "33",
+        "label": "GND",
+        "number": 33
+      },
+      {
+        "id": "34",
+        "label": "GP28",
+        "number": 34
+      },
+      {
+        "id": "35",
+        "label": "ADC_VREF",
+        "number": 35
+      },
+      {
+        "id": "36",
+        "label": "3V3",
+        "number": 36
+      },
+      {
+        "id": "37",
+        "label": "3V3_EN",
+        "number": 37
+      },
+      {
+        "id": "38",
+        "label": "GND",
+        "number": 38
+      },
+      {
+        "id": "39",
+        "label": "VSYS",
+        "number": 39
+      },
+      {
+        "id": "40",
+        "label": "VBUS",
+        "number": 40
+      }
+    ],
+    "dipPins": 40
+  },
+  {
+    "id": "pico-w",
+    "name": "Raspberry Pi Pico W",
+    "class": "dip",
+    "description": "Pico W, same breadboard pinout as Pico. Pin 1 is GP0 at the USB end.",
+    "pins": [
+      {
+        "id": "1",
+        "label": "GP0",
+        "number": 1
+      },
+      {
+        "id": "2",
+        "label": "GP1",
+        "number": 2
+      },
+      {
+        "id": "3",
+        "label": "GND",
+        "number": 3
+      },
+      {
+        "id": "4",
+        "label": "GP2",
+        "number": 4
+      },
+      {
+        "id": "5",
+        "label": "GP3",
+        "number": 5
+      },
+      {
+        "id": "6",
+        "label": "GP4",
+        "number": 6
+      },
+      {
+        "id": "7",
+        "label": "GP5",
+        "number": 7
+      },
+      {
+        "id": "8",
+        "label": "GND",
+        "number": 8
+      },
+      {
+        "id": "9",
+        "label": "GP6",
+        "number": 9
+      },
+      {
+        "id": "10",
+        "label": "GP7",
+        "number": 10
+      },
+      {
+        "id": "11",
+        "label": "GP8",
+        "number": 11
+      },
+      {
+        "id": "12",
+        "label": "GP9",
+        "number": 12
+      },
+      {
+        "id": "13",
+        "label": "GND",
+        "number": 13
+      },
+      {
+        "id": "14",
+        "label": "GP10",
+        "number": 14
+      },
+      {
+        "id": "15",
+        "label": "GP11",
+        "number": 15
+      },
+      {
+        "id": "16",
+        "label": "GP12",
+        "number": 16
+      },
+      {
+        "id": "17",
+        "label": "GP13",
+        "number": 17
+      },
+      {
+        "id": "18",
+        "label": "GND",
+        "number": 18
+      },
+      {
+        "id": "19",
+        "label": "GP14",
+        "number": 19
+      },
+      {
+        "id": "20",
+        "label": "GP15",
+        "number": 20
+      },
+      {
+        "id": "21",
+        "label": "GP16",
+        "number": 21
+      },
+      {
+        "id": "22",
+        "label": "GP17",
+        "number": 22
+      },
+      {
+        "id": "23",
+        "label": "GND",
+        "number": 23
+      },
+      {
+        "id": "24",
+        "label": "GP18",
+        "number": 24
+      },
+      {
+        "id": "25",
+        "label": "GP19",
+        "number": 25
+      },
+      {
+        "id": "26",
+        "label": "GP20",
+        "number": 26
+      },
+      {
+        "id": "27",
+        "label": "GP21",
+        "number": 27
+      },
+      {
+        "id": "28",
+        "label": "GND",
+        "number": 28
+      },
+      {
+        "id": "29",
+        "label": "GP22",
+        "number": 29
+      },
+      {
+        "id": "30",
+        "label": "RUN",
+        "number": 30
+      },
+      {
+        "id": "31",
+        "label": "GP26",
+        "number": 31
+      },
+      {
+        "id": "32",
+        "label": "GP27",
+        "number": 32
+      },
+      {
+        "id": "33",
+        "label": "GND",
+        "number": 33
+      },
+      {
+        "id": "34",
+        "label": "GP28",
+        "number": 34
+      },
+      {
+        "id": "35",
+        "label": "ADC_VREF",
+        "number": 35
+      },
+      {
+        "id": "36",
+        "label": "3V3",
+        "number": 36
+      },
+      {
+        "id": "37",
+        "label": "3V3_EN",
+        "number": 37
+      },
+      {
+        "id": "38",
+        "label": "GND",
+        "number": 38
+      },
+      {
+        "id": "39",
+        "label": "VSYS",
+        "number": 39
+      },
+      {
+        "id": "40",
+        "label": "VBUS",
+        "number": 40
+      }
+    ],
+    "dipPins": 40
+  },
+  {
+    "id": "pi4",
+    "name": "Raspberry Pi 4",
+    "class": "module",
+    "description": "Off-board Pi 4. Bring 3V3/5V/GND and a few GPIOs over with Dupont wire.",
+    "pins": [
+      {
+        "id": "3v3",
+        "label": "3V3"
+      },
+      {
+        "id": "5v",
+        "label": "5V"
+      },
+      {
+        "id": "gnd",
+        "label": "GND"
+      },
+      {
+        "id": "gpio2",
+        "label": "GPIO2"
+      },
+      {
+        "id": "gpio3",
+        "label": "GPIO3"
+      },
+      {
+        "id": "gpio4",
+        "label": "GPIO4"
+      },
+      {
+        "id": "gpio17",
+        "label": "GPIO17"
+      },
+      {
+        "id": "gpio27",
+        "label": "GPIO27"
+      },
+      {
+        "id": "gpio22",
+        "label": "GPIO22"
+      },
+      {
+        "id": "gpio18",
+        "label": "GPIO18"
+      },
+      {
+        "id": "gpio23",
+        "label": "GPIO23"
+      },
+      {
+        "id": "gpio24",
+        "label": "GPIO24"
+      },
+      {
+        "id": "gpio25",
+        "label": "GPIO25"
+      }
+    ]
+  },
+  {
+    "id": "pi5",
+    "name": "Raspberry Pi 5",
+    "class": "module",
+    "description": "Off-board Pi 5. 40-pin header is the same map as Pi 4 for these pins.",
+    "pins": [
+      {
+        "id": "3v3",
+        "label": "3V3"
+      },
+      {
+        "id": "5v",
+        "label": "5V"
+      },
+      {
+        "id": "gnd",
+        "label": "GND"
+      },
+      {
+        "id": "gpio2",
+        "label": "GPIO2"
+      },
+      {
+        "id": "gpio3",
+        "label": "GPIO3"
+      },
+      {
+        "id": "gpio4",
+        "label": "GPIO4"
+      },
+      {
+        "id": "gpio17",
+        "label": "GPIO17"
+      },
+      {
+        "id": "gpio27",
+        "label": "GPIO27"
+      },
+      {
+        "id": "gpio22",
+        "label": "GPIO22"
+      },
+      {
+        "id": "gpio18",
+        "label": "GPIO18"
+      },
+      {
+        "id": "gpio23",
+        "label": "GPIO23"
+      },
+      {
+        "id": "gpio24",
+        "label": "GPIO24"
+      },
+      {
+        "id": "gpio25",
+        "label": "GPIO25"
+      }
+    ]
+  },
+  {
+    "id": "esp32",
+    "name": "ESP32 DevKit",
+    "class": "dip",
+    "description": "30-pin ESP32-WROOM DevKit across the gutter. Pin 1 is 3V3 at the USB end.",
+    "pins": [
+      {
+        "id": "1",
+        "label": "3V3",
+        "number": 1
+      },
+      {
+        "id": "2",
+        "label": "EN",
+        "number": 2
+      },
+      {
+        "id": "3",
+        "label": "SVP",
+        "number": 3
+      },
+      {
+        "id": "4",
+        "label": "SVN",
+        "number": 4
+      },
+      {
+        "id": "5",
+        "label": "IO34",
+        "number": 5
+      },
+      {
+        "id": "6",
+        "label": "IO35",
+        "number": 6
+      },
+      {
+        "id": "7",
+        "label": "IO32",
+        "number": 7
+      },
+      {
+        "id": "8",
+        "label": "IO33",
+        "number": 8
+      },
+      {
+        "id": "9",
+        "label": "IO25",
+        "number": 9
+      },
+      {
+        "id": "10",
+        "label": "IO26",
+        "number": 10
+      },
+      {
+        "id": "11",
+        "label": "IO27",
+        "number": 11
+      },
+      {
+        "id": "12",
+        "label": "IO14",
+        "number": 12
+      },
+      {
+        "id": "13",
+        "label": "IO12",
+        "number": 13
+      },
+      {
+        "id": "14",
+        "label": "GND",
+        "number": 14
+      },
+      {
+        "id": "15",
+        "label": "IO13",
+        "number": 15
+      },
+      {
+        "id": "16",
+        "label": "IO15",
+        "number": 16
+      },
+      {
+        "id": "17",
+        "label": "IO2",
+        "number": 17
+      },
+      {
+        "id": "18",
+        "label": "IO0",
+        "number": 18
+      },
+      {
+        "id": "19",
+        "label": "IO4",
+        "number": 19
+      },
+      {
+        "id": "20",
+        "label": "IO16",
+        "number": 20
+      },
+      {
+        "id": "21",
+        "label": "IO17",
+        "number": 21
+      },
+      {
+        "id": "22",
+        "label": "IO5",
+        "number": 22
+      },
+      {
+        "id": "23",
+        "label": "IO18",
+        "number": 23
+      },
+      {
+        "id": "24",
+        "label": "IO19",
+        "number": 24
+      },
+      {
+        "id": "25",
+        "label": "GND",
+        "number": 25
+      },
+      {
+        "id": "26",
+        "label": "IO21",
+        "number": 26
+      },
+      {
+        "id": "27",
+        "label": "RX0",
+        "number": 27
+      },
+      {
+        "id": "28",
+        "label": "TX0",
+        "number": 28
+      },
+      {
+        "id": "29",
+        "label": "IO22",
+        "number": 29
+      },
+      {
+        "id": "30",
+        "label": "VIN",
+        "number": 30
+      }
+    ],
+    "dipPins": 30
+  },
+  {
+    "id": "esp32-s3",
+    "name": "ESP32-S3 DevKit",
+    "class": "module",
+    "description": "Off-board ESP32-S3. Pinouts vary; these are the usual power and UART pins.",
+    "pins": [
+      {
+        "id": "3v3",
+        "label": "3V3"
+      },
+      {
+        "id": "gnd",
+        "label": "GND"
+      },
+      {
+        "id": "5v",
+        "label": "5V"
+      },
+      {
+        "id": "tx",
+        "label": "TX"
+      },
+      {
+        "id": "rx",
+        "label": "RX"
+      },
+      {
+        "id": "io1",
+        "label": "IO1"
+      },
+      {
+        "id": "io2",
+        "label": "IO2"
+      },
+      {
+        "id": "io4",
+        "label": "IO4"
+      },
+      {
+        "id": "io5",
+        "label": "IO5"
+      },
+      {
+        "id": "io6",
+        "label": "IO6"
+      },
+      {
+        "id": "io7",
+        "label": "IO7"
+      }
+    ]
+  },
+  {
+    "id": "esp32-c3",
+    "name": "XIAO ESP32-C3",
+    "class": "dip",
+    "description": "Seeed XIAO ESP32-C3 across the gutter. Pin 1 is D0 at the USB end.",
+    "pins": [
+      {
+        "id": "1",
+        "label": "D0",
+        "number": 1
+      },
+      {
+        "id": "2",
+        "label": "D1",
+        "number": 2
+      },
+      {
+        "id": "3",
+        "label": "D2",
+        "number": 3
+      },
+      {
+        "id": "4",
+        "label": "D3",
+        "number": 4
+      },
+      {
+        "id": "5",
+        "label": "D4",
+        "number": 5
+      },
+      {
+        "id": "6",
+        "label": "D5",
+        "number": 6
+      },
+      {
+        "id": "7",
+        "label": "D6",
+        "number": 7
+      },
+      {
+        "id": "8",
+        "label": "D7",
+        "number": 8
+      },
+      {
+        "id": "9",
+        "label": "D8",
+        "number": 9
+      },
+      {
+        "id": "10",
+        "label": "D9",
+        "number": 10
+      },
+      {
+        "id": "11",
+        "label": "D10",
+        "number": 11
+      },
+      {
+        "id": "12",
+        "label": "3V3",
+        "number": 12
+      },
+      {
+        "id": "13",
+        "label": "GND",
+        "number": 13
+      },
+      {
+        "id": "14",
+        "label": "5V",
+        "number": 14
+      }
+    ],
+    "dipPins": 14
+  },
+  {
+    "id": "nodemcu",
+    "name": "NodeMCU ESP8266",
+    "class": "module",
+    "description": "Off-board NodeMCU. 3V3 board; VIN is the USB 5 V pin.",
+    "pins": [
+      {
+        "id": "3v3",
+        "label": "3V3"
+      },
+      {
+        "id": "gnd",
+        "label": "GND"
+      },
+      {
+        "id": "vin",
+        "label": "VIN"
+      },
+      {
+        "id": "d0",
+        "label": "D0"
+      },
+      {
+        "id": "d1",
+        "label": "D1"
+      },
+      {
+        "id": "d2",
+        "label": "D2"
+      },
+      {
+        "id": "d3",
+        "label": "D3"
+      },
+      {
+        "id": "d4",
+        "label": "D4"
+      },
+      {
+        "id": "d5",
+        "label": "D5"
+      },
+      {
+        "id": "d6",
+        "label": "D6"
+      },
+      {
+        "id": "d7",
+        "label": "D7"
+      },
+      {
+        "id": "d8",
+        "label": "D8"
+      },
+      {
+        "id": "rx",
+        "label": "RX"
+      },
+      {
+        "id": "tx",
+        "label": "TX"
+      },
+      {
+        "id": "a0",
+        "label": "A0"
+      }
+    ]
+  },
+  {
+    "id": "microbit",
+    "name": "micro:bit",
+    "class": "module",
+    "description": "Off-board BBC micro:bit. Edge connector broken out with Dupont leads.",
+    "pins": [
+      {
+        "id": "3v",
+        "label": "3V"
+      },
+      {
+        "id": "gnd",
+        "label": "GND"
+      },
+      {
+        "id": "p0",
+        "label": "P0"
+      },
+      {
+        "id": "p1",
+        "label": "P1"
+      },
+      {
+        "id": "p2",
+        "label": "P2"
+      },
+      {
+        "id": "p8",
+        "label": "P8"
+      },
+      {
+        "id": "p13",
+        "label": "P13"
+      },
+      {
+        "id": "p14",
+        "label": "P14"
+      },
+      {
+        "id": "p15",
+        "label": "P15"
+      },
+      {
+        "id": "p16",
+        "label": "P16"
+      }
+    ]
+  },
+  {
+    "id": "teensy40",
+    "name": "Teensy 4.0",
+    "class": "module",
+    "description": "Off-board Teensy 4.0. 3.3 V I/O only.",
+    "pins": [
+      {
+        "id": "3v3",
+        "label": "3V3"
+      },
+      {
+        "id": "gnd",
+        "label": "GND"
+      },
+      {
+        "id": "vin",
+        "label": "VIN"
+      },
+      {
+        "id": "0",
+        "label": "0"
+      },
+      {
+        "id": "1",
+        "label": "1"
+      },
+      {
+        "id": "2",
+        "label": "2"
+      },
+      {
+        "id": "3",
+        "label": "3"
+      },
+      {
+        "id": "13",
+        "label": "13"
+      },
+      {
+        "id": "14",
+        "label": "14"
+      },
+      {
+        "id": "15",
+        "label": "15"
+      }
+    ]
+  }
+]

@@ -54,19 +54,25 @@ export function detectShorts(project: Project, nets = computeNets(project)): Sho
 
   for (const part of project.parts) {
     if (part.kind === "leaded") {
-      const a = holeOf(project, part.from);
-      const b = holeOf(project, part.to);
-      if (!a || !b) continue;
-      const netA = netForHole(nets, a);
-      const netB = netForHole(nets, b);
-      if (netA && netB && netA.id === netB.id) {
-        push({
-          kind: "lead-short",
-          message: `${part.id} both leads sit on the same net (${a} and ${b})`,
-          netId: netA.id,
-          holes: netA.holes,
-          refs: [part.id],
-        });
+      const ends = part.mid ? [part.from, part.mid, part.to] : [part.from, part.to];
+      const resolved = ends.map((h) => holeOf(project, h));
+      if (resolved.some((h) => !h)) continue;
+      for (let i = 0; i < resolved.length; i++) {
+        for (let j = i + 1; j < resolved.length; j++) {
+          const a = resolved[i]!;
+          const b = resolved[j]!;
+          const netA = netForHole(nets, a);
+          const netB = netForHole(nets, b);
+          if (netA && netB && netA.id === netB.id) {
+            push({
+              kind: "lead-short",
+              message: `${part.id} leads share a net (${a} and ${b})`,
+              netId: netA.id,
+              holes: netA.holes,
+              refs: [part.id],
+            });
+          }
+        }
       }
       continue;
     }

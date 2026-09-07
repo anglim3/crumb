@@ -68,6 +68,8 @@ export type PlacedLeaded = {
   def: string;
   from: string;
   to: string;
+  /** Third lead for TO-220 / TO-92 / pots. */
+  mid?: string;
   value?: string;
 };
 
