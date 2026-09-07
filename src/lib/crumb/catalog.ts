@@ -604,11 +604,23 @@ export function searchParts(query: string): PartDef[] {
 
 export const CLASS_LABEL: Record<PartDef["class"], string> = {
   dip: "Chips",
+  power: "Power",
+  module: "Boards",
   passive: "Passives",
   led: "LEDs",
   switch: "Switches",
   button: "Buttons",
-  power: "Power",
   sensor: "Sensors",
-  module: "Modules",
 };
+
+export const CLASS_ORDER: PartDef["class"][] = [
+  "dip",
+  "power",
+  "module",
+  "passive",
+  "led",
+  "switch",
+  "button",
+  "sensor",
+];
+

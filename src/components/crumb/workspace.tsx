@@ -1,5 +1,5 @@
 import { BOARD_SPECS } from "@/lib/crumb/board";
-import { CLASS_LABEL, getPart, searchParts } from "@/lib/crumb/catalog";
+import { CLASS_LABEL, CLASS_ORDER, getPart, searchParts } from "@/lib/crumb/catalog";
 import { EMPTY_PROJECT, EXAMPLES } from "@/lib/crumb/examples";
 import { downloadText, renderProjectSvg } from "@/lib/crumb/render-svg";
 import { buildSteps } from "@/lib/crumb/steps";
@@ -191,23 +191,52 @@ function Header() {
 
 function PartsPane() {
   const [q, setQ] = useState("");
+  const [klass, setKlass] = useState<PartDef["class"] | "all">("dip");
   const pendingDef = useCrumb((s) => s.pendingDef);
   const setPendingDef = useCrumb((s) => s.setPendingDef);
   const wireColor = useCrumb((s) => s.wireColor);
   const setWireColor = useCrumb((s) => s.setWireColor);
-  const parts = searchParts(q);
-  const groups = groupParts(parts);
+  const parts = useMemo(() => {
+    const found = searchParts(q);
+    if (klass === "all") return found;
+    return found.filter((p) => p.class === klass);
+  }, [q, klass]);
 
   return (
     <div className="flex flex-col gap-4 p-4">
       <div>
-        <p className="text-xs font-medium uppercase tracking-wide text-muted">Catalog</p>
+        <p className="text-xs font-medium uppercase tracking-wide text-muted">Parts</p>
         <input
           value={q}
           onChange={(e) => setQ(e.target.value)}
           placeholder="Search parts"
           className="mt-2 h-10 w-full rounded-md border border-border bg-surface px-3 text-sm text-fg"
         />
+        <div className="mt-3 flex flex-wrap gap-2">
+          <button
+            type="button"
+            className={cn(
+              "h-10 rounded-md px-3 text-sm",
+              klass === "all" ? "bg-accent text-accent-fg" : "bg-surface",
+            )}
+            onClick={() => setKlass("all")}
+          >
+            All
+          </button>
+          {CLASS_ORDER.map((cls) => (
+            <button
+              key={cls}
+              type="button"
+              className={cn(
+                "h-10 rounded-md px-3 text-sm",
+                klass === cls ? "bg-accent text-accent-fg" : "bg-surface",
+              )}
+              onClick={() => setKlass(cls)}
+            >
+              {CLASS_LABEL[cls]}
+            </button>
+          ))}
+        </div>
       </div>
       <div>
         <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted">Wire color</p>
@@ -224,43 +253,28 @@ function PartsPane() {
           ))}
         </div>
       </div>
-      {Object.entries(groups).map(([cls, list]) => (
-        <div key={cls}>
-          <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted">
-            {CLASS_LABEL[cls as PartDef["class"]] ?? cls}
-          </p>
-          <ul className="flex flex-col gap-1">
-            {list.map((part) => (
-              <li key={part.id}>
-                <button
-                  type="button"
-                  onClick={() => setPendingDef(part.id)}
-                  className={cn(
-                    "flex w-full flex-col items-start rounded-md px-3 py-2 text-left",
-                    pendingDef === part.id ? "bg-accent text-accent-fg" : "bg-surface hover:bg-surface-hover",
-                  )}
-                >
-                  <span className="text-sm">{part.name}</span>
-                  <span className={cn("text-xs", pendingDef === part.id ? "text-accent-fg/80" : "text-muted")}>
-                    {part.description}
-                  </span>
-                </button>
-              </li>
-            ))}
-          </ul>
-        </div>
-      ))}
+      <ul className="flex flex-col gap-1">
+        {parts.length === 0 && <li className="px-1 text-sm text-muted">No parts in this group</li>}
+        {parts.map((part) => (
+          <li key={part.id}>
+            <button
+              type="button"
+              onClick={() => setPendingDef(part.id)}
+              className={cn(
+                "flex w-full flex-col items-start rounded-md px-3 py-2 text-left",
+                pendingDef === part.id ? "bg-accent text-accent-fg" : "bg-surface hover:bg-surface-hover",
+              )}
+            >
+              <span className="text-sm">{part.name}</span>
+              <span className={cn("text-xs", pendingDef === part.id ? "text-accent-fg/80" : "text-muted")}>
+                {CLASS_LABEL[part.class]} · {part.description}
+              </span>
+            </button>
+          </li>
+        ))}
+      </ul>
     </div>
   );
-}
-
-function groupParts(parts: PartDef[]): Record<string, PartDef[]> {
-  const out: Record<string, PartDef[]> = {};
-  for (const p of parts) {
-    out[p.class] ??= [];
-    out[p.class].push(p);
-  }
-  return out;
 }
 
 function Inspector({
