@@ -40,22 +40,22 @@ export function BoardView() {
   const [zoom, setZoom] = useState(1);
 
   return (
-    <div className="relative h-full min-h-0 overflow-auto bg-bench">
-      <div className="sticky top-2 z-10 float-right mr-2 flex gap-2 print:hidden">
-        <button type="button" className="h-10 rounded-md bg-surface px-3 text-sm" onClick={() => setZoom((z) => Math.max(0.5, +(z - 0.2).toFixed(2)))}>
+    <div className="relative h-full min-h-0 overflow-auto bg-bench max-lg:h-auto">
+      <div className="pointer-events-none absolute right-2 top-2 z-10 flex gap-2 print:hidden">
+        <button type="button" className="pointer-events-auto h-10 rounded-md bg-surface px-3 text-sm" onClick={() => setZoom((z) => Math.max(0.5, +(z - 0.2).toFixed(2)))}>
           −
         </button>
-        <button type="button" className="h-10 rounded-md bg-surface px-3 text-sm" onClick={() => setZoom(1)}>
+        <button type="button" className="pointer-events-auto h-10 rounded-md bg-surface px-3 text-sm" onClick={() => setZoom(1)}>
           {Math.round(zoom * 100)}%
         </button>
-        <button type="button" className="h-10 rounded-md bg-surface px-3 text-sm" onClick={() => setZoom((z) => Math.min(2.4, +(z + 0.2).toFixed(2)))}>
+        <button type="button" className="pointer-events-auto h-10 rounded-md bg-surface px-3 text-sm" onClick={() => setZoom((z) => Math.min(2.4, +(z + 0.2).toFixed(2)))}>
           +
         </button>
       </div>
       <svg
         viewBox={`0 0 ${geom.width} ${geom.height}`}
-        className="mx-auto block h-auto"
-        style={{ width: `${Math.max(40, zoom * 100)}%`, maxWidth: "none" }}
+        className="mx-auto block w-auto max-lg:h-auto max-lg:w-full"
+        style={{ height: `${Math.max(40, zoom * 100)}%`, maxWidth: "none" }}
         role="img"
         aria-label={`${spec.label} breadboard`}
       >
