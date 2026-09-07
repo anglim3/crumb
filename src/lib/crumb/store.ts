@@ -1,7 +1,15 @@
 import { create } from "zustand";
 import { getPart } from "./catalog.ts";
-import { EXAMPLE_555 } from "./examples.ts";
+import { EMPTY_PROJECT, EXAMPLE_555, EXAMPLES } from "./examples.ts";
 import { holeId, parseHole } from "./holes.ts";
+import {
+  emptyLibrary,
+  type LibraryFile,
+  migrateSession,
+  parseLibrary,
+  removeLibrary,
+  upsertLibrary,
+} from "./library.ts";
 import { addWire, leadHoles, parseProject, placeDip, placeLeadedHoles, placeModule, removePart, removeWire, setBoard, updatePart, movePart } from "./mutate.ts";
 import type { BoardSize, PlacedPart, Project } from "./types.ts";
 
@@ -20,6 +28,7 @@ export type CrumbState = {
   hoverHole: string | null;
   highlightNet: string | null;
   jsonOpen: boolean;
+  library: LibraryFile;
   setProject: (project: Project) => void;
   setTool: (tool: Tool) => void;
   setPendingDef: (id: string | null) => void;
@@ -40,6 +49,12 @@ export type CrumbState = {
   setName: (name: string) => void;
   duplicateSelected: () => void;
   moveSelected: (dRow: number) => void;
+  hydrateLibrary: (raw: unknown, session: Project | null) => void;
+  saveProject: () => void;
+  openLibraryEntry: (id: string) => void;
+  openExample: (name: string) => void;
+  newProject: () => void;
+  deleteLibraryEntry: (id: string) => void;
 };
 
 export const WIRE_COLORS = ["#c45c4a", "#2b2b2b", "#3d6b8a", "#3f7a4e", "#c9a227", "#8a5a2b", "#6b5c8a", "#d8d2c8"];
@@ -83,6 +98,7 @@ export const useCrumb = create<CrumbState>((set, get) => {
     hoverHole: null,
     highlightNet: null,
     jsonOpen: false,
+    library: emptyLibrary(),
     setProject: (project) => commit(project, { selected: null, wireFrom: null, placeClicks: [] }),
     setTool: (tool) => set({ tool, wireFrom: tool === "wire" ? get().wireFrom : null, placeClicks: [] }),
     setPendingDef: (pendingDef) => set({ pendingDef, tool: pendingDef ? "place" : get().tool, placeClicks: [] }),
@@ -189,8 +205,12 @@ export const useCrumb = create<CrumbState>((set, get) => {
       });
     },
     loadJson: (raw) => {
-      const project = parseProject(JSON.parse(raw));
-      commit(project, { selected: null, jsonOpen: false });
+      try {
+        const project = parseProject(JSON.parse(raw));
+        commit(project, { selected: null, jsonOpen: false });
+      } catch {
+        /* ignore bad files */
+      }
     },
     setName: (name) => {
       const s = get();
@@ -221,6 +241,70 @@ export const useCrumb = create<CrumbState>((set, get) => {
       if (!s.selected || !dRow) return;
       if (!s.project.parts.some((p) => p.id === s.selected)) return;
       commit(movePart(s.project, s.selected, dRow));
+    },
+    hydrateLibrary: (raw, session) => {
+      const file = migrateSession(parseLibrary(raw), session);
+      const active = file.entries.find((e) => e.id === file.activeId);
+      if (active) {
+        set({
+          library: file,
+          project: structuredClone(active.project),
+          past: [],
+          future: [],
+          selected: null,
+          wireFrom: null,
+          placeClicks: [],
+        });
+        return;
+      }
+      set({ library: file });
+    },
+    saveProject: () => {
+      const s = get();
+      set({ library: upsertLibrary(s.library, s.project, s.library.activeId) });
+    },
+    openLibraryEntry: (id) => {
+      const s = get();
+      const entry = s.library.entries.find((e) => e.id === id);
+      if (!entry) return;
+      commit(structuredClone(entry.project), {
+        library: { ...s.library, activeId: id },
+        selected: null,
+        wireFrom: null,
+        placeClicks: [],
+      });
+    },
+    openExample: (name) => {
+      const next = EXAMPLES.find((ex) => ex.name === name);
+      if (!next) return;
+      commit(structuredClone(next), {
+        library: { ...get().library, activeId: null },
+        selected: null,
+        wireFrom: null,
+        placeClicks: [],
+      });
+    },
+    newProject: () => {
+      commit({ ...EMPTY_PROJECT, name: "Untitled" }, {
+        library: { ...get().library, activeId: null },
+        selected: null,
+        wireFrom: null,
+        placeClicks: [],
+      });
+    },
+    deleteLibraryEntry: (id) => {
+      const s = get();
+      const library = removeLibrary(s.library, id);
+      if (s.library.activeId === id) {
+        commit({ ...EMPTY_PROJECT, name: "Untitled" }, {
+          library,
+          selected: null,
+          wireFrom: null,
+          placeClicks: [],
+        });
+        return;
+      }
+      set({ library });
     },
   };
 });
