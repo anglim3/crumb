@@ -14,6 +14,7 @@ function railNetKey(hole: Extract<HoleRef, { kind: "rail" }>, board: Project["bo
 }
 
 export function netKeyForHole(project: Project, hole: HoleRef): string {
+  if (hole.kind === "module") return `ext:${hole.partId}.${hole.pin}`;
   if (hole.kind === "rail") return railNetKey(hole, project.board);
   const side = hole.col <= "e" ? "L" : "R";
   return terminalNetKey(hole.row, side);

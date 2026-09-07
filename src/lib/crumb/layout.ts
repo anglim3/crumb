@@ -1,9 +1,22 @@
 import { BOARD_SPECS } from "./board.ts";
 import { getPart } from "./catalog.ts";
-import { holeId, isLeftCol, parseHole, parsePinRef } from "./holes.ts";
+import { holeId, isBoardHole, isLeftCol, parseHole, parsePinRef } from "./holes.ts";
 import { nextId } from "./ids.ts";
 import { leadHoles } from "./mutate.ts";
-import type { HoleRef, PlacedDip, PlacedPart, Project, TerminalCol } from "./types.ts";
+import type { HoleRef, ModulePin, PartDef, PartPin, PlacedDip, PlacedPart, Project, TerminalCol } from "./types.ts";
+
+export function findPartPin(def: PartDef | undefined, raw: string): PartPin | null {
+  if (!def) return null;
+  const q = raw.toLowerCase();
+  return (
+    def.pins.find(
+      (p) =>
+        p.id.toLowerCase() === q ||
+        p.label.toLowerCase() === q ||
+        (p.number != null && String(p.number) === q),
+    ) ?? null
+  );
+}
 
 export function dipPinHole(part: PlacedDip, pinNumber: number): HoleRef | null {
   const def = getPart(part.def);
@@ -59,10 +72,17 @@ export function resolveEndpoint(project: Project, raw: string): HoleRef | null {
     }
     return parseHole(part.from);
   }
+  if (part.kind === "module") {
+    const found = findPartPin(getPart(part.def), pin.pin);
+    if (!found) return null;
+    const endpoint: ModulePin = { kind: "module", partId: part.id, pin: found.id };
+    return endpoint;
+  }
   return null;
 }
 
 export function holeInBounds(project: Project, hole: HoleRef): boolean {
+  if (!isBoardHole(hole)) return true;
   const spec = BOARD_SPECS[project.board];
   return hole.row >= 1 && hole.row <= spec.rows;
 }

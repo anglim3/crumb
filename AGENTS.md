@@ -25,6 +25,7 @@ Do not invent catalog ids. If it is not in `list_parts`, pick the closest part o
 - Terminal holes: `{row}-{col}` with `col` in `a`–`j`. Example: `10-e`
 - Rails: `LP-12` left +, `LM-12` left −, `RP` / `RM` on the right
 - Part pins: `{id}.{number}` or `{id}.{LABEL}` (`u1.8`, `u1.VCC`, `m1.5v`)
+- Module pins (`m1.pos`, `m2.M1A`) resolve to off-board pads beside the board — not to terminal strips. Jumper them to holes the same way as any other `from` / `to`.
 - `a`–`e` on a row = one net. `f`–`j` on a row = another net. Gutter isolates them
 - `half` and `full` boards split each rail at mid-board. A jumper is required to join the two halves
 - DIP `anchor` is **pin 1 on the left strip** (`a`–`e`). The chip spans the gutter
