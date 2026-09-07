@@ -79,14 +79,14 @@ export function Workspace() {
     return () => window.removeEventListener("keydown", onKey);
   }, [cancelPending, deleteSelected, undo, redo]);
   return (
-    <div className="flex min-h-dvh flex-col bg-bg text-fg">
+    <div className="flex min-h-dvh flex-col bg-bg text-fg lg:h-dvh lg:overflow-hidden">
       <Header />
       <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
-        <aside className="order-2 max-h-[42vh] overflow-y-auto border-t border-border print:hidden lg:order-1 lg:max-h-none lg:w-72 lg:border-r lg:border-t-0">
+        <aside className="order-2 max-h-[42vh] overflow-y-auto border-t border-border print:hidden lg:order-1 lg:max-h-none lg:min-h-0 lg:w-72 lg:border-r lg:border-t-0">
           <PartsPane />
         </aside>
-        <main className="order-1 min-h-[48vh] flex-1 lg:order-2">
-          <div className="flex items-center justify-between gap-3 px-4 py-2 text-xs text-muted">
+        <main className="order-1 flex min-h-[48vh] flex-1 flex-col lg:order-2 lg:min-h-0">
+          <div className="flex shrink-0 items-center justify-between gap-3 px-4 py-2 text-xs text-muted">
             <p>
               {tool === "place" && pendingDef
                 ? `Placing ${getPart(pendingDef)?.name ?? pendingDef}${
@@ -112,11 +112,11 @@ export function Workspace() {
               )}
             </p>
           </div>
-          <div className="h-[min(70vh,720px)] px-3 pb-3">
+          <div className="min-h-0 flex-1 px-3 pb-3 lg:h-0">
             <BoardView />
           </div>
         </main>
-        <aside className="order-3 max-h-[40vh] overflow-y-auto border-t border-border print:hidden lg:max-h-none lg:w-80 lg:border-l lg:border-t-0">
+        <aside className="order-3 max-h-[40vh] overflow-y-auto border-t border-border print:hidden lg:max-h-none lg:min-h-0 lg:w-80 lg:border-l lg:border-t-0">
           <Inspector issues={issues} steps={steps} shorts={shorts} />
         </aside>
       </div>
