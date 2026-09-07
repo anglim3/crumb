@@ -1,6 +1,7 @@
 import { BOARD_SPECS } from "@/lib/crumb/board";
 import { CLASS_LABEL, CLASS_ORDER, getPart, searchParts } from "@/lib/crumb/catalog";
-import { EMPTY_PROJECT, EXAMPLES } from "@/lib/crumb/examples";
+import { EXAMPLES } from "@/lib/crumb/examples";
+import { LIBRARY_KEY, upsertLibrary } from "@/lib/crumb/library";
 import { decodeShare, encodeShare } from "@/lib/crumb/mutate";
 import { downloadPng, downloadText, renderProjectSvg } from "@/lib/crumb/render-svg";
 import { buildSteps } from "@/lib/crumb/steps";
@@ -11,11 +12,12 @@ import { detectShorts } from "@/lib/crumb/shorts";
 import { validateProject } from "@/lib/crumb/validate";
 import { cn } from "@/lib/utils";
 import { BoardView } from "./board-view";
-import { Cable, Check, FolderOpen, Redo2, Undo2 } from "lucide-react";
+import { Cable, Check, FolderOpen, Redo2, Save, Trash2, Undo2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 export function Workspace() {
   const project = useCrumb((s) => s.project);
+  const library = useCrumb((s) => s.library);
   const tool = useCrumb((s) => s.tool);
   const pendingDef = useCrumb((s) => s.pendingDef);
   const wireFrom = useCrumb((s) => s.wireFrom);
@@ -35,8 +37,23 @@ export function Workspace() {
       if (hash.startsWith("c=")) {
         useCrumb.getState().loadJson(JSON.stringify(decodeShare(hash.slice(2))));
       } else {
+        let session: Project | null = null;
         const raw = localStorage.getItem("crumb.project.v1");
-        if (raw) useCrumb.getState().loadJson(raw);
+        if (raw) {
+          try {
+            session = JSON.parse(raw) as Project;
+          } catch {
+            session = null;
+          }
+        }
+        let libraryRaw: unknown = null;
+        try {
+          libraryRaw = JSON.parse(localStorage.getItem(LIBRARY_KEY) ?? "null");
+        } catch {
+          libraryRaw = null;
+        }
+        useCrumb.getState().hydrateLibrary(libraryRaw, session);
+        if (!useCrumb.getState().library.activeId && raw) useCrumb.getState().loadJson(raw);
       }
     } catch {
       /* ignore */
@@ -48,10 +65,12 @@ export function Workspace() {
     if (!hydrated) return;
     try {
       localStorage.setItem("crumb.project.v1", JSON.stringify(project));
+      const file = library.activeId ? upsertLibrary(library, project, library.activeId) : library;
+      localStorage.setItem(LIBRARY_KEY, JSON.stringify(file));
     } catch {
       /* ignore */
     }
-  }, [project, hydrated]);
+  }, [project, library, hydrated]);
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const tag = (e.target as HTMLElement | null)?.tagName;
@@ -61,6 +80,11 @@ export function Workspace() {
         e.preventDefault();
         if (e.shiftKey) redo();
         else undo();
+        return;
+      }
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "s") {
+        e.preventDefault();
+        useCrumb.getState().saveProject();
         return;
       }
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "y") {
@@ -140,6 +164,14 @@ function Header() {
   const setName = useCrumb((s) => s.setName);
   const duplicateSelected = useCrumb((s) => s.duplicateSelected);
   const loadJson = useCrumb((s) => s.loadJson);
+  const library = useCrumb((s) => s.library);
+  const saveProject = useCrumb((s) => s.saveProject);
+  const openLibraryEntry = useCrumb((s) => s.openLibraryEntry);
+  const openExample = useCrumb((s) => s.openExample);
+  const newProject = useCrumb((s) => s.newProject);
+  const deleteLibraryEntry = useCrumb((s) => s.deleteLibraryEntry);
+  const exampleMatch = EXAMPLES.find((e) => e.name === project.name && !library.activeId);
+  const pickerValue = library.activeId ? `user:${library.activeId}` : exampleMatch ? `ex:${exampleMatch.name}` : "draft";
 
   return (
     <header className="flex flex-wrap items-center gap-3 border-b border-border px-4 py-3 print:hidden">
@@ -167,23 +199,55 @@ function Header() {
         </select>
       </label>
       <label className="flex items-center gap-2 text-xs text-muted">
-        Example
+        Project
         <select
-          className="h-10 rounded-md border border-border bg-surface px-2 text-fg"
-          value={EXAMPLES.find((e) => e.name === project.name)?.name ?? ""}
+          className="h-10 max-w-52 rounded-md border border-border bg-surface px-2 text-fg"
+          value={pickerValue}
           onChange={(e) => {
-            const next = EXAMPLES.find((ex) => ex.name === e.target.value);
-            if (next) setProject(structuredClone(next));
+            const value = e.target.value;
+            if (value === "draft") return;
+            if (value.startsWith("ex:")) openExample(value.slice(3));
+            if (value.startsWith("user:")) openLibraryEntry(value.slice(5));
           }}
         >
-          <option value="">Custom</option>
-          {EXAMPLES.map((ex) => (
-            <option key={ex.name} value={ex.name}>
-              {ex.name}
-            </option>
-          ))}
+          <option value="draft">{library.activeId ? "—" : project.name || "Untitled draft"}</option>
+          <optgroup label="Examples">
+            {EXAMPLES.map((ex) => (
+              <option key={ex.name} value={`ex:${ex.name}`}>
+                {ex.name}
+              </option>
+            ))}
+          </optgroup>
+          <optgroup label="My projects">
+            {library.entries.length === 0 && (
+              <option value="draft" disabled>
+                None saved yet
+              </option>
+            )}
+            {library.entries.map((entry) => (
+              <option key={entry.id} value={`user:${entry.id}`}>
+                {entry.project.name || entry.id}
+              </option>
+            ))}
+          </optgroup>
         </select>
       </label>
+      <button type="button" className="h-10 rounded-md bg-surface px-3 text-sm" onClick={saveProject} title="Save to this browser">
+        <span className="inline-flex items-center gap-1.5">
+          <Save className="size-3.5" />
+          Save
+        </span>
+      </button>
+      {library.activeId && (
+        <button
+          type="button"
+          className="h-10 rounded-md bg-surface px-3 text-sm"
+          title="Delete saved project"
+          onClick={() => deleteLibraryEntry(library.activeId!)}
+        >
+          <Trash2 className="size-3.5" />
+        </button>
+      )}
       <div className="flex flex-wrap gap-2">
         <button type="button" className="h-10 rounded-md bg-surface px-3 text-sm disabled:opacity-40" onClick={undo} disabled={!past.length}>
           <span className="inline-flex items-center gap-1.5">
@@ -240,7 +304,7 @@ function Header() {
                 }}
               />
             </label>
-            <button type="button" className="h-10 rounded-md bg-surface px-3 text-sm" onClick={() => setProject({ ...EMPTY_PROJECT, name: "Untitled" })}>
+            <button type="button" className="h-10 rounded-md bg-surface px-3 text-sm" onClick={newProject}>
               New
             </button>
             <button type="button" className={cn("h-10 rounded-md px-3 text-sm", jsonOpen ? "bg-accent text-accent-fg" : "bg-surface")} onClick={() => setJsonOpen(!jsonOpen)}>
