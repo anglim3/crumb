@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360" width="640" height="360" role="img" aria-label="555 blinker on a breadboard">
+  <rect width="640" height="360" rx="18" fill="#14110e"/>
+  <rect x="48" y="28" width="544" height="304" rx="16" fill="#c9b896"/>
+  <rect x="60" y="40" width="520" height="280" rx="12" fill="#efe6d4"/>
+  <rect x="78" y="52" width="22" height="256" rx="5" fill="#e8c8c2"/>
+  <rect x="106" y="52" width="22" height="256" rx="5" fill="#c5d0da"/>
+  <rect x="540" y="52" width="22" height="256" rx="5" fill="#e8c8c2"/>
+  <rect x="512" y="52" width="22" height="256" rx="5" fill="#c5d0da"/>
+  <g fill="#3a3228">
+    <g id="row">
+      <circle cx="156" cy="0" r="4.2"/><circle cx="180" cy="0" r="4.2"/><circle cx="204" cy="0" r="4.2"/><circle cx="228" cy="0" r="4.2"/><circle cx="252" cy="0" r="4.2"/>
+      <circle cx="300" cy="0" r="4.2"/><circle cx="324" cy="0" r="4.2"/><circle cx="348" cy="0" r="4.2"/><circle cx="372" cy="0" r="4.2"/><circle cx="396" cy="0" r="4.2"/>
+      <circle cx="89" cy="0" r="4.2"/><circle cx="117" cy="0" r="4.2"/><circle cx="551" cy="0" r="4.2"/><circle cx="523" cy="0" r="4.2"/>
+    </g>
+    <use href="#row" transform="translate(0 76)"/>
+    <use href="#row" transform="translate(0 100)"/>
+    <use href="#row" transform="translate(0 124)"/>
+    <use href="#row" transform="translate(0 148)"/>
+    <use href="#row" transform="translate(0 172)"/>
+    <use href="#row" transform="translate(0 196)"/>
+    <use href="#row" transform="translate(0 220)"/>
+    <use href="#row" transform="translate(0 244)"/>
+    <use href="#row" transform="translate(0 268)"/>
+  </g>
+  <path d="M89 124 C89 108, 252 108, 252 124" fill="none" stroke="#c45c4a" stroke-width="3" stroke-linecap="round"/>
+  <path d="M117 148 C117 138, 252 138, 252 148" fill="none" stroke="#2b2b2b" stroke-width="3" stroke-linecap="round"/>
+  <path d="M300 172 C300 184, 396 184, 396 172" fill="none" stroke="#c9a227" stroke-width="3" stroke-linecap="round"/>
+  <path d="M300 148 C300 136, 89 136, 89 172" fill="none" stroke="#3f7a4e" stroke-width="3" stroke-linecap="round"/>
+  <path d="M396 220 C396 232, 117 232, 117 220" fill="none" stroke="#2b2b2b" stroke-width="3" stroke-linecap="round"/>
+  <rect x="244" y="112" width="64" height="96" rx="4" fill="#1c1916"/>
+  <text x="276" y="164" text-anchor="middle" fill="#efe6d4" font-family="ui-monospace, monospace" font-size="11">u1</text>
+  <line x1="89" y1="172" x2="396" y2="172" stroke="#8a8478" stroke-width="2"/>
+  <line x1="156" y1="196" x2="156" y2="244" stroke="#8a8478" stroke-width="2"/>
+  <circle cx="156" cy="244" r="7" fill="#c45c4a"/>
+  <text x="320" y="88" text-anchor="middle" fill="#6a5e4e" font-family="Georgia, serif" font-size="13">555 blinker</text>
+</svg>
