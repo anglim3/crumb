@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 56" width="280" height="56" role="img" aria-label="Crumb">
+  <circle cx="22" cy="28" r="7" fill="#c9b896"/>
+  <circle cx="22" cy="28" r="2.4" fill="#3a3228"/>
+  <text x="40" y="37" font-family="Georgia, 'Times New Roman', serif" font-size="32" fill="#14110e">Crumb</text>
+</svg>
