@@ -92,7 +92,7 @@ export const useCrumb = create<CrumbState>((set, get) => {
     setHighlightNet: (highlightNet) => set({ highlightNet }),
     setJsonOpen: (jsonOpen) => set({ jsonOpen }),
     changeBoard: (size) => commit(setBoard(get().project, size)),
-    cancelPending: () => set({ tool: "select", pendingDef: null, wireFrom: null, placeClicks: [] }),
+    cancelPending: () => set({ tool: "select", pendingDef: null, wireFrom: null, placeClicks: [], selected: null }),
     clickHole: (hole) => {
       const s = get();
       if (s.tool === "wire") {
