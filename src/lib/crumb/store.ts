@@ -37,6 +37,8 @@ export type CrumbState = {
   undo: () => void;
   redo: () => void;
   loadJson: (raw: string) => void;
+  setName: (name: string) => void;
+  duplicateSelected: () => void;
 };
 
 export const WIRE_COLORS = ["#c45c4a", "#2b2b2b", "#3d6b8a", "#3f7a4e", "#c9a227", "#8a5a2b", "#6b5c8a", "#d8d2c8"];
@@ -184,6 +186,30 @@ export const useCrumb = create<CrumbState>((set, get) => {
     loadJson: (raw) => {
       const project = parseProject(JSON.parse(raw));
       commit(project, { selected: null, jsonOpen: false });
+    },
+    setName: (name) => {
+      const s = get();
+      if (s.project.name === name) return;
+      commit({ ...s.project, name });
+    },
+    duplicateSelected: () => {
+      const s = get();
+      const part = s.project.parts.find((p) => p.id === s.selected);
+      if (!part) return;
+      const bump = (hole: string, by: number) => {
+        const parsed = parseHole(hole);
+        if (!parsed) return hole;
+        return holeId({ ...parsed, row: parsed.row + by });
+      };
+      if (part.kind === "dip") {
+        commit(placeDip(s.project, part.def, bump(part.anchor, 2)));
+        return;
+      }
+      if (part.kind === "leaded") {
+        commit(placeLeaded(s.project, part.def, bump(part.from, 2), bump(part.to, 2), part.value, undefined, part.mid ? bump(part.mid, 2) : undefined));
+        return;
+      }
+      commit(placeModule(s.project, part.def, part.slot, part.offsetRow + 5));
     },
   };
 });

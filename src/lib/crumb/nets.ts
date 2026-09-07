@@ -34,6 +34,7 @@ export function holesOnNetKey(project: Project, key: string): string[] {
     const seg = Number(body.split(":")[1]) as 0 | 1;
     return rowsOfSegment(spec, spec.railSplit ? seg : 0).map((row) => `${side}${polarity}-${row}`);
   }
+  if (key.startsWith("ext:")) return [key.slice(4)];
   return [];
 }
 
@@ -58,7 +59,12 @@ export function computeNets(project: Project): Net[] {
 
   const touch = (raw: string) => {
     const hole = resolveEndpoint(project, raw) ?? parseHole(raw);
-    if (!hole) return null;
+    if (!hole) {
+      const key = `ext:${raw}`;
+      seen.add(key);
+      uf.find(key);
+      return key;
+    }
     const key = netKeyForHole(project, hole);
     seen.add(key);
     uf.find(key);

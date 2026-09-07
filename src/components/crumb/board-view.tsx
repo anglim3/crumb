@@ -8,7 +8,7 @@ import { detectShorts, shortHoles } from "@/lib/crumb/shorts";
 import { useCrumb } from "@/lib/crumb/store";
 import type { HoleRef, Project, TerminalCol } from "@/lib/crumb/types";
 import { jumperPath } from "@/lib/crumb/wire-path";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 
 const COLS: TerminalCol[] = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j"];
 
@@ -31,12 +31,25 @@ export function BoardView() {
   const activeNet = highlightNet ? nets.find((n) => n.id === highlightNet) : undefined;
   const hoverNet = hoverHole ? netForHole(nets, hoverHole) : undefined;
   const lit = new Set([...(activeNet?.holes ?? []), ...(hoverNet?.holes ?? [])]);
+  const [zoom, setZoom] = useState(1);
 
   return (
     <div className="relative h-full min-h-0 overflow-auto bg-bench">
+      <div className="sticky top-2 z-10 float-right mr-2 flex gap-2 print:hidden">
+        <button type="button" className="h-10 rounded-md bg-surface px-3 text-sm" onClick={() => setZoom((z) => Math.max(0.5, +(z - 0.2).toFixed(2)))}>
+          −
+        </button>
+        <button type="button" className="h-10 rounded-md bg-surface px-3 text-sm" onClick={() => setZoom(1)}>
+          {Math.round(zoom * 100)}%
+        </button>
+        <button type="button" className="h-10 rounded-md bg-surface px-3 text-sm" onClick={() => setZoom((z) => Math.min(2.4, +(z + 0.2).toFixed(2)))}>
+          +
+        </button>
+      </div>
       <svg
         viewBox={`0 0 ${geom.width} ${geom.height}`}
-        className="mx-auto block h-auto w-full max-w-3xl"
+        className="mx-auto block h-auto"
+        style={{ width: `${Math.max(40, zoom * 100)}%`, maxWidth: "none" }}
         role="img"
         aria-label={`${spec.label} breadboard`}
       >
@@ -296,17 +309,19 @@ function LeadedBody({ project, partId }: { project: Project; partId: string }) {
 function ModuleCard({ project, partId }: { project: Project; partId: string }) {
   const selected = useCrumb((s) => s.selected) === partId;
   const setSelected = useCrumb((s) => s.setSelected);
+  const clickHole = useCrumb((s) => s.clickHole);
   const part = project.parts.find((p) => p.id === partId);
   if (!part || part.kind !== "module") return null;
   const def = getPart(part.def);
   const geom = boardGeom(project.board);
   const spec = BOARD_SPECS[project.board];
-  const w = 86;
-  const h = 54;
+  const pins = def?.pins ?? [];
+  const w = 92;
+  const h = 28 + Math.ceil(pins.length / 2) * 12;
   const x = part.slot === 0 ? 8 : geom.width - w - 8;
   const y = geom.rowY(Math.min(spec.rows, Math.max(1, part.offsetRow))) - 10;
   return (
-    <g className="cursor-pointer" onClick={() => setSelected(partId)}>
+    <g>
       <rect
         x={x}
         y={y}
@@ -315,13 +330,33 @@ function ModuleCard({ project, partId }: { project: Project; partId: string }) {
         rx="6"
         className={selected ? "fill-module stroke-accent" : "fill-module stroke-dip-edge"}
         strokeWidth="1.2"
+        onClick={() => setSelected(partId)}
       />
-      <text x={x + w / 2} y={y + 24} textAnchor="middle" className="fill-board-inner font-display" style={{ fontSize: 9 }}>
-        {def?.name ?? part.def}
+      <text x={x + w / 2} y={y + 14} textAnchor="middle" className="fill-board-inner font-display" style={{ fontSize: 8 }}>
+        {part.id} {def?.name ?? part.def}
       </text>
-      <text x={x + w / 2} y={y + 38} textAnchor="middle" className="fill-board-inner/70 font-mono" style={{ fontSize: 7 }}>
-        {part.id} off-board
-      </text>
+      {pins.map((pin, i) => {
+        const col = i % 2;
+        const row = Math.floor(i / 2);
+        const px = x + 8 + col * 46;
+        const py = y + 28 + row * 12;
+        const ref = `${part.id}.${pin.id}`;
+        return (
+          <text
+            key={pin.id}
+            x={px}
+            y={py}
+            className="fill-board-inner/90 font-mono"
+            style={{ fontSize: 6, cursor: "pointer" }}
+            onClick={(e) => {
+              e.stopPropagation();
+              clickHole(ref);
+            }}
+          >
+            {pin.label}
+          </text>
+        );
+      })}
     </g>
   );
 }

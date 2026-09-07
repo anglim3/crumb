@@ -85,6 +85,23 @@ const TOOLS = [
       properties: { path: { type: "string" } },
     },
   },
+  {
+    name: "remove_part",
+    description: "Remove a part by id from the project file",
+    inputSchema: {
+      type: "object",
+      properties: { path: { type: "string" }, id: { type: "string" } },
+      required: ["id"],
+    },
+  },
+  {
+    name: "list_nets",
+    description: "List jumper endpoints in the project file",
+    inputSchema: {
+      type: "object",
+      properties: { path: { type: "string" } },
+    },
+  },
 ];
 
 const CATALOG = JSON.parse(readFileSync(resolve(root, "mcp/catalog.json"), "utf8"));
@@ -170,6 +187,16 @@ function handleTool(name, args = {}) {
       if (owners.length > 1) issues.push({ level: "error", message: `${hole} used by ${owners.join(", ")}` });
     }
     return { issues };
+  }
+  if (name === "remove_part") {
+    const project = load(path);
+    project.parts = project.parts.filter((p) => p.id !== args.id);
+    save(project, path);
+    return project;
+  }
+  if (name === "list_nets") {
+    const project = load(path);
+    return project.wires.map((w) => ({ id: w.id, from: w.from, to: w.to }));
   }
   throw new Error(`Unknown tool ${name}`);
 }

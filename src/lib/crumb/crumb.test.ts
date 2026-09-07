@@ -3,7 +3,7 @@ import { test } from "node:test";
 import { holeId, parseHole, parsePinRef } from "./holes.ts";
 import { dipPinHole, resolveEndpoint } from "./layout.ts";
 import { computeNets, netForHole } from "./nets.ts";
-import { EXAMPLE_555, EXAMPLE_BUTTON, EMPTY_PROJECT } from "./examples.ts";
+import { EXAMPLE_555, EXAMPLE_BUTTON, EXAMPLE_ESP32, EXAMPLE_PICO, EMPTY_PROJECT } from "./examples.ts";
 import { validateProject } from "./validate.ts";
 import { placeDip, addWire, placeLeaded, parseProject } from "./mutate.ts";
 import { detectShorts } from "./shorts.ts";
@@ -54,6 +54,11 @@ test("555 example has no vcc-gnd short and no collisions", () => {
 test("button example validates on mini board", () => {
   const errors = validateProject(EXAMPLE_BUTTON).filter((i) => i.level === "error");
   assert.deepEqual(errors, []);
+});
+
+test("esp32 and pico examples validate", () => {
+  assert.deepEqual(validateProject(EXAMPLE_ESP32).filter((i) => i.level === "error"), []);
+  assert.deepEqual(validateProject(EXAMPLE_PICO).filter((i) => i.level === "error"), []);
 });
 
 test("detects vcc-gnd rail short", () => {

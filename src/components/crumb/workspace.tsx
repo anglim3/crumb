@@ -5,6 +5,7 @@ import { downloadText, renderProjectSvg } from "@/lib/crumb/render-svg";
 import { buildSteps } from "@/lib/crumb/steps";
 import { useCrumb, WIRE_COLORS } from "@/lib/crumb/store";
 import type { BoardSize, PartDef, Project } from "@/lib/crumb/types";
+import { computeNets } from "@/lib/crumb/nets";
 import { detectShorts } from "@/lib/crumb/shorts";
 import { validateProject } from "@/lib/crumb/validate";
 import { cn } from "@/lib/utils";
@@ -25,7 +26,26 @@ export function Workspace() {
   const issues = useMemo(() => validateProject(project), [project]);
   const shorts = useMemo(() => detectShorts(project), [project]);
   const steps = useMemo(() => buildSteps(project), [project]);
+  const [hydrated, setHydrated] = useState(false);
 
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem("crumb.project.v1");
+      if (raw) useCrumb.getState().loadJson(raw);
+    } catch {
+      /* ignore */
+    }
+    setHydrated(true);
+  }, []);
+
+  useEffect(() => {
+    if (!hydrated) return;
+    try {
+      localStorage.setItem("crumb.project.v1", JSON.stringify(project));
+    } catch {
+      /* ignore */
+    }
+  }, [project, hydrated]);
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const tag = (e.target as HTMLElement | null)?.tagName;
@@ -47,7 +67,7 @@ export function Workspace() {
         deleteSelected();
       }
       if (e.key === "w") useCrumb.getState().setTool("wire");
-      if (e.key === "v") useCrumb.getState().setTool("select");
+      if (e.key === "d") useCrumb.getState().duplicateSelected();
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -56,7 +76,7 @@ export function Workspace() {
     <div className="flex min-h-dvh flex-col bg-bg text-fg">
       <Header />
       <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
-        <aside className="order-2 max-h-[42vh] overflow-y-auto border-t border-border lg:order-1 lg:max-h-none lg:w-72 lg:border-r lg:border-t-0">
+        <aside className="order-2 max-h-[42vh] overflow-y-auto border-t border-border print:hidden lg:order-1 lg:max-h-none lg:w-72 lg:border-r lg:border-t-0">
           <PartsPane />
         </aside>
         <main className="order-1 min-h-[48vh] flex-1 lg:order-2">
@@ -90,7 +110,7 @@ export function Workspace() {
             <BoardView />
           </div>
         </main>
-        <aside className="order-3 max-h-[40vh] overflow-y-auto border-t border-border lg:max-h-none lg:w-80 lg:border-l lg:border-t-0">
+        <aside className="order-3 max-h-[40vh] overflow-y-auto border-t border-border print:hidden lg:max-h-none lg:w-80 lg:border-l lg:border-t-0">
           <Inspector issues={issues} steps={steps} shorts={shorts} />
         </aside>
       </div>
@@ -111,13 +131,20 @@ function Header() {
   const redo = useCrumb((s) => s.redo);
   const past = useCrumb((s) => s.past);
   const future = useCrumb((s) => s.future);
+  const setName = useCrumb((s) => s.setName);
+  const duplicateSelected = useCrumb((s) => s.duplicateSelected);
   const loadJson = useCrumb((s) => s.loadJson);
 
   return (
-    <header className="flex flex-wrap items-center gap-3 border-b border-border px-4 py-3">
+    <header className="flex flex-wrap items-center gap-3 border-b border-border px-4 py-3 print:hidden">
       <div className="min-w-0 flex-1">
         <p className="font-display text-xl leading-none tracking-tight">Crumb</p>
-        <p className="mt-1 text-xs text-muted">Breadboard layouts you can actually build</p>
+        <input
+          className="mt-1 h-8 w-full max-w-56 rounded-md border border-border bg-surface px-2 text-xs text-fg"
+          value={project.name}
+          onChange={(e) => setName(e.target.value)}
+          aria-label="Project name"
+        />
       </div>
       <label className="flex items-center gap-2 text-xs text-muted">
         Board
@@ -180,6 +207,9 @@ function Header() {
             <Cable className="size-3.5" />
             Wire
           </span>
+        </button>
+        <button type="button" className="h-10 rounded-md bg-surface px-3 text-sm" onClick={duplicateSelected}>
+          Duplicate
         </button>
         <button type="button" className="h-10 rounded-md bg-surface px-3 text-sm" onClick={deleteSelected}>
           <span className="inline-flex items-center gap-1.5">
@@ -342,6 +372,11 @@ function Inspector({
   const selected = useCrumb((s) => s.selected);
   const jsonOpen = useCrumb((s) => s.jsonOpen);
   const setProject = useCrumb((s) => s.setProject);
+  const setHighlightNet = useCrumb((s) => s.setHighlightNet);
+  const highlightNet = useCrumb((s) => s.highlightNet);
+  const nets = useMemo(() => computeNets(project), [project]);
+  const liveNets = nets.filter((n) => n.label || n.holes.length > 14);
+  const [done, setDone] = useState<Record<number, boolean>>({});
   const [draft, setDraft] = useState("");
   const [jsonErr, setJsonErr] = useState<string | null>(null);
   const selectedPart = project.parts.find((p) => p.id === selected);
@@ -455,12 +490,33 @@ function Inspector({
         )}
       </section>
       <section>
+        <p className="text-xs font-medium uppercase tracking-wide text-muted">Nets</p>
+        <ul className="mt-2 flex flex-col gap-1">
+          {liveNets.slice(0, 12).map((net) => (
+            <li key={net.id}>
+              <button
+                type="button"
+                className={cn(
+                  "h-10 w-full rounded-md px-3 text-left text-sm",
+                  highlightNet === net.id ? "bg-accent text-accent-fg" : "bg-surface",
+                )}
+                onClick={() => setHighlightNet(highlightNet === net.id ? null : net.id)}
+              >
+                {net.label ?? net.id} · {net.holes.length} holes
+              </button>
+            </li>
+          ))}
+        </ul>
+      </section>
+      <section>
         <p className="text-xs font-medium uppercase tracking-wide text-muted">Build steps</p>
         <ol className="mt-2 list-decimal space-y-2 pl-4 text-sm">
           {steps.map((step, i) => (
-            <li key={`${step.title}-${i}`}>
-              <span className="font-medium">{step.title}</span>
-              <p className="text-muted">{step.detail}</p>
+            <li key={`${step.title}-${i}`} className={done[i] ? "text-muted line-through" : ""}>
+              <button type="button" className="text-left" onClick={() => setDone((d) => ({ ...d, [i]: !d[i] }))}>
+                <span className="font-medium">{step.title}</span>
+                <p className="text-muted">{step.detail}</p>
+              </button>
             </li>
           ))}
         </ol>

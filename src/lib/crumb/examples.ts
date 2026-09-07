@@ -72,4 +72,40 @@ export const EXAMPLE_BUTTON: Project = {
   ],
 };
 
-export const EXAMPLES: Project[] = [EXAMPLE_555, EXAMPLE_DHT, EXAMPLE_BUTTON];
+export const EXAMPLE_ESP32: Project = {
+  version: 1,
+  name: "ESP32 LED",
+  board: "half",
+  parts: [
+    { kind: "dip", id: "u1", def: "esp32", anchor: "5-e" },
+    { kind: "leaded", id: "r1", def: "resistor", from: "18-j", to: "20-j", value: "330Ω" },
+    { kind: "leaded", id: "d1", def: "led", from: "20-h", to: "22-h" },
+  ],
+  wires: [
+    { id: "w1", from: "u1.VIN", to: "LP-5", color: "#c45c4a" },
+    { id: "w2", from: "u1.GND", to: "LM-18", color: "#2b2b2b" },
+    { id: "w3", from: "u1.IO2", to: "18-j", color: "#3f7a4e" },
+    { id: "w4", from: "22-h", to: "RM-22", color: "#2b2b2b" },
+  ],
+};
+
+export const EXAMPLE_PICO: Project = {
+  version: 1,
+  name: "Pico button",
+  board: "half",
+  parts: [
+    { kind: "dip", id: "u1", def: "pico", anchor: "5-e" },
+    { kind: "leaded", id: "sw1", def: "button", from: "26-a", to: "28-a" },
+    { kind: "leaded", id: "r1", def: "resistor", from: "26-c", to: "24-c", value: "10k" },
+  ],
+  wires: [
+    { id: "w1", from: "u1.3V3", to: "LP-8", color: "#c45c4a" },
+    { id: "w2", from: "u1.GND", to: "LM-8", color: "#2b2b2b" },
+    { id: "w3", from: "5-a", to: "26-a", color: "#3d6b8a" },
+    { id: "w4", from: "28-a", to: "LM-28", color: "#2b2b2b" },
+    { id: "w5", from: "24-c", to: "LP-24", color: "#c45c4a" },
+  ],
+};
+
+export const EXAMPLES: Project[] = [EXAMPLE_555, EXAMPLE_DHT, EXAMPLE_BUTTON, EXAMPLE_ESP32, EXAMPLE_PICO];
+
