@@ -8,18 +8,24 @@ Not SPICE. Not a PCB tool.
 
 ## Requirements
 
-- [Node.js](https://nodejs.org/) 22 or newer (`--experimental-strip-types`)
-- No `npm install` for MCP or the SVG CLI — they run off the TypeScript sources
+- [Node.js](https://nodejs.org/) 22 or newer
 
-## Quick start
+## Web editor
 
 ```bash
 git clone https://github.com/anglim3/crumb.git
 cd crumb
-node --experimental-strip-types scripts/crumb-svg.mjs examples/555-blinker.json blinker.svg
+npm install
+npm run dev
 ```
 
-Open `blinker.svg`. That is the same geometry the editor uses.
+Opens the interactive board at the Vite URL (default `http://localhost:5173`). Pick an example, place parts, draw jumpers, export JSON / SVG / PNG. Layouts autosave in the browser. A `#c=...` hash loads a shared project.
+
+## SVG CLI (no install)
+
+```bash
+node --experimental-strip-types scripts/crumb-svg.mjs examples/555-blinker.json blinker.svg
+```
 
 Examples: `examples/555-blinker.json`, `examples/homekit-blinds.json`, plus the named circuits in `src/lib/crumb/examples.ts` (button LED, Uno + DHT22, ESP32 LED, Pico button, HomeKit blinds).
 
@@ -27,9 +33,7 @@ The blinds bench feeds **12 V into RP / RM**. The barrel jack is a visual module
 
 ## MCP (for an AI harness)
 
-Point the harness at this repo root as `cwd`.
-
-Claude Desktop / Cursor / similar:
+Point the harness at this repo root as `cwd`. MCP and the CLI do not need `npm install`.
 
 ```json
 {
@@ -48,7 +52,7 @@ Default project file: `examples/555-blinker.json`. Pass `path` on any tool to us
 | Tool | What it does |
 | --- | --- |
 | `list_parts` | Search the catalog (`query` optional) |
-| `get_board` | Read the project JSON |
+| `get_board` | Read the current project JSON |
 | `set_project` | Replace the whole document |
 | `place_part` | DIP (`anchor`), leaded (`from` / `to` / `mid` / `legs`), module (`slot`, `offsetRow`) |
 | `add_wire` | Jumper between holes or `part.pin` |
@@ -96,9 +100,5 @@ Catalog ids live in `src/lib/crumb/catalog.ts` and `mcp/catalog.json` (keep thos
 ## Tests
 
 ```bash
-node --experimental-strip-types --test src/lib/crumb/crumb.test.ts
+npm test
 ```
-
-## What this repo is
-
-Core model, validator, SVG renderer, examples, and the MCP server. The interactive browser editor is the same JSON and the same `src/lib/crumb` code.
