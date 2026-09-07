@@ -1,9 +1,9 @@
-import { BOARD_SPECS } from "./board";
-import { getPart } from "./catalog";
-import { holeId, parseHole } from "./holes";
-import { dipPinHole, holeInBounds, occupiedHoles, resolveEndpoint } from "./layout";
-import { computeNets } from "./nets";
-import type { Issue, Project } from "./types";
+import { BOARD_SPECS } from "./board.ts";
+import { getPart } from "./catalog.ts";
+import { holeId, parseHole } from "./holes.ts";
+import { dipPinHole, holeInBounds, occupiedHoles, resolveEndpoint } from "./layout.ts";
+import { computeNets } from "./nets.ts";
+import type { Issue, Project } from "./types.ts";
 
 export function validateProject(project: Project): Issue[] {
   const issues: Issue[] = [];
@@ -100,6 +100,15 @@ export function validateProject(project: Project): Issue[] {
       message: "A + rail is connected to a − rail",
       refs: shorted.holes.slice(0, 6),
     });
+  }
+
+  const endpoints = new Set<string>();
+  for (const wire of project.wires) {
+    const key = [wire.from, wire.to].sort().join("|");
+    if (endpoints.has(key)) {
+      issues.push({ level: "warn", code: "dup-wire", message: `Duplicate jumper ${wire.from} ↔ ${wire.to}`, refs: [wire.id] });
+    }
+    endpoints.add(key);
   }
 
   void occ;

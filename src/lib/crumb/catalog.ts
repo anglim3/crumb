@@ -1,4 +1,4 @@
-import type { PartDef } from "./types";
+import type { PartDef } from "./types.ts";
 
 function dipPins(count: 8 | 14 | 16 | 20 | 24 | 28 | 40, labels: string[]): PartDef["pins"] {
   return labels.map((label, i) => ({

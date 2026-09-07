@@ -1,7 +1,7 @@
-import { BOARD_SPECS, railSegment, rowsOfSegment } from "./board";
-import { parseHole } from "./holes";
-import { resolveEndpoint } from "./layout";
-import type { HoleRef, Net, Project } from "./types";
+import { BOARD_SPECS, railSegment, rowsOfSegment } from "./board.ts";
+import { parseHole } from "./holes.ts";
+import { resolveEndpoint } from "./layout.ts";
+import type { HoleRef, Net, Project } from "./types.ts";
 
 function terminalNetKey(row: number, side: "L" | "R"): string {
   return `term:${side}:${row}`;

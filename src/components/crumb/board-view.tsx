@@ -166,6 +166,12 @@ function RailStrip({
     <g>
       <rect x={xP} y={y} width={PITCH * 0.84} height={h} rx="4" className="fill-rail-plus" />
       <rect x={xM} y={y} width={PITCH * 0.84} height={h} rx="4" className="fill-rail-minus" />
+      <text x={xP + PITCH * 0.42} y={y - 3} textAnchor="middle" className="fill-ink-soft font-mono" style={{ fontSize: 8 }}>
+        +
+      </text>
+      <text x={xM + PITCH * 0.42} y={y - 3} textAnchor="middle" className="fill-ink-soft font-mono" style={{ fontSize: 8 }}>
+        −
+      </text>
     </g>
   );
 }
@@ -199,6 +205,24 @@ function DipBody({ project, partId }: { project: Project; partId: string }) {
         strokeWidth="1.2"
       />
       <circle cx={left + 7} cy={top + 8} r="2.2" className="fill-board-inner" />
+      {Array.from({ length: count }, (_, i) => i + 1).map((n) => {
+        const hole = dipPinHole(part, n);
+        if (!hole) return null;
+        const p = geom.holeXY(hole);
+        const leftSide = n <= count / 2;
+        return (
+          <text
+            key={n}
+            x={leftSide ? left + 11 : right - 11}
+            y={p.y + 2.5}
+            textAnchor={leftSide ? "start" : "end"}
+            className="fill-board-inner/80 font-mono"
+            style={{ fontSize: 6 }}
+          >
+            {n}
+          </text>
+        );
+      })}
       <text
         x={(left + right) / 2}
         y={(top + bottom) / 2 + 3}
@@ -206,7 +230,7 @@ function DipBody({ project, partId }: { project: Project; partId: string }) {
         className="fill-board-inner font-mono"
         style={{ fontSize: 7 }}
       >
-        {part.id} {def?.name.split(" ")[0]}
+        {part.id}
       </text>
     </g>
   );

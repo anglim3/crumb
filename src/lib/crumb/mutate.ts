@@ -1,6 +1,6 @@
-import { getPart } from "./catalog";
-import { nextId } from "./ids";
-import type { BoardSize, PlacedPart, Project, Wire } from "./types";
+import { getPart } from "./catalog.ts";
+import { nextId } from "./ids.ts";
+import type { BoardSize, PlacedPart, Project, Wire } from "./types.ts";
 
 export function setBoard(project: Project, board: BoardSize): Project {
   return { ...project, board };

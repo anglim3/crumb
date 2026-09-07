@@ -1,23 +1,41 @@
 import { BOARD_SPECS } from "@/lib/crumb/board";
 import { CLASS_LABEL, getPart, searchParts } from "@/lib/crumb/catalog";
 import { EMPTY_PROJECT, EXAMPLES } from "@/lib/crumb/examples";
+import { downloadText, renderProjectSvg } from "@/lib/crumb/render-svg";
 import { buildSteps } from "@/lib/crumb/steps";
 import { useCrumb, WIRE_COLORS } from "@/lib/crumb/store";
 import type { BoardSize, PartDef, Project } from "@/lib/crumb/types";
 import { validateProject } from "@/lib/crumb/validate";
 import { cn } from "@/lib/utils";
 import { BoardView } from "./board-view";
-import { Cable, Check, FileJson, Trash2 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { Cable, Check, Download, FileJson, Trash2 } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 
 export function Workspace() {
   const project = useCrumb((s) => s.project);
   const tool = useCrumb((s) => s.tool);
   const pendingDef = useCrumb((s) => s.pendingDef);
   const wireFrom = useCrumb((s) => s.wireFrom);
+  const deleteSelected = useCrumb((s) => s.deleteSelected);
+  const cancelPending = useCrumb((s) => s.cancelPending);
   const issues = useMemo(() => validateProject(project), [project]);
   const steps = useMemo(() => buildSteps(project), [project]);
 
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const tag = (e.target as HTMLElement | null)?.tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
+      if (e.key === "Escape") cancelPending();
+      if (e.key === "Delete" || e.key === "Backspace") {
+        e.preventDefault();
+        deleteSelected();
+      }
+      if (e.key === "w") useCrumb.getState().setTool("wire");
+      if (e.key === "v") useCrumb.getState().setTool("select");
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [cancelPending, deleteSelected]);
   return (
     <div className="flex min-h-dvh flex-col bg-bg text-fg">
       <Header />
@@ -141,6 +159,23 @@ function Header() {
             JSON
           </span>
         </button>
+        <button
+          type="button"
+          className="h-10 rounded-md bg-surface px-3 text-sm"
+          onClick={() => downloadText(`${project.name.replace(/\s+/g, "-").toLowerCase()}.json`, JSON.stringify(project, null, 2), "application/json")}
+        >
+          <span className="inline-flex items-center gap-1.5">
+            <Download className="size-3.5" />
+            .json
+          </span>
+        </button>
+        <button
+          type="button"
+          className="h-10 rounded-md bg-surface px-3 text-sm"
+          onClick={() => downloadText(`${project.name.replace(/\s+/g, "-").toLowerCase()}.svg`, renderProjectSvg(project), "image/svg+xml")}
+        >
+          SVG
+        </button>
       </div>
     </header>
   );
@@ -228,13 +263,31 @@ function Inspector({
   steps: ReturnType<typeof buildSteps>;
 }) {
   const project = useCrumb((s) => s.project);
+  const selected = useCrumb((s) => s.selected);
   const jsonOpen = useCrumb((s) => s.jsonOpen);
   const setProject = useCrumb((s) => s.setProject);
   const [draft, setDraft] = useState("");
   const [jsonErr, setJsonErr] = useState<string | null>(null);
+  const selectedPart = project.parts.find((p) => p.id === selected);
+  const selectedDef = selectedPart ? getPart(selectedPart.def) : undefined;
 
   return (
     <div className="flex flex-col gap-6 p-4">
+      {selectedPart && selectedDef && (
+        <section>
+          <p className="text-xs font-medium uppercase tracking-wide text-muted">Selected</p>
+          <p className="mt-2 text-sm">
+            {selectedPart.id} · {selectedDef.name}
+          </p>
+          <ul className="mt-2 font-mono text-xs text-muted">
+            {selectedDef.pins.map((pin) => (
+              <li key={pin.id}>
+                {pin.number ?? pin.id} {pin.label}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
       <section>
         <p className="text-xs font-medium uppercase tracking-wide text-muted">Checks</p>
         {issues.length === 0 ? (

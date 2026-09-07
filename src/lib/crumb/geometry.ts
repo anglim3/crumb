@@ -1,6 +1,6 @@
-import { BOARD_SPECS } from "./board";
-import type { BoardSize, HoleRef, RailPolarity, RailSide, TerminalCol } from "./types";
-import { COL_INDEX } from "./layout";
+import { BOARD_SPECS } from "./board.ts";
+import type { BoardSize, HoleRef, RailPolarity, RailSide, TerminalCol } from "./types.ts";
+import { COL_INDEX } from "./layout.ts";
 
 export const PITCH = 22;
 export const HOLE_R = 3.4;

@@ -1,4 +1,4 @@
-import type { BoardGeom } from "./geometry";
+import type { BoardGeom } from "./geometry.ts";
 
 export function jumperPath(
   geom: BoardGeom,

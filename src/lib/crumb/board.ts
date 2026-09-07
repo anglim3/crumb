@@ -1,4 +1,4 @@
-import type { BoardSize } from "./types";
+import type { BoardSize } from "./types.ts";
 
 export type BoardSpec = {
   size: BoardSize;

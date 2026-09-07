@@ -1,4 +1,4 @@
-import { LEFT_COLS, RIGHT_COLS, TERMINAL_COLS, type HoleRef, type RailPolarity, type RailSide, type TerminalCol } from "./types";
+import { LEFT_COLS, RIGHT_COLS, TERMINAL_COLS, type HoleRef, type RailPolarity, type RailSide, type TerminalCol } from "./types.ts";
 
 const TERMINAL_RE = /^(\d{1,2})-([a-j])$/i;
 const RAIL_RE = /^([LR])([PM])-(\d{1,2})$/i;

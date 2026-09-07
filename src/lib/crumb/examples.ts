@@ -1,4 +1,4 @@
-import type { Project } from "./types";
+import type { Project } from "./types.ts";
 
 export const EMPTY_PROJECT: Project = {
   version: 1,
@@ -8,27 +8,30 @@ export const EMPTY_PROJECT: Project = {
   wires: [],
 };
 
-/** 555 astable LED blinker on a half board. */
+/**
+ * 555 astable LED blinker.
+ * u1 pin 1 at 10-e: 1 GND, 2 TRIG, 3 OUT, 4 RESET / 5 CTRL, 6 THRES, 7 DISCH, 8 VCC
+ */
 export const EXAMPLE_555: Project = {
   version: 1,
   name: "555 blinker",
   board: "half",
   parts: [
     { kind: "dip", id: "u1", def: "ne555", anchor: "10-e" },
-    { kind: "leaded", id: "r1", def: "resistor", from: "10-c", to: "8-c", value: "1k" },
-    { kind: "leaded", id: "r2", def: "resistor", from: "11-j", to: "12-j", value: "10k" },
-    { kind: "leaded", id: "c1", def: "ceramic-cap", from: "12-i", to: "14-i", value: "10µF" },
+    { kind: "leaded", id: "r1", def: "resistor", from: "LP-11", to: "11-j", value: "1k" },
+    { kind: "leaded", id: "r2", def: "resistor", from: "11-i", to: "12-i", value: "10k" },
+    { kind: "leaded", id: "c1", def: "ceramic-cap", from: "12-j", to: "14-j", value: "10µF" },
     { kind: "leaded", id: "rled", def: "resistor", from: "12-a", to: "15-a", value: "330Ω" },
     { kind: "leaded", id: "d1", def: "led", from: "15-c", to: "17-c" },
   ],
   wires: [
     { id: "w1", from: "u1.8", to: "LP-10", color: "#c45c4a" },
     { id: "w2", from: "u1.1", to: "LM-10", color: "#2b2b2b" },
-    { id: "w3", from: "u1.4", to: "u1.8", color: "#c45c4a" },
-    { id: "w4", from: "8-c", to: "LP-8", color: "#c45c4a" },
-    { id: "w5", from: "10-c", to: "11-g", color: "#3d6b8a" },
-    { id: "w6", from: "u1.2", to: "u1.6", color: "#c9a227" },
-    { id: "w7", from: "14-i", to: "LM-14", color: "#2b2b2b" },
+    { id: "w3", from: "u1.4", to: "LP-13", color: "#c45c4a" },
+    { id: "w4", from: "u1.7", to: "11-j", color: "#3d6b8a" },
+    { id: "w5", from: "u1.6", to: "12-i", color: "#c9a227" },
+    { id: "w6", from: "u1.2", to: "12-g", color: "#c9a227" },
+    { id: "w7", from: "14-j", to: "LM-14", color: "#2b2b2b" },
     { id: "w8", from: "u1.3", to: "12-a", color: "#3f7a4e" },
     { id: "w9", from: "17-c", to: "LM-17", color: "#2b2b2b" },
     { id: "w10", from: "u1.5", to: "13-h", color: "#6b5c8a" },
@@ -54,4 +57,19 @@ export const EXAMPLE_DHT: Project = {
   ],
 };
 
-export const EXAMPLES: Project[] = [EXAMPLE_555, EXAMPLE_DHT];
+export const EXAMPLE_BUTTON: Project = {
+  version: 1,
+  name: "Button LED",
+  board: "mini",
+  parts: [
+    { kind: "leaded", id: "sw1", def: "button", from: "5-a", to: "8-a" },
+    { kind: "leaded", id: "r1", def: "resistor", from: "8-c", to: "11-c", value: "330Ω" },
+    { kind: "leaded", id: "d1", def: "led", from: "11-e", to: "13-e" },
+  ],
+  wires: [
+    { id: "w1", from: "5-a", to: "LP-5", color: "#c45c4a" },
+    { id: "w2", from: "13-e", to: "LM-13", color: "#2b2b2b" },
+  ],
+};
+
+export const EXAMPLES: Project[] = [EXAMPLE_555, EXAMPLE_DHT, EXAMPLE_BUTTON];

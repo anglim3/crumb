@@ -1,5 +1,5 @@
-import { getPart } from "./catalog";
-import type { BuildStep, Project } from "./types";
+import { getPart } from "./catalog.ts";
+import type { BuildStep, Project } from "./types.ts";
 
 export function buildSteps(project: Project): BuildStep[] {
   const steps: BuildStep[] = [

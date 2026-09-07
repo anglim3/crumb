@@ -1,8 +1,8 @@
-import { BOARD_SPECS } from "./board";
-import { getPart } from "./catalog";
-import { holeId, isLeftCol, parseHole, parsePinRef } from "./holes";
-import { nextId } from "./ids";
-import type { HoleRef, PlacedDip, PlacedPart, Project, TerminalCol } from "./types";
+import { BOARD_SPECS } from "./board.ts";
+import { getPart } from "./catalog.ts";
+import { holeId, isLeftCol, parseHole, parsePinRef } from "./holes.ts";
+import { nextId } from "./ids.ts";
+import type { HoleRef, PlacedDip, PlacedPart, Project, TerminalCol } from "./types.ts";
 
 export function dipPinHole(part: PlacedDip, pinNumber: number): HoleRef | null {
   const def = getPart(part.def);
