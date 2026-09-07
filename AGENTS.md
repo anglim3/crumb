@@ -49,6 +49,7 @@ Intentional ties (555 TRIG to THRES) are not shorts. A 1k from VCC to GND on one
 - Leave one empty row between unrelated blocks when the board has room
 - Prefer named pins (`u1.VCC`) over raw numbers in wires
 - `esp32` is the 30-pin DevKit, pin 1 = 3V3. Do not use it for a 38-pin DevKitC
+- `nano-esp32` is the Arduino Nano ESP32 (ABX00083). Pin 1 is D12 at the USB end, not classic Nano TX. Do not use `nano` for that board; 3V3 is on the analog side.
 
 ## Files that matter
 

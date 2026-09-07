@@ -107,5 +107,51 @@ export const EXAMPLE_PICO: Project = {
   ],
 };
 
-export const EXAMPLES: Project[] = [EXAMPLE_555, EXAMPLE_DHT, EXAMPLE_BUTTON, EXAMPLE_ESP32, EXAMPLE_PICO];
+/**
+ * Nano ESP32 + TMC2208 blinds bench.
+ * LP = 3V3 from the Nano. RP = 12 V to TMC VM. Common GND on LM/RM.
+ * Barrel jack and NEMA 17 are visual only — do not jumper module pins
+ * (validate cannot resolve m1.pos today). Feed 12 V into RP / RM.
+ */
+export const EXAMPLE_HOMEKIT_BLINDS: Project = {
+  version: 1,
+  name: "HomeKit blinds (12V into RP/RM — do not wire barrel-jack pins)",
+  board: "half",
+  parts: [
+    { kind: "dip", id: "u1", def: "nano-esp32", anchor: "1-e" },
+    { kind: "dip", id: "u2", def: "tmc2208", anchor: "17-e" },
+    { kind: "leaded", id: "c1", def: "electrolytic", from: "24-a", to: "23-a", value: "100µF" },
+    { kind: "leaded", id: "sw1", def: "limit-switch-nc", from: "27-a", to: "29-a" },
+    { kind: "module", id: "m1", def: "barrel-jack", slot: 1, offsetRow: 18 },
+    { kind: "module", id: "m2", def: "nema17", slot: 0, offsetRow: 17 },
+  ],
+  wires: [
+    { id: "w1", from: "u1.3V3", to: "LP-2", color: "#c45c4a" },
+    { id: "w2", from: "LP-15", to: "LP-16", color: "#c45c4a" },
+    { id: "w3", from: "u2.VIO", to: "LP-18", color: "#c45c4a" },
+    { id: "w4", from: "u1.GND", to: "LM-12", color: "#2b2b2b" },
+    { id: "w5", from: "u1.GND2", to: "RM-14", color: "#2b2b2b" },
+    { id: "w6", from: "LM-15", to: "LM-16", color: "#2b2b2b" },
+    { id: "w7", from: "RM-15", to: "RM-16", color: "#2b2b2b" },
+    { id: "w8", from: "LM-16", to: "RM-16", color: "#2b2b2b" },
+    { id: "w9", from: "u2.GND", to: "LM-17", color: "#2b2b2b" },
+    { id: "w10", from: "u2.GND2", to: "LM-23", color: "#2b2b2b" },
+    { id: "w11", from: "RP-15", to: "RP-16", color: "#c45c4a" },
+    { id: "w12", from: "u2.VM", to: "RP-24", color: "#c45c4a" },
+    { id: "w13", from: "u1.D2", to: "u2.EN", color: "#3d6b8a" },
+    { id: "w14", from: "u1.D3", to: "u2.STEP", color: "#c9a227" },
+    { id: "w15", from: "u1.D4", to: "u2.DIR", color: "#6b5c8a" },
+    { id: "w16", from: "sw1.nc", to: "u1.D5", color: "#3f7a4e" },
+    { id: "w17", from: "sw1.com", to: "LM-27", color: "#2b2b2b" },
+  ],
+};
+
+export const EXAMPLES: Project[] = [
+  EXAMPLE_555,
+  EXAMPLE_DHT,
+  EXAMPLE_BUTTON,
+  EXAMPLE_ESP32,
+  EXAMPLE_PICO,
+  EXAMPLE_HOMEKIT_BLINDS,
+];
 
