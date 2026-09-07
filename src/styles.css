@@ -1,0 +1,50 @@
+@import "tailwindcss";
+
+@theme {
+  --font-display: "Fraunces", "Times New Roman", serif;
+  --font-sans: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+  --color-bg: #14110e;
+  --color-fg: #efe8dc;
+  --color-muted: #9a9084;
+  --color-border: #2a241e;
+  --color-surface: #1c1814;
+  --color-surface-hover: #26211b;
+  --color-accent: #d8d2c8;
+  --color-accent-fg: #14110e;
+  --color-ok: #8fad8a;
+  --color-warn: #c9a56a;
+  --color-bad: #c9897a;
+  --color-bench: #1a1612;
+  --color-board: #c9b896;
+  --color-board-inner: #efe6d4;
+  --color-ink-soft: #6a5e4e;
+  --color-ink-faint: #8a7b68;
+  --color-hole: #3a3228;
+  --color-hole-rail: #2c2620;
+  --color-hole-lit: #5a7a92;
+  --color-hole-active: #8a3a30;
+  --color-rail-plus: #e8c8c2;
+  --color-rail-minus: #c5d0da;
+  --color-dip-body: #1c1916;
+  --color-dip-edge: #3a342e;
+  --color-lead: #8a8478;
+  --color-passive: #d7c4a0;
+  --color-led: #c45c4a;
+  --color-module: #2a3238;
+}
+
+@layer base {
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+  html,
+  body,
+  #root {
+    min-height: 100%;
+    background: var(--color-bg);
+    color: var(--color-fg);
+    font-family: var(--font-sans);
+  }
+}
