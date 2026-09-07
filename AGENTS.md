@@ -5,12 +5,11 @@ You are laying out a **solderless breadboard**, not a schematic and not a PCB. A
 ## Setup
 
 - Runtime: Node 22+
-- MCP: `node --experimental-strip-types mcp/server.mjs` with `cwd` = repo root
+- Web editor: `npm install` then `npm run dev` (Vite, port 5173)
+- MCP: `node --experimental-strip-types mcp/server.mjs` with `cwd` = repo root (no install)
 - Default file: `examples/555-blinker.json`
 - Render check: `node --experimental-strip-types scripts/crumb-svg.mjs <file.json> out.svg`
-- Tests: `node --experimental-strip-types --test src/lib/crumb/crumb.test.ts`
-
-No install step for those commands.
+- Tests: `npm test`
 
 ## Workflow
 
@@ -58,6 +57,8 @@ Intentional ties (555 TRIG to THRES) are not shorts. A 1k from VCC to GND on one
 | `src/lib/crumb/types.ts` | JSON shape |
 | `src/lib/crumb/catalog.ts` | Parts |
 | `src/lib/crumb/validate.ts` / `shorts.ts` | Checks |
+| `src/components/crumb/` | Web editor |
+| `src/main.tsx` | Vite entry |
 | `mcp/server.mjs` | Tool adapter |
 | `mcp/catalog.json` | MCP copy of the catalog — regenerate if you edit `catalog.ts` |
 | `examples/` | Known-good boards |
