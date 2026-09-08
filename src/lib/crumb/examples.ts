@@ -109,8 +109,10 @@ export const EXAMPLE_PICO: Project = {
 
 /**
  * Nano ESP32 + TMC2208 blinds bench.
- * LP = 3V3 from the Nano. RP = 12 V from the barrel jack to TMC VM.
- * Common GND on LM/RM. NEMA 17 coils jumper to the TMC motor taps.
+ * LP = 3V3 from the Nano (jumped across the mid-board split).
+ * Lower RP (rows 16–30) = 12 V from the barrel jack to TMC VM — do not
+ * bridge to the Nano-side RP half. Common GND on LM/RM (bridged).
+ * NEMA 17 coils jumper to the TMC motor taps.
  */
 export const EXAMPLE_HOMEKIT_BLINDS: Project = {
   version: 1,
@@ -135,7 +137,6 @@ export const EXAMPLE_HOMEKIT_BLINDS: Project = {
     { id: "w8", from: "LM-16", to: "RM-16", color: "#2b2b2b" },
     { id: "w9", from: "u2.GND", to: "LM-17", color: "#2b2b2b" },
     { id: "w10", from: "u2.GND2", to: "LM-23", color: "#2b2b2b" },
-    { id: "w11", from: "RP-15", to: "RP-16", color: "#c45c4a" },
     { id: "w12", from: "u2.VM", to: "RP-24", color: "#c45c4a" },
     { id: "w13", from: "u1.D2", to: "u2.EN", color: "#3d6b8a" },
     { id: "w14", from: "u1.D3", to: "u2.STEP", color: "#c9a227" },
