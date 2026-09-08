@@ -154,6 +154,10 @@ test("nano-esp32 pin 1 is D12, not classic Nano TX", () => {
   const classic = getPart("nano")!;
   assert.equal(neo.pins[0]?.label, "D12");
   assert.equal(classic.pins[0]?.label, "D1");
+  // Official ABX00083 visual pinout (USB at top): D12…D2, GND, RST, D0/RX0, D1/TX0.
+  assert.equal(neo.pins[12]?.label, "RST");
+  assert.equal(neo.pins[13]?.label, "D0");
+  assert.equal(neo.pins[14]?.label, "D1");
   assert.equal(neo.pins[15]?.label, "VIN");
   assert.equal(neo.pins[28]?.label, "3V3");
   assert.equal(neo.pins[29]?.label, "D13");
