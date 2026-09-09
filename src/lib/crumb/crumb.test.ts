@@ -230,8 +230,9 @@ test("homekit-blinds example validates", () => {
   assert.equal(dipPinCaption(getPart("nano-esp32"), 13), "RESET");
   assert.equal(dipPinCaption(getPart("nano-esp32"), 14), "D0/RX0");
   assert.equal(dipPinCaption(getPart("nano-esp32"), 28), "B0");
-  assert.equal(resolveEndpoint(fromFile, "u2.DIR")?.row, 17);
-  assert.equal(resolveEndpoint(fromFile, "u2.VM")?.row, 24);
+  assert.equal(fromFile.parts.find((p) => p.id === "u2")?.anchor, "20-e");
+  assert.equal(resolveEndpoint(fromFile, "u2.DIR")?.row, 20);
+  assert.equal(resolveEndpoint(fromFile, "u2.VM")?.row, 27);
   assert.ok(resolveEndpoint(fromFile, "m1.pos"));
   assert.ok(resolveEndpoint(fromFile, "m2.M1A"));
   assert.ok(fromFile.wires.some((w) => w.from === "m1.pos" || w.to === "m1.pos"));
@@ -244,7 +245,7 @@ test("homekit-blinds example validates", () => {
     "12 V must stay on the lower RP half",
   );
   const nets = computeNets(fromFile);
-  const twelveVolt = netForHole(nets, "RP-18");
+  const twelveVolt = netForHole(nets, "RP-21");
   assert.ok(twelveVolt);
   assert.ok(twelveVolt.holes.includes("RP-16"));
   assert.ok(twelveVolt.holes.includes("RP-30"));
@@ -253,7 +254,7 @@ test("homekit-blinds example validates", () => {
   }
   const threeVolt = netForHole(nets, "LP-2");
   assert.ok(threeVolt?.holes.includes("LP-16"));
-  assert.ok(threeVolt?.holes.includes("LP-18"));
+  assert.ok(threeVolt?.holes.includes("LP-21"));
   const gnd = netForHole(nets, "LM-12");
   assert.ok(gnd?.holes.includes("LM-16"));
   assert.ok(gnd?.holes.includes("RM-16"));
