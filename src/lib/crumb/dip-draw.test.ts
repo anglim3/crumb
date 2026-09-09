@@ -30,3 +30,11 @@ test("homekit-blinds SVG draws DIP silk after terminal hole dots", () => {
     assert.ok(i > holeEnd, `${label} should render above hole dots`);
   }
 });
+
+test("homekit-blinds SVG draws wires above DIP bodies", () => {
+  const svg = renderProjectSvg(EXAMPLE_HOMEKIT_BLINDS);
+  const lastDipSilk = Math.max(svg.lastIndexOf(">STEP<"), svg.lastIndexOf(">DIR<"));
+  assert.ok(lastDipSilk >= 0);
+  const wireIdx = svg.indexOf('stroke="#3d6b8a"');
+  assert.ok(wireIdx > lastDipSilk, "signal wires should render above DIP silk");
+});
