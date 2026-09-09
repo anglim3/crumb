@@ -1126,7 +1126,7 @@
     "name": "Arduino Nano ESP32",
     "class": "dip",
     "dipPins": 30,
-    "description": "Arduino Nano ESP32 ABX00083 with headers (45×18 mm, 15+15 @ 2.54 mm). Pin 1 is D12 at the USB end on the digital (left) strip — not classic Nano order. Do not use catalog id `nano` for this board; 3V3 is on the analog (right) side.",
+    "description": "Arduino Nano ESP32 ABX00083 with headers (45×18 mm, 15+15 @ 2.54 mm). Pin 1 is D12 at the USB end on the digital (left) strip — not classic Nano order. Silk follows the official pinout (B0/B1, D0/RX0, D1/TX0, VUSB). Do not use catalog id `nano` for this board; 3V3 is on the analog (right) side.",
     "pins": [
       {
         "id": "1",
@@ -1190,18 +1190,27 @@
       },
       {
         "id": "13",
-        "label": "RST",
-        "number": 13
+        "label": "RESET",
+        "number": 13,
+        "aliases": [
+          "RST"
+        ]
       },
       {
         "id": "14",
-        "label": "D0",
-        "number": 14
+        "label": "D0/RX0",
+        "number": 14,
+        "aliases": [
+          "RX"
+        ]
       },
       {
         "id": "15",
-        "label": "D1",
-        "number": 15
+        "label": "D1/TX0",
+        "number": 15,
+        "aliases": [
+          "TX"
+        ]
       },
       {
         "id": "16",
@@ -1215,13 +1224,19 @@
       },
       {
         "id": "18",
-        "label": "BOOT1",
-        "number": 18
+        "label": "B1",
+        "number": 18,
+        "aliases": [
+          "BOOT1"
+        ]
       },
       {
         "id": "19",
         "label": "VUSB",
-        "number": 19
+        "number": 19,
+        "aliases": [
+          "VBUS"
+        ]
       },
       {
         "id": "20",
@@ -1265,8 +1280,11 @@
       },
       {
         "id": "28",
-        "label": "BOOT0",
-        "number": 28
+        "label": "B0",
+        "number": 28,
+        "aliases": [
+          "BOOT0"
+        ]
       },
       {
         "id": "29",

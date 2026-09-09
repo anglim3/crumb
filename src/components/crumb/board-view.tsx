@@ -3,7 +3,7 @@ import { getPart } from "@/lib/crumb/catalog";
 import { focusedHoles, holeOpacity, itemOpacity, selectableIds } from "@/lib/crumb/focus";
 import { boardGeom, HOLE_R, MODULE_PIN_R, PITCH, moduleCardGeom, projectGeom } from "@/lib/crumb/geometry";
 import { holeId, parseHole } from "@/lib/crumb/holes";
-import { dipPinHole, resolveEndpoint } from "@/lib/crumb/layout";
+import { dipPinCaption, dipPinHole, resolveEndpoint } from "@/lib/crumb/layout";
 import { computeNets, netForHole } from "@/lib/crumb/nets";
 import { detectShorts, shortHoles } from "@/lib/crumb/shorts";
 import { useCrumb } from "@/lib/crumb/store";
@@ -371,25 +371,26 @@ function DipBody({
         if (!hole) return null;
         const p = geom.holeXY(hole);
         const leftSide = n <= count / 2;
+        const caption = dipPinCaption(def, n);
         return (
           <text
             key={n}
-            x={leftSide ? left + 11 : right - 11}
-            y={p.y + 2.5}
+            x={leftSide ? left + 3.5 : right - 3.5}
+            y={p.y + 2.2}
             textAnchor={leftSide ? "start" : "end"}
-            className="fill-board-inner/80 font-mono"
-            style={{ fontSize: 6 }}
+            className="fill-board-inner/85 font-mono"
+            style={{ fontSize: caption.length > 4 ? 4.5 : 5.5 }}
           >
-            {n}
+            {caption}
           </text>
         );
       })}
       <text
         x={(left + right) / 2}
-        y={(top + bottom) / 2 + 3}
+        y={top + 8}
         textAnchor="middle"
         className="fill-board-inner font-mono"
-        style={{ fontSize: 7 }}
+        style={{ fontSize: 6 }}
       >
         {part.id}
       </text>

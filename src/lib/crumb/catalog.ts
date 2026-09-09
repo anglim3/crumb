@@ -1,11 +1,18 @@
 import type { PartDef } from "./types.ts";
 
-function dipPins(labels: string[]): PartDef["pins"] {
-  return labels.map((label, i) => ({
-    id: String(i + 1),
-    label,
-    number: i + 1,
-  }));
+type DipPinSpec = string | { label: string; aliases?: string[] };
+
+function dipPins(labels: DipPinSpec[]): PartDef["pins"] {
+  return labels.map((entry, i) => {
+    const label = typeof entry === "string" ? entry : entry.label;
+    const aliases = typeof entry === "string" ? undefined : entry.aliases;
+    return {
+      id: String(i + 1),
+      label,
+      number: i + 1,
+      ...(aliases?.length ? { aliases } : {}),
+    };
+  });
 }
 
 function header(pins: string[]): PartDef["pins"] {
@@ -379,7 +386,7 @@ export const CATALOG: PartDef[] = [
     class: "dip",
     dipPins: 30,
     description:
-      "Arduino Nano ESP32 ABX00083 with headers (45×18 mm, 15+15 @ 2.54 mm). Pin 1 is D12 at the USB end on the digital (left) strip — not classic Nano order. Do not use catalog id `nano` for this board; 3V3 is on the analog (right) side.",
+      "Arduino Nano ESP32 ABX00083 with headers (45×18 mm, 15+15 @ 2.54 mm). Pin 1 is D12 at the USB end on the digital (left) strip — not classic Nano order. Silk follows the official pinout (B0/B1, D0/RX0, D1/TX0, VUSB). Do not use catalog id `nano` for this board; 3V3 is on the analog (right) side.",
     pins: dipPins([
       "D12",
       "D11",
@@ -393,13 +400,13 @@ export const CATALOG: PartDef[] = [
       "D3",
       "D2",
       "GND",
-      "RST",
-      "D0",
-      "D1",
+      { label: "RESET", aliases: ["RST"] },
+      { label: "D0/RX0", aliases: ["RX"] },
+      { label: "D1/TX0", aliases: ["TX"] },
       "VIN",
       "GND2",
-      "BOOT1",
-      "VUSB",
+      { label: "B1", aliases: ["BOOT1"] },
+      { label: "VUSB", aliases: ["VBUS"] },
       "A7",
       "A6",
       "A5",
@@ -408,7 +415,7 @@ export const CATALOG: PartDef[] = [
       "A2",
       "A1",
       "A0",
-      "BOOT0",
+      { label: "B0", aliases: ["BOOT0"] },
       "3V3",
       "D13",
     ]),

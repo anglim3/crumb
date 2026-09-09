@@ -522,6 +522,7 @@ function Inspector({
             {selectedDef.pins.map((pin) => (
               <li key={pin.id}>
                 {pin.number ?? pin.id} {pin.label}
+                {pin.aliases?.length ? ` (${pin.aliases.join(", ")})` : ""}
               </li>
             ))}
           </ul>

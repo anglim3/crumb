@@ -45,6 +45,8 @@ export type PartPin = {
   id: string;
   label: string;
   number?: number;
+  /** Extra names that resolve to this pin (`u1.RX0`, `u1.VBUS`, …). */
+  aliases?: string[];
 };
 
 export type PartDef = {

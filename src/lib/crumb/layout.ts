@@ -5,17 +5,31 @@ import { nextId } from "./ids.ts";
 import { leadHoles } from "./mutate.ts";
 import type { HoleRef, ModulePin, PartDef, PartPin, PlacedDip, PlacedPart, Project, TerminalCol } from "./types.ts";
 
+export function pinKeyMatches(pin: PartPin, raw: string): boolean {
+  const q = raw.trim().toLowerCase();
+  if (!q) return false;
+  if (pin.id.toLowerCase() === q) return true;
+  if (pin.label.toLowerCase() === q) return true;
+  if (pin.number != null && String(pin.number) === q) return true;
+  if (pin.aliases?.some((alias) => alias.toLowerCase() === q)) return true;
+  const tokens = pin.label
+    .toLowerCase()
+    .split("/")
+    .map((token) => token.trim())
+    .filter(Boolean);
+  return tokens.includes(q);
+}
+
 export function findPartPin(def: PartDef | undefined, raw: string): PartPin | null {
   if (!def) return null;
-  const q = raw.toLowerCase();
-  return (
-    def.pins.find(
-      (p) =>
-        p.id.toLowerCase() === q ||
-        p.label.toLowerCase() === q ||
-        (p.number != null && String(p.number) === q),
-    ) ?? null
-  );
+  return def.pins.find((p) => pinKeyMatches(p, raw)) ?? null;
+}
+
+/** Silk caption on a DIP body; falls back to the pin number. */
+export function dipPinCaption(def: PartDef | undefined, pinNumber: number): string {
+  const pin = def?.pins.find((p) => p.number === pinNumber) ?? def?.pins[pinNumber - 1];
+  const label = pin?.label?.trim();
+  return label || String(pinNumber);
 }
 
 export function dipPinHole(part: PlacedDip, pinNumber: number): HoleRef | null {
@@ -42,10 +56,7 @@ export function resolveEndpoint(project: Project, raw: string): HoleRef | null {
   if (part.kind === "dip") {
     const n = Number(pin.pin);
     if (!Number.isFinite(n)) {
-      const def = getPart(part.def);
-      const found = def?.pins.find(
-        (p) => p.label.toLowerCase() === pin.pin.toLowerCase() || p.id === pin.pin,
-      );
+      const found = findPartPin(getPart(part.def), pin.pin);
       if (!found?.number) return null;
       return dipPinHole(part, found.number);
     }
