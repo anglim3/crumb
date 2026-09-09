@@ -9,7 +9,7 @@ import { computeNets, netForHole } from "@/lib/crumb/nets";
 import { detectShorts, shortHoles } from "@/lib/crumb/shorts";
 import { useCrumb } from "@/lib/crumb/store";
 import type { HoleRef, Project, TerminalCol } from "@/lib/crumb/types";
-import { jumperPath } from "@/lib/crumb/wire-path";
+import { computeWireLanes, jumperPath, wireGeomsFromProject } from "@/lib/crumb/wire-path";
 import { leadHoles } from "@/lib/crumb/mutate";
 import { leadedMarkup } from "@/lib/crumb/part-draw";
 import { useMemo, useState, type PointerEvent as ReactPointerEvent } from "react";
@@ -35,6 +35,8 @@ export function BoardView() {
   const shorted = useMemo(() => shortHoles(shorts), [shorts]);
   const selectable = useMemo(() => selectableIds(project), [project]);
   const focus = useMemo(() => focusedHoles(project, selected), [project, selected]);
+  const wireGeoms = useMemo(() => wireGeomsFromProject(project, geom, resolveEndpoint), [project, geom]);
+  const wireLanes = useMemo(() => computeWireLanes(wireGeoms), [wireGeoms]);
   const activeNet = highlightNet ? nets.find((n) => n.id === highlightNet) : undefined;
   const hoverNet = hoverHole ? netForHole(nets, hoverHole) : undefined;
   const lit = new Set([...(activeNet?.holes ?? []), ...(hoverNet?.holes ?? [])]);
@@ -113,19 +115,19 @@ export function BoardView() {
           );
         })}
 
-        {project.wires.map((wire, i) => {
+        {project.wires.map((wire) => {
+          const w = wireGeoms.find((g) => g.id === wire.id);
+          if (!w) return null;
+          const lane = wireLanes.get(wire.id) ?? { lane: 0, count: 1 };
           const a = resolveEndpoint(project, wire.from);
-          const b = resolveEndpoint(project, wire.to);
-          if (!a || !b) return null;
-          const pa = geom.holeXY(a);
-          const pb = geom.holeXY(b);
+          if (!a) return null;
           const selectedWire = selected === wire.id;
           const aId = holeId(a);
           const shortWire = shorted.has(aId);
           return (
             <path
               key={wire.id}
-              d={jumperPath(geom, pa.x, pa.y, pb.x, pb.y, i)}
+              d={jumperPath(geom, w.ax, w.ay, w.bx, w.by, lane.lane, lane.count)}
               fill="none"
               stroke={shortWire ? "#c9897a" : wire.color}
               strokeWidth={selectedWire || shortWire ? 3.4 : 2.4}
