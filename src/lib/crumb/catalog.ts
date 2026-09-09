@@ -385,8 +385,9 @@ export const CATALOG: PartDef[] = [
     name: "Arduino Nano ESP32",
     class: "dip",
     dipPins: 30,
+    dipMirror: true,
     description:
-      "Arduino Nano ESP32 ABX00083 with headers (45×18 mm, 15+15 @ 2.54 mm). Pin 1 is D12 at the USB end on the digital (left) strip — not classic Nano order. Silk follows the official pinout (B0/B1, D0/RX0, D1/TX0, VUSB). Do not use catalog id `nano` for this board; 3V3 is on the analog (right) side.",
+      "Arduino Nano ESP32 ABX00083 with headers (45×18 mm, 15+15 @ 2.54 mm). Pin 1 is D12 at the USB end on the digital strip (column f when seated). Seat pin 1 in column f so silk matches the physical silk. Analog side is D13…VIN on column e. Do not use catalog id `nano` for this board.",
     pins: dipPins([
       "D12",
       "D11",

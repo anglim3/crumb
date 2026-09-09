@@ -3,7 +3,7 @@
   "name": "HomeKit blinds",
   "board": "half",
   "parts": [
-    { "kind": "dip", "id": "u1", "def": "nano-esp32", "anchor": "1-e" },
+    { "kind": "dip", "id": "u1", "def": "nano-esp32", "anchor": "1-f" },
     { "kind": "dip", "id": "u2", "def": "tmc2208", "anchor": "20-e" },
     { "kind": "leaded", "id": "c1", "def": "electrolytic", "from": "27-a", "to": "26-a", "value": "100µF" },
     { "kind": "leaded", "id": "sw1", "def": "limit-switch-nc", "from": "28-a", "to": "30-a" },

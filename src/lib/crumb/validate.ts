@@ -32,11 +32,11 @@ export function validateProject(project: Project): Issue[] {
         issues.push({ level: "error", code: "bad-anchor", message: `${part.id}: pin 1 must be a terminal hole like 10-e`, refs: [part.id] });
         continue;
       }
-      if (pin1.col !== "e") {
+      if (pin1.col !== "e" && !(def.dipMirror && pin1.col === "f")) {
         issues.push({
           level: "warn",
           code: "dip-col",
-          message: `${part.id}: seat 0.3" DIPs with pin 1 on column e so the body spans the gutter`,
+          message: `${part.id}: seat 0.3" DIPs with pin 1 on column ${def.dipMirror ? "f" : "e"} so the body spans the gutter`,
           refs: [part.id],
         });
       }
