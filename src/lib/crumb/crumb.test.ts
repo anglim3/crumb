@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { holeId, parseHole, parsePinRef } from "./holes.ts";
-import { dipPinHole, occupiedHoles, resolveEndpoint } from "./layout.ts";
+import { dipPinCaption, dipPinHole, occupiedHoles, resolveEndpoint } from "./layout.ts";
 import { computeNets, netForHole } from "./nets.ts";
 import { EXAMPLE_555, EXAMPLE_BUTTON, EXAMPLE_ESP32, EXAMPLE_HOMEKIT_BLINDS, EXAMPLE_PICO, EMPTY_PROJECT } from "./examples.ts";
 import { boardGeom, projectGeom } from "./geometry.ts";
@@ -154,11 +154,15 @@ test("nano-esp32 pin 1 is D12, not classic Nano TX", () => {
   const classic = getPart("nano")!;
   assert.equal(neo.pins[0]?.label, "D12");
   assert.equal(classic.pins[0]?.label, "D1");
-  // Official ABX00083 visual pinout (USB at top): D12…D2, GND, RST, D0/RX0, D1/TX0.
-  assert.equal(neo.pins[12]?.label, "RST");
-  assert.equal(neo.pins[13]?.label, "D0");
-  assert.equal(neo.pins[14]?.label, "D1");
+  // Official ABX00083 visual pinout (USB at top): D12…D2, GND, RESET, D0/RX0, D1/TX0.
+  // Analog USB→far: D13, 3V3, B0, A0…A7, VUSB, B1, GND, VIN.
+  assert.equal(neo.pins[12]?.label, "RESET");
+  assert.equal(neo.pins[13]?.label, "D0/RX0");
+  assert.equal(neo.pins[14]?.label, "D1/TX0");
   assert.equal(neo.pins[15]?.label, "VIN");
+  assert.equal(neo.pins[17]?.label, "B1");
+  assert.equal(neo.pins[18]?.label, "VUSB");
+  assert.equal(neo.pins[27]?.label, "B0");
   assert.equal(neo.pins[28]?.label, "3V3");
   assert.equal(neo.pins[29]?.label, "D13");
   const u1 = { kind: "dip" as const, id: "u1", def: "nano-esp32", anchor: "1-e" };
@@ -167,6 +171,29 @@ test("nano-esp32 pin 1 is D12, not classic Nano TX", () => {
   assert.deepEqual(dipPinHole(u1, 16), { kind: "terminal", row: 15, col: "f" });
   assert.deepEqual(dipPinHole(u1, 29), { kind: "terminal", row: 2, col: "f" });
   assert.deepEqual(dipPinHole(u1, 30), { kind: "terminal", row: 1, col: "f" });
+});
+
+test("nano-esp32 silk aliases resolve without moving holes", () => {
+  const project = placeDip(EMPTY_PROJECT, "nano-esp32", "1-e", "u1");
+  assert.deepEqual(resolveEndpoint(project, "u1.D2"), { kind: "terminal", row: 11, col: "e" });
+  assert.deepEqual(resolveEndpoint(project, "u1.D3"), { kind: "terminal", row: 10, col: "e" });
+  assert.deepEqual(resolveEndpoint(project, "u1.D4"), { kind: "terminal", row: 9, col: "e" });
+  assert.deepEqual(resolveEndpoint(project, "u1.D5"), { kind: "terminal", row: 8, col: "e" });
+  assert.deepEqual(resolveEndpoint(project, "u1.3V3"), { kind: "terminal", row: 2, col: "f" });
+  assert.deepEqual(resolveEndpoint(project, "u1.GND"), { kind: "terminal", row: 12, col: "e" });
+  assert.deepEqual(resolveEndpoint(project, "u1.GND2"), { kind: "terminal", row: 14, col: "f" });
+  assert.deepEqual(resolveEndpoint(project, "u1.D0"), { kind: "terminal", row: 14, col: "e" });
+  assert.deepEqual(resolveEndpoint(project, "u1.RX0"), { kind: "terminal", row: 14, col: "e" });
+  assert.deepEqual(resolveEndpoint(project, "u1.D1"), { kind: "terminal", row: 15, col: "e" });
+  assert.deepEqual(resolveEndpoint(project, "u1.TX0"), { kind: "terminal", row: 15, col: "e" });
+  assert.deepEqual(resolveEndpoint(project, "u1.RESET"), { kind: "terminal", row: 13, col: "e" });
+  assert.deepEqual(resolveEndpoint(project, "u1.RST"), { kind: "terminal", row: 13, col: "e" });
+  assert.deepEqual(resolveEndpoint(project, "u1.B0"), { kind: "terminal", row: 3, col: "f" });
+  assert.deepEqual(resolveEndpoint(project, "u1.BOOT0"), { kind: "terminal", row: 3, col: "f" });
+  assert.deepEqual(resolveEndpoint(project, "u1.B1"), { kind: "terminal", row: 13, col: "f" });
+  assert.deepEqual(resolveEndpoint(project, "u1.BOOT1"), { kind: "terminal", row: 13, col: "f" });
+  assert.deepEqual(resolveEndpoint(project, "u1.VUSB"), { kind: "terminal", row: 12, col: "f" });
+  assert.deepEqual(resolveEndpoint(project, "u1.VBUS"), { kind: "terminal", row: 12, col: "f" });
 });
 
 test("tmc2208 SilentStepStick pin 1 is GND, pin 16 is DIR", () => {
@@ -191,8 +218,18 @@ test("homekit-blinds example validates", () => {
   assert.equal(fromFile.parts.find((p) => p.id === "u2")?.def, "tmc2208");
   assert.ok(fromFile.parts.some((p) => p.def === "limit-switch-nc"));
   assert.equal(getPart("limit-switch-nc")?.pins.length, 2);
-  assert.equal(resolveEndpoint(fromFile, "u1.D12")?.row, 1);
-  assert.equal(resolveEndpoint(fromFile, "u1.3V3")?.row, 2);
+  assert.deepEqual(resolveEndpoint(fromFile, "u1.D12"), { kind: "terminal", row: 1, col: "e" });
+  assert.deepEqual(resolveEndpoint(fromFile, "u1.D2"), { kind: "terminal", row: 11, col: "e" });
+  assert.deepEqual(resolveEndpoint(fromFile, "u1.D3"), { kind: "terminal", row: 10, col: "e" });
+  assert.deepEqual(resolveEndpoint(fromFile, "u1.D4"), { kind: "terminal", row: 9, col: "e" });
+  assert.deepEqual(resolveEndpoint(fromFile, "u1.D5"), { kind: "terminal", row: 8, col: "e" });
+  assert.deepEqual(resolveEndpoint(fromFile, "u1.3V3"), { kind: "terminal", row: 2, col: "f" });
+  assert.deepEqual(resolveEndpoint(fromFile, "u1.GND"), { kind: "terminal", row: 12, col: "e" });
+  assert.deepEqual(resolveEndpoint(fromFile, "u1.GND2"), { kind: "terminal", row: 14, col: "f" });
+  assert.equal(dipPinCaption(getPart("nano-esp32"), 1), "D12");
+  assert.equal(dipPinCaption(getPart("nano-esp32"), 13), "RESET");
+  assert.equal(dipPinCaption(getPart("nano-esp32"), 14), "D0/RX0");
+  assert.equal(dipPinCaption(getPart("nano-esp32"), 28), "B0");
   assert.equal(resolveEndpoint(fromFile, "u2.DIR")?.row, 17);
   assert.equal(resolveEndpoint(fromFile, "u2.VM")?.row, 24);
   assert.ok(resolveEndpoint(fromFile, "m1.pos"));
@@ -224,6 +261,18 @@ test("homekit-blinds example validates", () => {
   assert.match(svg, /Barrel jack/);
   assert.match(svg, /NEMA 17/);
   assert.match(svg, /stroke="#c45c4a"/);
+  assert.match(svg, /D12/);
+  assert.match(svg, /D0\/RX0/);
+  assert.match(svg, /D1\/TX0/);
+  assert.match(svg, />B0</);
+  assert.match(svg, />B1</);
+  assert.match(svg, /VUSB/);
+  assert.match(svg, /RESET/);
+});
+
+test("mcp catalog.json mirrors src catalog", () => {
+  const mcp = JSON.parse(readFileSync(new URL("../../../mcp/catalog.json", import.meta.url), "utf8"));
+  assert.deepEqual(mcp, CATALOG);
 });
 
 test("resolves module pin refs by id and label", () => {

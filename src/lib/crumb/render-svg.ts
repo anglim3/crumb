@@ -2,7 +2,7 @@ import { BOARD_SPECS } from "./board.ts";
 import { getPart } from "./catalog.ts";
 import { boardGeom, HOLE_R, MODULE_PIN_R, moduleCardGeom, projectGeom } from "./geometry.ts";
 import { parseHole } from "./holes.ts";
-import { dipPinHole, resolveEndpoint } from "./layout.ts";
+import { dipPinCaption, dipPinHole, resolveEndpoint } from "./layout.ts";
 import { leadHoles } from "./mutate.ts";
 import { leadedMarkup } from "./part-draw.ts";
 import type { HoleRef, Project, TerminalCol } from "./types.ts";
@@ -83,8 +83,20 @@ export function renderProjectSvg(project: Project): string {
       const bottom = Math.max(a.y, b.y) + 9;
       parts.push(
         `<rect x="${left}" y="${top}" width="${right - left}" height="${bottom - top}" rx="3" fill="#1c1916"/>`,
-        `<text x="${(left + right) / 2}" y="${(top + bottom) / 2 + 3}" text-anchor="middle" fill="#efe6d4" font-size="7" font-family="monospace">${esc(part.id)}</text>`,
+        `<circle cx="${left + 7}" cy="${top + 8}" r="2.2" fill="#efe6d4"/>`,
+        `<text x="${(left + right) / 2}" y="${top + 8}" text-anchor="middle" fill="#efe6d4" font-size="6" font-family="monospace">${esc(part.id)}</text>`,
       );
+      for (let n = 1; n <= count; n++) {
+        const hole = dipPinHole(part, n);
+        if (!hole) continue;
+        const p = geom.holeXY(hole);
+        const leftSide = n <= count / 2;
+        const caption = dipPinCaption(def, n);
+        const fontSize = caption.length > 4 ? 4.5 : 5.5;
+        parts.push(
+          `<text x="${leftSide ? left + 3.5 : right - 3.5}" y="${p.y + 2.2}" text-anchor="${leftSide ? "start" : "end"}" fill="#efe6d4" font-size="${fontSize}" font-family="monospace">${esc(caption)}</text>`,
+        );
+      }
     } else if (part.kind === "leaded") {
       const def = getPart(part.def);
       const pts = leadHoles(part)
