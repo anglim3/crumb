@@ -3,6 +3,7 @@ import { getPart } from "@/lib/crumb/catalog";
 import { focusedHoles, holeOpacity, itemOpacity, selectableIds } from "@/lib/crumb/focus";
 import { boardGeom, HOLE_R, MODULE_PIN_R, PITCH, moduleCardGeom, projectGeom } from "@/lib/crumb/geometry";
 import { holeId, parseHole } from "@/lib/crumb/holes";
+import { dipBounds, dipSilkFontSize, dipSilkX } from "@/lib/crumb/dip-draw";
 import { dipPinCaption, dipPinHole, resolveEndpoint } from "@/lib/crumb/layout";
 import { computeNets, netForHole } from "@/lib/crumb/nets";
 import { detectShorts, shortHoles } from "@/lib/crumb/shorts";
@@ -99,17 +100,18 @@ export function BoardView() {
           </text>
         ))}
 
-        {project.parts.map((part) => (
-          <g key={part.id} opacity={itemOpacity(selected, part.id, selectable)}>
-            {part.kind === "dip" ? (
-              <DipBody project={project} partId={part.id} geom={geom} />
-            ) : part.kind === "leaded" ? (
-              <LeadedBody project={project} partId={part.id} geom={geom} />
-            ) : (
-              <ModuleCard project={project} partId={part.id} geom={geom} />
-            )}
-          </g>
-        ))}
+        {project.parts.map((part) => {
+          if (part.kind === "dip") return null;
+          return (
+            <g key={part.id} opacity={itemOpacity(selected, part.id, selectable)}>
+              {part.kind === "leaded" ? (
+                <LeadedBody project={project} partId={part.id} geom={geom} />
+              ) : (
+                <ModuleCard project={project} partId={part.id} geom={geom} />
+              )}
+            </g>
+          );
+        })}
 
         {project.wires.map((wire, i) => {
           const a = resolveEndpoint(project, wire.from);
@@ -177,6 +179,15 @@ export function BoardView() {
               onClick={() => clickHole(id)}
               style={{ cursor: "pointer" }}
             />
+          );
+        })}
+
+        {project.parts.map((part) => {
+          if (part.kind !== "dip") return null;
+          return (
+            <g key={part.id} opacity={itemOpacity(selected, part.id, selectable)}>
+              <DipBody project={project} partId={part.id} geom={geom} />
+            </g>
           );
         })}
 
@@ -340,15 +351,9 @@ function DipBody({
   if (!part || part.kind !== "dip") return null;
   const def = getPart(part.def);
   const count = def?.dipPins ?? 8;
-  const p1 = dipPinHole(part, 1);
-  const lastLeft = dipPinHole(part, count / 2);
-  if (!p1 || !lastLeft) return null;
-  const a = geom.holeXY(p1);
-  const b = geom.holeXY(lastLeft);
-  const left = geom.colX("e") - 8;
-  const right = geom.colX("f") + 8;
-  const top = Math.min(a.y, b.y) - 9;
-  const bottom = Math.max(a.y, b.y) + 9;
+  const bounds = dipBounds(geom, part, count);
+  if (!bounds) return null;
+  const { left, right, top, bottom } = bounds;
   return (
     <g
       className="cursor-grab"
@@ -375,11 +380,11 @@ function DipBody({
         return (
           <text
             key={n}
-            x={leftSide ? left + 3.5 : right - 3.5}
+            x={dipSilkX(bounds, leftSide)}
             y={p.y + 2.2}
             textAnchor={leftSide ? "start" : "end"}
             className="fill-board-inner/85 font-mono"
-            style={{ fontSize: caption.length > 4 ? 4.5 : 5.5 }}
+            style={{ fontSize: dipSilkFontSize(caption) }}
           >
             {caption}
           </text>
