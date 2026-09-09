@@ -57,6 +57,8 @@ export type PartDef = {
   pins: PartPin[];
   /** DIP pin count; body spans gutter. */
   dipPins?: 8 | 14 | 16 | 20 | 24 | 28 | 30 | 38 | 40;
+  /** Swap gutter columns so pin 1 sits on f and the opposite strip on e (ABX00083). */
+  dipMirror?: boolean;
   /** Two-lead span in rows when placed vertically (hint only). */
   defaultSpan?: number;
   color?: string;
@@ -67,7 +69,7 @@ export type PlacedDip = {
   kind: "dip";
   id: string;
   def: string;
-  /** Pin 1 hole, always a left-side terminal (a–e). */
+  /** Pin 1 hole: column e by default; column f when the catalog def sets dipMirror. */
   anchor: string;
 };
 

@@ -4,7 +4,7 @@ import { focusedHoles, holeOpacity, itemOpacity, selectableIds } from "@/lib/cru
 import { boardGeom, HOLE_R, MODULE_PIN_R, PITCH, moduleCardGeom, projectGeom } from "@/lib/crumb/geometry";
 import { holeId, parseHole } from "@/lib/crumb/holes";
 import { dipBounds, dipSilkFontSize, dipSilkX } from "@/lib/crumb/dip-draw";
-import { dipPinCaption, dipPinHole, resolveEndpoint } from "@/lib/crumb/layout";
+import { dipPinCaption, dipPinHole, dipMirrorStrips, dipSilkLeftSide, resolveEndpoint } from "@/lib/crumb/layout";
 import { computeNets, netForHole } from "@/lib/crumb/nets";
 import { detectShorts, shortHoles } from "@/lib/crumb/shorts";
 import { useCrumb } from "@/lib/crumb/store";
@@ -354,6 +354,8 @@ function DipBody({
   const bounds = dipBounds(geom, part, count);
   if (!bounds) return null;
   const { left, right, top, bottom } = bounds;
+  const mirror = dipMirrorStrips(def);
+  const pin1X = mirror ? right - 7 : left + 7;
   return (
     <g
       className="cursor-grab"
@@ -370,12 +372,12 @@ function DipBody({
         className={selected ? "fill-dip-body stroke-accent" : "fill-dip-body stroke-dip-edge"}
         strokeWidth="1.2"
       />
-      <circle cx={left + 7} cy={top + 8} r="2.2" className="fill-board-inner" />
+      <circle cx={pin1X} cy={top + 8} r="2.2" className="fill-board-inner" />
       {Array.from({ length: count }, (_, i) => i + 1).map((n) => {
         const hole = dipPinHole(part, n);
         if (!hole) return null;
         const p = geom.holeXY(hole);
-        const leftSide = n <= count / 2;
+        const leftSide = dipSilkLeftSide(def, n, count);
         const caption = dipPinCaption(def, n);
         return (
           <text

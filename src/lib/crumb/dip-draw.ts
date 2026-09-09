@@ -1,7 +1,7 @@
 import { getPart } from "./catalog.ts";
 import type { BoardGeom } from "./geometry.ts";
 import { HOLE_R } from "./geometry.ts";
-import { dipPinCaption, dipPinHole } from "./layout.ts";
+import { dipPinCaption, dipPinHole, dipMirrorStrips, dipSilkLeftSide } from "./layout.ts";
 import type { PlacedDip, Project } from "./types.ts";
 
 function esc(value: string): string {
@@ -54,16 +54,18 @@ export function dipMarkup(
   if (!bounds) return "";
   const { left, right, top, bottom } = bounds;
   const stroke = opts?.selected ? "#d8d2c8" : "#1c1916";
+  const mirror = dipMirrorStrips(def);
+  const pin1X = mirror ? right - 7 : left + 7;
   const chunks = [
     `<rect x="${left}" y="${top}" width="${right - left}" height="${bottom - top}" rx="3" fill="#1c1916" stroke="${stroke}" stroke-width="1.2"/>`,
-    `<circle cx="${left + 7}" cy="${top + 8}" r="2.2" fill="#efe6d4"/>`,
+    `<circle cx="${pin1X}" cy="${top + 8}" r="2.2" fill="#efe6d4"/>`,
     `<text x="${(left + right) / 2}" y="${top + 8}" text-anchor="middle" fill="#efe6d4" font-size="6" font-family="monospace">${esc(part.id)}</text>`,
   ];
   for (let n = 1; n <= count; n++) {
     const hole = dipPinHole(part, n);
     if (!hole) continue;
     const p = geom.holeXY(hole);
-    const leftSide = n <= count / 2;
+    const leftSide = dipSilkLeftSide(def, n, count);
     const caption = dipPinCaption(def, n);
     const fontSize = dipSilkFontSize(caption);
     chunks.push(

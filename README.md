@@ -113,7 +113,7 @@ Boards: `mini` (17 rows), `half` (30, split rails), `full` (63, split rails).
 DIP pin 1 sits on the left strip (`a`–`e`). The body crosses the gutter.
 
 - `esp32` is a **30-pin** DevKit, pin 1 = 3V3. Park a 38-pin DevKitC as a module.
-- `nano-esp32` is ABX00083. Pin 1 is D12, not classic Nano TX. Silk is D12…D2, GND, RESET, D0/RX0, D1/TX0 on the digital side; analog USB-end is D13, 3V3, B0.
+- `nano-esp32` is ABX00083. Pin 1 is D12 at the USB end — seat pin 1 in column f. Digital silk is D12…D2, GND, RESET, D0/RX0, D1/TX0 on the f strip; analog is D13, 3V3, B0… on the e strip.
 - Leaded parts: two holes (`from` / `to`), three (`mid`), or four (`legs`).
 
 <details>

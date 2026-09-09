@@ -1,6 +1,6 @@
 import { BOARD_SPECS } from "./board.ts";
 import { getPart } from "./catalog.ts";
-import { holeId, isBoardHole, isLeftCol, parseHole, parsePinRef } from "./holes.ts";
+import { holeId, isBoardHole, parseHole, parsePinRef } from "./holes.ts";
 import { nextId } from "./ids.ts";
 import { leadHoles } from "./mutate.ts";
 import type { HoleRef, ModulePin, PartDef, PartPin, PlacedDip, PlacedPart, Project, TerminalCol } from "./types.ts";
@@ -32,18 +32,32 @@ export function dipPinCaption(def: PartDef | undefined, pinNumber: number): stri
   return label || String(pinNumber);
 }
 
+export function dipMirrorStrips(def: PartDef | undefined): boolean {
+  return def?.dipMirror === true;
+}
+
+/** Which body edge gets the silk label for a DIP pin. */
+export function dipSilkLeftSide(def: PartDef | undefined, pinNumber: number, count: number): boolean {
+  const onFirstStrip = pinNumber <= count / 2;
+  return dipMirrorStrips(def) ? !onFirstStrip : onFirstStrip;
+}
+
 export function dipPinHole(part: PlacedDip, pinNumber: number): HoleRef | null {
   const def = getPart(part.def);
   const count = def?.dipPins;
   if (!count) return null;
   const anchor = parseHole(part.anchor);
-  if (!anchor || anchor.kind !== "terminal" || !isLeftCol(anchor.col)) return null;
+  if (!anchor || anchor.kind !== "terminal") return null;
+  const mirror = dipMirrorStrips(def);
+  const pin1Col = mirror ? "f" : "e";
+  const pin2Col = mirror ? "e" : "f";
+  if (anchor.col !== pin1Col) return null;
   const half = count / 2;
   if (pinNumber < 1 || pinNumber > count) return null;
   if (pinNumber <= half) {
-    return { kind: "terminal", row: anchor.row + pinNumber - 1, col: "e" };
+    return { kind: "terminal", row: anchor.row + pinNumber - 1, col: pin1Col };
   }
-  return { kind: "terminal", row: anchor.row + (count - pinNumber), col: "f" };
+  return { kind: "terminal", row: anchor.row + (count - pinNumber), col: pin2Col };
 }
 
 export function resolveEndpoint(project: Project, raw: string): HoleRef | null {
