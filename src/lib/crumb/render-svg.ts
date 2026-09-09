@@ -7,7 +7,7 @@ import { resolveEndpoint } from "./layout.ts";
 import { leadHoles } from "./mutate.ts";
 import { leadedMarkup } from "./part-draw.ts";
 import type { HoleRef, Project, TerminalCol } from "./types.ts";
-import { jumperPath } from "./wire-path.ts";
+import { computeWireLanes, jumperPath, wireGeomsFromProject } from "./wire-path.ts";
 
 const COLS: TerminalCol[] = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j"];
 
@@ -93,16 +93,16 @@ export function renderProjectSvg(project: Project): string {
     }
   }
 
-  project.wires.forEach((wire, i) => {
-    const a = resolveEndpoint(project, wire.from);
-    const b = resolveEndpoint(project, wire.to);
-    if (!a || !b) return;
-    const pa = geom.holeXY(a);
-    const pb = geom.holeXY(b);
+  const wireGeoms = wireGeomsFromProject(project, geom, resolveEndpoint);
+  const wireLanes = computeWireLanes(wireGeoms);
+  for (const wire of project.wires) {
+    const w = wireGeoms.find((g) => g.id === wire.id);
+    if (!w) continue;
+    const lane = wireLanes.get(wire.id) ?? { lane: 0, count: 1 };
     parts.push(
-      `<path d="${jumperPath(geom, pa.x, pa.y, pb.x, pb.y, i)}" fill="none" stroke="${esc(wire.color)}" stroke-width="2.4" stroke-linecap="round"/>`,
+      `<path d="${jumperPath(geom, w.ax, w.ay, w.bx, w.by, lane.lane, lane.count)}" fill="none" stroke="${esc(wire.color)}" stroke-width="2.4" stroke-linecap="round"/>`,
     );
-  });
+  }
 
   for (const hole of allHoles(spec.rows)) {
     const { x, y } = geom.holeXY(hole);
