@@ -1,8 +1,9 @@
 import { BOARD_SPECS } from "./board.ts";
 import { getPart } from "./catalog.ts";
+import { dipMarkup } from "./dip-draw.ts";
 import { boardGeom, HOLE_R, MODULE_PIN_R, moduleCardGeom, projectGeom } from "./geometry.ts";
 import { parseHole } from "./holes.ts";
-import { dipPinCaption, dipPinHole, resolveEndpoint } from "./layout.ts";
+import { resolveEndpoint } from "./layout.ts";
 import { leadHoles } from "./mutate.ts";
 import { leadedMarkup } from "./part-draw.ts";
 import type { HoleRef, Project, TerminalCol } from "./types.ts";
@@ -69,35 +70,8 @@ export function renderProjectSvg(project: Project): string {
   }
 
   for (const part of project.parts) {
-    if (part.kind === "dip") {
-      const def = getPart(part.def);
-      const count = def?.dipPins ?? 8;
-      const p1 = dipPinHole(part, 1);
-      const last = dipPinHole(part, count / 2);
-      if (!p1 || !last) continue;
-      const a = geom.holeXY(p1);
-      const b = geom.holeXY(last);
-      const left = geom.colX("e") - 8;
-      const right = geom.colX("f") + 8;
-      const top = Math.min(a.y, b.y) - 9;
-      const bottom = Math.max(a.y, b.y) + 9;
-      parts.push(
-        `<rect x="${left}" y="${top}" width="${right - left}" height="${bottom - top}" rx="3" fill="#1c1916"/>`,
-        `<circle cx="${left + 7}" cy="${top + 8}" r="2.2" fill="#efe6d4"/>`,
-        `<text x="${(left + right) / 2}" y="${top + 8}" text-anchor="middle" fill="#efe6d4" font-size="6" font-family="monospace">${esc(part.id)}</text>`,
-      );
-      for (let n = 1; n <= count; n++) {
-        const hole = dipPinHole(part, n);
-        if (!hole) continue;
-        const p = geom.holeXY(hole);
-        const leftSide = n <= count / 2;
-        const caption = dipPinCaption(def, n);
-        const fontSize = caption.length > 4 ? 4.5 : 5.5;
-        parts.push(
-          `<text x="${leftSide ? left + 3.5 : right - 3.5}" y="${p.y + 2.2}" text-anchor="${leftSide ? "start" : "end"}" fill="#efe6d4" font-size="${fontSize}" font-family="monospace">${esc(caption)}</text>`,
-        );
-      }
-    } else if (part.kind === "leaded") {
+    if (part.kind === "dip") continue;
+    if (part.kind === "leaded") {
       const def = getPart(part.def);
       const pts = leadHoles(part)
         .map((h) => parseHole(h))
@@ -143,6 +117,11 @@ export function renderProjectSvg(project: Project): string {
         `<circle cx="${pin.x}" cy="${pin.y}" r="${MODULE_PIN_R}" fill="#3a3228" stroke="#c9b896" stroke-width="0.8"/>`,
       );
     }
+  }
+
+  for (const part of project.parts) {
+    if (part.kind !== "dip") continue;
+    parts.push(dipMarkup(project, part, geom));
   }
 
   parts.push(`</svg>`);
