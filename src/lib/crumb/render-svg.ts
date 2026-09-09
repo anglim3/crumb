@@ -69,6 +69,11 @@ export function renderProjectSvg(project: Project): string {
     parts.push(`<rect x="${xM}" y="${y}" width="18" height="${h}" rx="4" fill="#c5d0da"/>`);
   }
 
+  for (const hole of allHoles(spec.rows)) {
+    const { x, y } = geom.holeXY(hole);
+    parts.push(`<circle cx="${x}" cy="${y}" r="${HOLE_R}" fill="#3a3228"/>`);
+  }
+
   for (const part of project.parts) {
     if (part.kind === "dip") continue;
     if (part.kind === "leaded") {
@@ -93,22 +98,6 @@ export function renderProjectSvg(project: Project): string {
     }
   }
 
-  const wireGeoms = wireGeomsFromProject(project, geom, resolveEndpoint);
-  const wireLanes = computeWireLanes(wireGeoms);
-  for (const wire of project.wires) {
-    const w = wireGeoms.find((g) => g.id === wire.id);
-    if (!w) continue;
-    const lane = wireLanes.get(wire.id) ?? { lane: 0, count: 1 };
-    parts.push(
-      `<path d="${jumperPath(geom, w.ax, w.ay, w.bx, w.by, lane.lane, lane.count)}" fill="none" stroke="${esc(wire.color)}" stroke-width="2.4" stroke-linecap="round"/>`,
-    );
-  }
-
-  for (const hole of allHoles(spec.rows)) {
-    const { x, y } = geom.holeXY(hole);
-    parts.push(`<circle cx="${x}" cy="${y}" r="${HOLE_R}" fill="#3a3228"/>`);
-  }
-
   for (const part of project.parts) {
     if (part.kind !== "module") continue;
     const card = moduleCardGeom(project, part, geom);
@@ -122,6 +111,17 @@ export function renderProjectSvg(project: Project): string {
   for (const part of project.parts) {
     if (part.kind !== "dip") continue;
     parts.push(dipMarkup(project, part, geom));
+  }
+
+  const wireGeoms = wireGeomsFromProject(project, geom, resolveEndpoint);
+  const wireLanes = computeWireLanes(wireGeoms);
+  for (const wire of project.wires) {
+    const w = wireGeoms.find((g) => g.id === wire.id);
+    if (!w) continue;
+    const lane = wireLanes.get(wire.id) ?? { lane: 0, count: 1 };
+    parts.push(
+      `<path d="${jumperPath(geom, w.ax, w.ay, w.bx, w.by, lane.lane, lane.count)}" fill="none" stroke="${esc(wire.color)}" stroke-width="2.4" stroke-linecap="round"/>`,
+    );
   }
 
   parts.push(`</svg>`);

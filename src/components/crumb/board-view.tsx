@@ -102,50 +102,6 @@ export function BoardView() {
           </text>
         ))}
 
-        {project.parts.map((part) => {
-          if (part.kind === "dip") return null;
-          return (
-            <g key={part.id} opacity={itemOpacity(selected, part.id, selectable)}>
-              {part.kind === "leaded" ? (
-                <LeadedBody project={project} partId={part.id} geom={geom} />
-              ) : (
-                <ModuleCard project={project} partId={part.id} geom={geom} />
-              )}
-            </g>
-          );
-        })}
-
-        {project.wires.map((wire) => {
-          const w = wireGeoms.find((g) => g.id === wire.id);
-          if (!w) return null;
-          const lane = wireLanes.get(wire.id) ?? { lane: 0, count: 1 };
-          const a = resolveEndpoint(project, wire.from);
-          if (!a) return null;
-          const selectedWire = selected === wire.id;
-          const aId = holeId(a);
-          const shortWire = shorted.has(aId);
-          return (
-            <path
-              key={wire.id}
-              d={jumperPath(geom, w.ax, w.ay, w.bx, w.by, lane.lane, lane.count)}
-              fill="none"
-              stroke={shortWire ? "#c9897a" : wire.color}
-              strokeWidth={selectedWire || shortWire ? 3.4 : 2.4}
-              strokeLinecap="round"
-              opacity={itemOpacity(selected, wire.id, selectable)}
-              className="cursor-pointer"
-              onClick={(e) => {
-                e.stopPropagation();
-                setSelected(wire.id);
-              }}
-            />
-          );
-        })}
-
-        {wireFrom && hoverHole && wireFrom !== hoverHole && (
-          <RubberBand project={project} geom={geom} from={wireFrom} to={hoverHole} />
-        )}
-
         {allHoles(spec.rows).map((hole) => {
           const id = holeId(hole);
           const { x, y } = geom.holeXY(hole);
@@ -184,14 +140,48 @@ export function BoardView() {
           );
         })}
 
-        {project.parts.map((part) => {
-          if (part.kind !== "dip") return null;
-          return (
-            <g key={part.id} opacity={itemOpacity(selected, part.id, selectable)}>
+        {project.parts.map((part) => (
+          <g key={part.id} opacity={itemOpacity(selected, part.id, selectable)}>
+            {part.kind === "leaded" ? (
+              <LeadedBody project={project} partId={part.id} geom={geom} />
+            ) : part.kind === "module" ? (
+              <ModuleCard project={project} partId={part.id} geom={geom} />
+            ) : (
               <DipBody project={project} partId={part.id} geom={geom} />
-            </g>
+            )}
+          </g>
+        ))}
+
+        {project.wires.map((wire) => {
+          const w = wireGeoms.find((g) => g.id === wire.id);
+          if (!w) return null;
+          const lane = wireLanes.get(wire.id) ?? { lane: 0, count: 1 };
+          const a = resolveEndpoint(project, wire.from);
+          if (!a) return null;
+          const selectedWire = selected === wire.id;
+          const aId = holeId(a);
+          const shortWire = shorted.has(aId);
+          return (
+            <path
+              key={wire.id}
+              d={jumperPath(geom, w.ax, w.ay, w.bx, w.by, lane.lane, lane.count)}
+              fill="none"
+              stroke={shortWire ? "#c9897a" : wire.color}
+              strokeWidth={selectedWire || shortWire ? 3.4 : 2.4}
+              strokeLinecap="round"
+              opacity={itemOpacity(selected, wire.id, selectable)}
+              className="cursor-pointer"
+              onClick={(e) => {
+                e.stopPropagation();
+                setSelected(wire.id);
+              }}
+            />
           );
         })}
+
+        {wireFrom && hoverHole && wireFrom !== hoverHole && (
+          <RubberBand project={project} geom={geom} from={wireFrom} to={hoverHole} />
+        )}
 
         {project.parts.map((part) => {
           if (part.kind !== "module") return null;
