@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { getPart } from "./catalog.ts";
 import { EMPTY_PROJECT, EXAMPLE_555, EXAMPLES } from "./examples.ts";
-import { holeId, parseHole } from "./holes.ts";
+import { holeId, isBoardHole, parseHole } from "./holes.ts";
 import {
   emptyLibrary,
   type LibraryFile,
@@ -61,7 +61,7 @@ export const WIRE_COLORS = ["#c45c4a", "#2b2b2b", "#3d6b8a", "#3f7a4e", "#c9a227
 
 function snapDipAnchor(hole: string): string {
   const parsed = parseHole(hole);
-  if (!parsed) return hole;
+  if (!parsed || !isBoardHole(parsed)) return hole;
   if (parsed.kind === "rail") return `${parsed.row}-e`;
   return holeId({ kind: "terminal", row: parsed.row, col: "e" });
 }
@@ -223,7 +223,7 @@ export const useCrumb = create<CrumbState>((set, get) => {
       if (!part) return;
       const bump = (hole: string, by: number) => {
         const parsed = parseHole(hole);
-        if (!parsed) return hole;
+        if (!parsed || !isBoardHole(parsed)) return hole;
         return holeId({ ...parsed, row: parsed.row + by });
       };
       if (part.kind === "dip") {
