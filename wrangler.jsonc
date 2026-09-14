@@ -1,0 +1,21 @@
+{
+	"$schema": "./node_modules/wrangler/config-schema.json",
+	"name": "crumb",
+	// Static SPA: the Vite editor builds to ./dist and is served as Workers Static Assets.
+	// No `main` entrypoint — there is no Worker code, only the hosted editor bundle.
+	// The MCP server (mcp/server.mjs) and CLI (scripts/crumb-svg.mjs) stay local-only.
+	"compatibility_date": "2026-09-14",
+	"assets": {
+		"directory": "./dist",
+		"not_found_handling": "single-page-application"
+	},
+	// Custom domain. Requires the janglim.cloud zone on the Cloudflare account
+	// (already the case for weather.janglim.cloud). Attach on first deploy with
+	// `npm run deploy`; no account_id is committed here.
+	"routes": [
+		{
+			"pattern": "crumb.janglim.cloud",
+			"custom_domain": true
+		}
+	]
+}

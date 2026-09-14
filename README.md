@@ -8,6 +8,10 @@
 </p>
 
 <p align="center">
+  <strong>Demo: <a href="https://crumb.janglim.cloud">crumb.janglim.cloud</a></strong> — the editor, hosted on Cloudflare Workers.
+</p>
+
+<p align="center">
   <img src="https://img.shields.io/badge/license-MIT-c9b896?style=flat-square&labelColor=1c1814" alt="MIT" />
   <img src="https://img.shields.io/badge/node-22+-8fad8a?style=flat-square&labelColor=1c1814" alt="Node 22+" />
   <img src="https://img.shields.io/badge/status-private-9a9084?style=flat-square&labelColor=1c1814" alt="Private" />
@@ -56,6 +60,26 @@ node --experimental-strip-types scripts/crumb-svg.mjs examples/555-blinker.json 
 ```bash
 npm test
 ```
+
+## Demo / deploy
+
+The editor is a static Vite SPA hosted on Cloudflare Workers (Static Assets) at
+**https://crumb.janglim.cloud**. The MCP server and SVG CLI stay local-only —
+the hosted demo is the browser editor.
+
+```bash
+npm run deploy   # npm run build && wrangler deploy
+```
+
+- Config: [`wrangler.jsonc`](wrangler.jsonc) — Worker name `crumb`, `assets.directory`
+  `./dist`, `not_found_handling: single-page-application` so share-link hashes
+  (`#c=…`) and deep links resolve to `index.html`.
+- Custom domain `crumb.janglim.cloud` is attached as a Workers custom domain
+  (`routes` with `custom_domain: true`). It needs the `janglim.cloud` zone on the
+  Cloudflare account, which already exists. No `account_id` is committed —
+  deploy authenticates via `wrangler login` or `CLOUDFLARE_API_TOKEN` in the
+  environment.
+- Dry-run without credentials: `npm run deploy:dry-run` (`wrangler deploy --dry-run`).
 
 ## Examples
 
