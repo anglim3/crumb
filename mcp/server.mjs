@@ -5,16 +5,28 @@
  *
  * Tools operate on a project file path (default: ./examples/555-blinker.json).
  * The web app uses the same JSON shape.
+ *
+ * Project `path` arguments are sandboxed to this repo (realpath under the
+ * package root). Parse failures return a generic error — never SyntaxError
+ * text, which can include a file-content snippet.
  */
-import { readFileSync, writeFileSync, existsSync } from "node:fs";
+import { closeSync, constants, existsSync, openSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { validateProject } from "../src/lib/crumb/validate.ts";
 import { detectShorts } from "../src/lib/crumb/shorts.ts";
+import { PathNotAllowedError, resolveAllowedPath } from "./paths.mjs";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const defaultPath = resolve(root, "examples/555-blinker.json");
+
+class InvalidProjectFileError extends Error {
+  constructor() {
+    super("Invalid project file");
+    this.name = "InvalidProjectFileError";
+  }
+}
 
 const TOOLS = [
   {
@@ -109,16 +121,48 @@ const TOOLS = [
 
 const CATALOG = JSON.parse(readFileSync(resolve(root, "mcp/catalog.json"), "utf8"));
 
+function projectPath(path = defaultPath) {
+  return resolveAllowedPath(path, root);
+}
+
 function load(path = defaultPath) {
-  const file = resolve(path);
+  const file = projectPath(path);
   if (!existsSync(file)) {
     return { version: 1, name: "Untitled", board: "half", parts: [], wires: [] };
   }
-  return JSON.parse(readFileSync(file, "utf8"));
+  let text;
+  try {
+    text = readFileSync(file, "utf8");
+  } catch {
+    throw new InvalidProjectFileError();
+  }
+  try {
+    return JSON.parse(text);
+  } catch {
+    throw new InvalidProjectFileError();
+  }
 }
 
 function save(project, path = defaultPath) {
-  writeFileSync(resolve(path), JSON.stringify(project, null, 2) + "\n");
+  const file = projectPath(path);
+  const data = JSON.stringify(project, null, 2) + "\n";
+  const flags =
+    constants.O_WRONLY |
+    constants.O_CREAT |
+    constants.O_TRUNC |
+    (constants.O_NOFOLLOW ?? 0);
+  let fd;
+  try {
+    fd = openSync(file, flags, 0o644);
+  } catch (err) {
+    if (err && err.code === "ELOOP") throw new PathNotAllowedError();
+    throw err;
+  }
+  try {
+    writeFileSync(fd, data);
+  } finally {
+    closeSync(fd);
+  }
 }
 
 function handleTool(name, args = {}) {
@@ -193,6 +237,14 @@ function handleTool(name, args = {}) {
   throw new Error(`Unknown tool ${name}`);
 }
 
+function publicErrorMessage(err) {
+  if (err instanceof PathNotAllowedError) return "Path is not allowed";
+  if (err instanceof InvalidProjectFileError) return "Invalid project file";
+  if (err instanceof SyntaxError) return "Invalid project file";
+  if (err instanceof Error && /^Unknown tool /.test(err.message)) return err.message;
+  return "Request failed";
+}
+
 function reply(id, result, error) {
   const msg = error ? { jsonrpc: "2.0", id, error } : { jsonrpc: "2.0", id, result };
   process.stdout.write(JSON.stringify(msg) + "\n");
@@ -232,7 +284,7 @@ process.stdin.on("data", (chunk) => {
         reply(id, null, { code: -32601, message: `Unknown method ${method}` });
       }
     } catch (err) {
-      reply(id, null, { code: -32000, message: String(err) });
+      reply(id, null, { code: -32000, message: publicErrorMessage(err) });
     }
   }
 });
