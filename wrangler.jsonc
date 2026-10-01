@@ -1,0 +1,17 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "crumb",
+  // Static SPA. Vite builds the editor to ./dist; Workers Static Assets serves it.
+  // No Worker script — the MCP server and SVG CLI stay local.
+  "compatibility_date": "2026-10-01",
+  "assets": {
+    "directory": "./dist",
+    "not_found_handling": "single-page-application"
+  },
+  "routes": [
+    {
+      "pattern": "crumb.janglim.cloud",
+      "custom_domain": true
+    }
+  ]
+}

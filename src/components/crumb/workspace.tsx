@@ -1,8 +1,9 @@
 import { BOARD_SPECS } from "@/lib/crumb/board";
 import { CLASS_LABEL, CLASS_ORDER, getPart, searchParts } from "@/lib/crumb/catalog";
 import { EXAMPLES } from "@/lib/crumb/examples";
-import { LIBRARY_KEY, upsertLibrary } from "@/lib/crumb/library";
-import { decodeShare, encodeShare } from "@/lib/crumb/mutate";
+import { applyBoot, libraryAutosave, PROJECT_KEY } from "@/lib/crumb/boot";
+import { LIBRARY_KEY } from "@/lib/crumb/library";
+import { encodeShare } from "@/lib/crumb/mutate";
 import { downloadPng, downloadText, renderProjectSvg } from "@/lib/crumb/render-svg";
 import { buildSteps } from "@/lib/crumb/steps";
 import { useCrumb, WIRE_COLORS } from "@/lib/crumb/store";
@@ -30,31 +31,19 @@ export function Workspace() {
   const shorts = useMemo(() => detectShorts(project), [project]);
   const steps = useMemo(() => buildSteps(project), [project]);
   const [hydrated, setHydrated] = useState(false);
+  const holdLibrary = useCrumb((s) => s.holdLibrary);
 
   useEffect(() => {
+    let projectRaw: string | null = null;
+    let libraryRaw: string | null = null;
     try {
-      const hash = window.location.hash.replace(/^#/, "");
-      if (hash.startsWith("c=")) {
-        useCrumb.getState().loadJson(JSON.stringify(decodeShare(hash.slice(2))));
-      } else {
-        let session: Project | null = null;
-        const raw = localStorage.getItem("crumb.project.v1");
-        if (raw) {
-          try {
-            session = JSON.parse(raw) as Project;
-          } catch {
-            session = null;
-          }
-        }
-        let libraryRaw: unknown = null;
-        try {
-          libraryRaw = JSON.parse(localStorage.getItem(LIBRARY_KEY) ?? "null");
-        } catch {
-          libraryRaw = null;
-        }
-        useCrumb.getState().hydrateLibrary(libraryRaw, session);
-        if (!useCrumb.getState().library.activeId && raw) useCrumb.getState().loadJson(raw);
-      }
+      projectRaw = localStorage.getItem(PROJECT_KEY);
+      libraryRaw = localStorage.getItem(LIBRARY_KEY);
+    } catch {
+      /* ignore */
+    }
+    try {
+      applyBoot(window.location.hash, { projectRaw, libraryRaw });
     } catch {
       /* ignore */
     }
@@ -64,13 +53,13 @@ export function Workspace() {
   useEffect(() => {
     if (!hydrated) return;
     try {
-      localStorage.setItem("crumb.project.v1", JSON.stringify(project));
-      const file = library.activeId ? upsertLibrary(library, project, library.activeId) : library;
-      localStorage.setItem(LIBRARY_KEY, JSON.stringify(file));
+      localStorage.setItem(PROJECT_KEY, JSON.stringify(project));
+      const libraryJson = libraryAutosave(library, project, holdLibrary);
+      if (libraryJson != null) localStorage.setItem(LIBRARY_KEY, libraryJson);
     } catch {
       /* ignore */
     }
-  }, [project, library, hydrated]);
+  }, [project, library, hydrated, holdLibrary]);
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const tag = (e.target as HTMLElement | null)?.tagName;

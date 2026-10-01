@@ -230,9 +230,12 @@ test("homekit-blinds example validates", () => {
   assert.equal(dipPinCaption(getPart("nano-esp32"), 13), "RESET");
   assert.equal(dipPinCaption(getPart("nano-esp32"), 14), "D0/RX0");
   assert.equal(dipPinCaption(getPart("nano-esp32"), 28), "B0");
-  assert.equal(fromFile.parts.find((p) => p.id === "u2")?.anchor, "20-e");
-  assert.equal(resolveEndpoint(fromFile, "u2.DIR")?.row, 20);
-  assert.equal(resolveEndpoint(fromFile, "u2.VM")?.row, 27);
+  const u2 = fromFile.parts.find((p) => p.id === "u2");
+  assert.equal(u2?.kind === "dip" ? u2.anchor : undefined, "20-e");
+  const u2dir = resolveEndpoint(fromFile, "u2.DIR");
+  const u2vm = resolveEndpoint(fromFile, "u2.VM");
+  assert.equal(u2dir && "row" in u2dir ? u2dir.row : undefined, 20);
+  assert.equal(u2vm && "row" in u2vm ? u2vm.row : undefined, 27);
   assert.ok(resolveEndpoint(fromFile, "m1.pos"));
   assert.ok(resolveEndpoint(fromFile, "m2.M1A"));
   assert.ok(fromFile.wires.some((w) => w.from === "m1.pos" || w.to === "m1.pos"));
@@ -304,7 +307,8 @@ test("any catalog module pin resolves; uno jumpers validate", () => {
   uno = addWire(uno, "m1.gnd", "RM-8", "#2b2b2b", "wgnd");
   uno = addWire(uno, "m1.d2", "10-j", "#3d6b8a", "wd2");
   assert.deepEqual(validateProject(uno).filter((i) => i.level === "error"), []);
-  assert.equal(resolveEndpoint(uno, "m1.5V")?.pin, "5v");
+  const uno5v = resolveEndpoint(uno, "m1.5V");
+  assert.equal(uno5v?.kind === "module" ? uno5v.pin : undefined, "5v");
   const svg = renderProjectSvg(uno);
   assert.match(svg, /Arduino Uno/);
   const snap = placeModule(EMPTY_PROJECT, "9v-snap", 0, 3, "m3");
