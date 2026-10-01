@@ -1,5 +1,5 @@
 import { getPart } from "./catalog.ts";
-import { holeId, parseHole } from "./holes.ts";
+import { holeId, isBoardHole, parseHole } from "./holes.ts";
 import { nextId } from "./ids.ts";
 import type { BoardSize, PlacedLeaded, PlacedPart, Project, Wire } from "./types.ts";
 
@@ -53,7 +53,7 @@ export function updatePart(project: Project, id: string, patch: Partial<PlacedPa
 
 export function shiftHole(hole: string, dRow: number): string {
   const parsed = parseHole(hole);
-  if (!parsed) return hole;
+  if (!parsed || !isBoardHole(parsed)) return hole;
   return holeId({ ...parsed, row: Math.max(1, parsed.row + dRow) });
 }
 

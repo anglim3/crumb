@@ -4,3 +4,9 @@ dist
 *.local
 .vite
 .mcp-test-*
+.env
+.env.*
+*.pem
+.npmrc
+.wrangler
+.dev.vars*

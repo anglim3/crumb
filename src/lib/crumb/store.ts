@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { getPart } from "./catalog.ts";
 import { EMPTY_PROJECT, EXAMPLE_555, EXAMPLES } from "./examples.ts";
-import { holeId, parseHole } from "./holes.ts";
+import { holeId, isBoardHole, parseHole } from "./holes.ts";
 import {
   emptyLibrary,
   type LibraryFile,
@@ -50,6 +50,10 @@ export type CrumbState = {
   duplicateSelected: () => void;
   moveSelected: (dRow: number) => void;
   hydrateLibrary: (raw: unknown, session: Project | null) => void;
+  /** Share-link boot. Show `project` without binding it to a saved library entry. */
+  loadSharedProject: (project: Project) => void;
+  /** When true, autosave must not write the library key. */
+  holdLibrary: boolean;
   saveProject: () => void;
   openLibraryEntry: (id: string) => void;
   openExample: (name: string) => void;
@@ -61,7 +65,7 @@ export const WIRE_COLORS = ["#c45c4a", "#2b2b2b", "#3d6b8a", "#3f7a4e", "#c9a227
 
 function snapDipAnchor(hole: string): string {
   const parsed = parseHole(hole);
-  if (!parsed) return hole;
+  if (!parsed || !isBoardHole(parsed)) return hole;
   if (parsed.kind === "rail") return `${parsed.row}-e`;
   return holeId({ kind: "terminal", row: parsed.row, col: "e" });
 }
@@ -99,6 +103,7 @@ export const useCrumb = create<CrumbState>((set, get) => {
     highlightNet: null,
     jsonOpen: false,
     library: emptyLibrary(),
+    holdLibrary: false,
     setProject: (project) => commit(project, { selected: null, wireFrom: null, placeClicks: [] }),
     setTool: (tool) => set({ tool, wireFrom: tool === "wire" ? get().wireFrom : null, placeClicks: [] }),
     setPendingDef: (pendingDef) => set({ pendingDef, tool: pendingDef ? "place" : get().tool, placeClicks: [] }),
@@ -223,7 +228,7 @@ export const useCrumb = create<CrumbState>((set, get) => {
       if (!part) return;
       const bump = (hole: string, by: number) => {
         const parsed = parseHole(hole);
-        if (!parsed) return hole;
+        if (!parsed || !isBoardHole(parsed)) return hole;
         return holeId({ ...parsed, row: parsed.row + by });
       };
       if (part.kind === "dip") {
@@ -259,9 +264,25 @@ export const useCrumb = create<CrumbState>((set, get) => {
       }
       set({ library: file });
     },
+    loadSharedProject: (project) => {
+      const library = get().library;
+      set({
+        project,
+        past: [],
+        future: [],
+        library: { ...library, activeId: null },
+        holdLibrary: true,
+        selected: null,
+        jsonOpen: false,
+        wireFrom: null,
+        placeClicks: [],
+        tool: "select",
+        pendingDef: null,
+      });
+    },
     saveProject: () => {
       const s = get();
-      set({ library: upsertLibrary(s.library, s.project, s.library.activeId) });
+      set({ library: upsertLibrary(s.library, s.project, s.library.activeId), holdLibrary: false });
     },
     openLibraryEntry: (id) => {
       const s = get();
@@ -269,6 +290,7 @@ export const useCrumb = create<CrumbState>((set, get) => {
       if (!entry) return;
       commit(structuredClone(entry.project), {
         library: { ...s.library, activeId: id },
+        holdLibrary: false,
         selected: null,
         wireFrom: null,
         placeClicks: [],
@@ -298,13 +320,14 @@ export const useCrumb = create<CrumbState>((set, get) => {
       if (s.library.activeId === id) {
         commit({ ...EMPTY_PROJECT, name: "Untitled" }, {
           library,
+          holdLibrary: false,
           selected: null,
           wireFrom: null,
           placeClicks: [],
         });
         return;
       }
-      set({ library });
+      set({ library, holdLibrary: false });
     },
   };
 });

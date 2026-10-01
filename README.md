@@ -8,9 +8,13 @@
 </p>
 
 <p align="center">
+  <strong><a href="https://crumb.janglim.cloud">Try the demo</a></strong> — the editor, hosted at crumb.janglim.cloud.
+</p>
+
+<p align="center">
   <img src="https://img.shields.io/badge/license-MIT-c9b896?style=flat-square&labelColor=1c1814" alt="MIT" />
   <img src="https://img.shields.io/badge/node-22+-8fad8a?style=flat-square&labelColor=1c1814" alt="Node 22+" />
-  <img src="https://img.shields.io/badge/status-private-9a9084?style=flat-square&labelColor=1c1814" alt="Private" />
+  <img src="https://img.shields.io/badge/demo-crumb.janglim.cloud-3d6b8a?style=flat-square&labelColor=1c1814" alt="Demo" />
 </p>
 
 <p align="center">
@@ -43,7 +47,7 @@ npm install
 npm run dev
 ```
 
-Open the Vite URL (default [http://localhost:5173](http://localhost:5173)). Pick an example, place parts, draw jumpers. Layouts autosave. A `#c=…` hash loads a shared project.
+Open [http://localhost:5173](http://localhost:5173). The dev server listens on localhost; set `CRUMB_DEV_HOST` if you need another interface. Pick an example, place parts, draw jumpers. Layouts autosave. A `#c=…` hash loads a shared project without replacing saved projects until you save.
 
 **CLI** — no install
 
@@ -56,6 +60,20 @@ node --experimental-strip-types scripts/crumb-svg.mjs examples/555-blinker.json 
 ```bash
 npm test
 ```
+
+## Demo
+
+The editor is live at **[crumb.janglim.cloud](https://crumb.janglim.cloud)**.
+
+The hosted demo is the browser editor. The MCP server and SVG CLI stay on your machine.
+
+Rebuild and deploy that site from this repo:
+
+```bash
+npm run deploy
+```
+
+[`wrangler.jsonc`](wrangler.jsonc) serves the Vite build (`./dist`) as a Workers static SPA (`not_found_handling: single-page-application`), so share links (`#c=…`) resolve to `index.html`. The custom domain is `crumb.janglim.cloud`. No Cloudflare account id is stored in the repo — authenticate with `wrangler login` or `CLOUDFLARE_API_TOKEN`. `npm run deploy:dry-run` checks the asset bundle without publishing.
 
 ## Examples
 
@@ -149,7 +167,7 @@ Catalog ids live in [`src/lib/crumb/catalog.ts`](src/lib/crumb/catalog.ts). Keep
 
 ## Contributing
 
-The repo is private until public release. Agent notes and geometry laws: [AGENTS.md](AGENTS.md). Change the core under `src/lib/crumb` first. Keep MCP thin.
+Contributions are welcome. Read [AGENTS.md](AGENTS.md) for the breadboard geometry and how the editor, validator, and MCP server fit together. Change the core under `src/lib/crumb` first. Keep MCP thin.
 
 ## License
 
