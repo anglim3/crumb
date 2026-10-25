@@ -59,6 +59,7 @@ node --experimental-strip-types scripts/crumb-svg.mjs examples/555-blinker.json 
 
 ```bash
 npm test
+npm run lint
 ```
 
 ## Demo
@@ -167,7 +168,7 @@ Catalog ids live in [`src/lib/crumb/catalog.ts`](src/lib/crumb/catalog.ts). Keep
 
 ## Contributing
 
-Contributions are welcome. Read [AGENTS.md](AGENTS.md) for the breadboard geometry and how the editor, validator, and MCP server fit together. Change the core under `src/lib/crumb` first. Keep MCP thin.
+Contributions are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) for setup, checks, and how changes should land. Placement notes live in [AGENTS.md](AGENTS.md). Security reports go through [SECURITY.md](SECURITY.md).
 
 ## License
 
