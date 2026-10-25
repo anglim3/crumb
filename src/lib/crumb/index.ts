@@ -10,4 +10,5 @@ export * from "./examples.ts";
 export * from "./geometry.ts";
 export * from "./steps.ts";
 export * from "./mutate.ts";
+export * from "./share.ts";
 export * from "./render-svg.ts";

@@ -1,5 +1,6 @@
 import { upsertLibrary, type LibraryFile } from "./library.ts";
-import { decodeShare, parseProject } from "./mutate.ts";
+import { parseProject } from "./mutate.ts";
+import { decodeShare } from "./share.ts";
 import { useCrumb } from "./store.ts";
 import type { Project } from "./types.ts";
 
@@ -50,7 +51,7 @@ function parseSession(raw: string | null): Project | null {
  * from storage, but do not treat a bad hash as a fresh empty editor — that
  * path used to persist the stock example over the saved project and library.
  */
-export function resolveBoot(hash: string, stored: StoredSnapshot): BootPlan {
+export async function resolveBoot(hash: string, stored: StoredSnapshot): Promise<BootPlan> {
   const libraryRaw = parseJson(stored.libraryRaw);
   const session = parseSession(stored.projectRaw);
   const body = hash.replace(/^#/, "");
@@ -58,7 +59,7 @@ export function resolveBoot(hash: string, stored: StoredSnapshot): BootPlan {
     return { libraryRaw, session, sessionRaw: stored.projectRaw, share: null, holdLibrary: false };
   }
   try {
-    const share = decodeShare(body.slice(2));
+    const share = await decodeShare(body.slice(2));
     return { libraryRaw, session: null, sessionRaw: null, share, holdLibrary: true };
   } catch {
     return { libraryRaw, session, sessionRaw: stored.projectRaw, share: null, holdLibrary: false };
@@ -73,8 +74,8 @@ export function libraryAutosave(library: LibraryFile, project: Project, holdLibr
 }
 
 /** Cold start used by the editor. A share loads into the session and holds library writes. */
-export function applyBoot(hash: string, stored: StoredSnapshot): void {
-  const plan = resolveBoot(hash, stored);
+export async function applyBoot(hash: string, stored: StoredSnapshot): Promise<void> {
+  const plan = await resolveBoot(hash, stored);
   useCrumb.getState().hydrateLibrary(plan.libraryRaw, plan.share ? null : plan.session);
   if (plan.share) {
     useCrumb.getState().loadSharedProject(plan.share);

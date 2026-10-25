@@ -2,6 +2,8 @@
 # style-src keeps 'unsafe-inline' because the board and color swatches set style attributes.
 # img-src allows data images and the blob URLs used for SVG and PNG export.
 # Fonts are self-hosted, so font-src does not name a third-party host.
+# The manifest, icons, and og.png are same-origin files, covered by default-src and img-src.
+# Share compression uses CompressionStream in the page and does not add a connect target.
 /*
   Content-Security-Policy: default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob:; connect-src 'self'
   X-Content-Type-Options: nosniff

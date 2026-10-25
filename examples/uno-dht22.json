@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "name": "Uno + DHT22",
+  "board": "half",
+  "parts": [
+    { "kind": "module", "id": "m1", "def": "uno", "slot": 1, "offsetRow": 4 },
+    { "kind": "leaded", "id": "s1", "def": "dht22", "from": "20-j", "to": "23-j", "mid": "21-j", "legs": ["22-j"] },
+    { "kind": "leaded", "id": "rp", "def": "resistor", "from": "20-f", "to": "21-f", "value": "10k" }
+  ],
+  "wires": [
+    { "id": "w1", "from": "20-j", "to": "RP-20", "color": "#c45c4a" },
+    { "id": "w2", "from": "23-j", "to": "RM-23", "color": "#2b2b2b" },
+    { "id": "w3", "from": "21-j", "to": "16-j", "color": "#3d6b8a" },
+    { "id": "w4", "from": "RP-5", "to": "20-f", "color": "#c45c4a" },
+    { "id": "w5", "from": "RM-5", "to": "RM-23", "color": "#2b2b2b" }
+  ]
+}

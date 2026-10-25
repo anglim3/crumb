@@ -103,7 +103,7 @@ export const useCrumb = create<CrumbState>((set, get) => {
   };
 
   return {
-    project: EXAMPLE_555,
+    project: structuredClone(EXAMPLE_555),
     past: [],
     future: [],
     tool: "select",

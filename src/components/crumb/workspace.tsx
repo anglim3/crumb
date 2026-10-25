@@ -4,7 +4,8 @@ import { EXAMPLES } from "@/lib/crumb/examples";
 import { applyBoot, libraryAutosave, PROJECT_KEY } from "@/lib/crumb/boot";
 import { LIBRARY_KEY } from "@/lib/crumb/library";
 import { copyText } from "@/lib/crumb/clipboard";
-import { encodeShare, parseProject } from "@/lib/crumb/mutate";
+import { parseProject } from "@/lib/crumb/mutate";
+import { encodeShare } from "@/lib/crumb/share";
 import { downloadPng, downloadText, renderProjectSvg } from "@/lib/crumb/render-svg";
 import { buildSteps } from "@/lib/crumb/steps";
 import { useCrumb, WIRE_COLORS } from "@/lib/crumb/store";
@@ -14,6 +15,15 @@ import { detectShorts } from "@/lib/crumb/shorts";
 import { validateProject } from "@/lib/crumb/validate";
 import { cn } from "@/lib/utils";
 import { BoardView } from "./board-view";
+import {
+  AppFooter,
+  EmptyBoard,
+  ExampleGallery,
+  FirstRunHint,
+  HelpDialog,
+  hintDismissed,
+  rememberHintDismissed,
+} from "./shell";
 import { Cable, Check, FolderOpen, Redo2, Save, Trash2, Undo2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
@@ -32,10 +42,20 @@ export function Workspace() {
   const shorts = useMemo(() => detectShorts(project), [project]);
   const steps = useMemo(() => buildSteps(project), [project]);
   const [hydrated, setHydrated] = useState(false);
+  const [helpOpen, setHelpOpen] = useState(false);
+  const [galleryOpen, setGalleryOpen] = useState(false);
+  const [hintOn, setHintOn] = useState(() => !hintDismissed());
+  const [emptyDismissed, setEmptyDismissed] = useState(false);
   const [storageBanner, setStorageBanner] = useState<string | null>(null);
   const holdLibrary = useCrumb((s) => s.holdLibrary);
+  const boardEmpty = project.parts.length === 0 && project.wires.length === 0;
 
   useEffect(() => {
+    if (!boardEmpty) setEmptyDismissed(false);
+  }, [boardEmpty]);
+
+  useEffect(() => {
+    let cancelled = false;
     let projectRaw: string | null = null;
     let libraryRaw: string | null = null;
     try {
@@ -44,12 +64,17 @@ export function Workspace() {
     } catch {
       /* ignore */
     }
-    try {
-      applyBoot(window.location.hash, { projectRaw, libraryRaw });
-    } catch {
-      /* ignore */
-    }
-    setHydrated(true);
+    void (async () => {
+      try {
+        await applyBoot(window.location.hash, { projectRaw, libraryRaw });
+      } catch {
+        /* ignore */
+      }
+      if (!cancelled) setHydrated(true);
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   useEffect(() => {
@@ -67,6 +92,18 @@ export function Workspace() {
     const onKey = (e: KeyboardEvent) => {
       const tag = (e.target as HTMLElement | null)?.tagName;
       if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
+      if (e.key === "?" || (e.key === "/" && e.shiftKey)) {
+        e.preventDefault();
+        setHelpOpen((open) => !open);
+        return;
+      }
+      if (helpOpen || galleryOpen) {
+        if (e.key === "Escape") {
+          setHelpOpen(false);
+          setGalleryOpen(false);
+        }
+        return;
+      }
       if (e.key === "Escape") cancelPending();
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "z") {
         e.preventDefault();
@@ -93,7 +130,7 @@ export function Workspace() {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [cancelPending, deleteSelected, undo, redo]);
+  }, [cancelPending, deleteSelected, undo, redo, helpOpen, galleryOpen]);
   return (
     <div className="flex min-h-dvh flex-col bg-bg text-fg lg:h-dvh lg:overflow-hidden">
       {storageBanner && (
@@ -101,7 +138,20 @@ export function Workspace() {
           {storageBanner}
         </p>
       )}
-      <Header />
+      <Header
+        helpOpen={helpOpen}
+        galleryOpen={galleryOpen}
+        onToggleHelp={() => setHelpOpen((open) => !open)}
+        onToggleGallery={() => setGalleryOpen((open) => !open)}
+      />
+      {hintOn && (
+        <FirstRunHint
+          onDismiss={() => {
+            setHintOn(false);
+            rememberHintDismissed();
+          }}
+        />
+      )}
       <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
         <aside className="order-2 max-h-[42vh] overflow-y-auto border-t border-border print:hidden lg:order-1 lg:max-h-none lg:min-h-0 lg:w-72 lg:border-r lg:border-t-0">
           <PartsPane />
@@ -135,19 +185,42 @@ export function Workspace() {
               )}
             </p>
           </div>
-          <div className="min-h-0 flex-1 px-3 pb-3 lg:h-0">
+          <div className="relative min-h-0 flex-1 px-3 pb-3 lg:h-0">
             <BoardView />
+            {boardEmpty && !emptyDismissed && (
+              <EmptyBoard onLoadExample={() => setGalleryOpen(true)} onStartFresh={() => setEmptyDismissed(true)} />
+            )}
           </div>
         </main>
         <aside className="order-3 max-h-[40vh] overflow-y-auto border-t border-border print:hidden lg:max-h-none lg:min-h-0 lg:w-80 lg:border-l lg:border-t-0">
           <Inspector issues={issues} steps={steps} shorts={shorts} />
         </aside>
       </div>
+      <AppFooter />
+      <HelpDialog open={helpOpen} onClose={() => setHelpOpen(false)} />
+      <ExampleGallery
+        open={galleryOpen}
+        onClose={() => setGalleryOpen(false)}
+        onPick={(name) => {
+          useCrumb.getState().openExample(name);
+          setGalleryOpen(false);
+        }}
+      />
     </div>
   );
 }
 
-function Header() {
+function Header({
+  helpOpen,
+  galleryOpen,
+  onToggleHelp,
+  onToggleGallery,
+}: {
+  helpOpen: boolean;
+  galleryOpen: boolean;
+  onToggleHelp: () => void;
+  onToggleGallery: () => void;
+}) {
   const project = useCrumb((s) => s.project);
   const changeBoard = useCrumb((s) => s.changeBoard);
   const tool = useCrumb((s) => s.tool);
@@ -245,8 +318,29 @@ function Header() {
         <button
           type="button"
           className="h-10 rounded-md bg-surface px-3 text-sm"
+          onClick={onToggleGallery}
+          aria-expanded={galleryOpen}
+          aria-haspopup="dialog"
+        >
+          Examples
+        </button>
+        <button
+          type="button"
+          className="h-10 w-10 rounded-md bg-surface text-sm"
+          onClick={onToggleHelp}
+          aria-expanded={helpOpen}
+          aria-haspopup="dialog"
+          aria-label="Help"
+          title="Help (?)"
+        >
+          ?
+        </button>
+        <button
+          type="button"
+          className="h-10 rounded-md bg-surface px-3 text-sm"
           onClick={saveProject}
           title="Save to this browser"
+          aria-label="Save project to this browser"
         >
           <span className="inline-flex items-center gap-1.5">
             <Save className="size-3.5" />
@@ -258,6 +352,7 @@ function Header() {
             type="button"
             className="h-10 rounded-md bg-surface px-3 text-sm"
             title="Delete saved project"
+            aria-label="Delete saved project"
             onClick={() => deleteLibraryEntry(library.activeId!)}
           >
             <Trash2 className="size-3.5" />
@@ -269,6 +364,7 @@ function Header() {
             className="h-10 rounded-md bg-surface px-3 text-sm disabled:opacity-40"
             onClick={undo}
             disabled={!past.length}
+            aria-label="Undo"
           >
             <span className="inline-flex items-center gap-1.5">
               <Undo2 className="size-3.5" />
@@ -280,6 +376,7 @@ function Header() {
             className="h-10 rounded-md bg-surface px-3 text-sm disabled:opacity-40"
             onClick={redo}
             disabled={!future.length}
+            aria-label="Redo"
           >
             <span className="inline-flex items-center gap-1.5">
               <Redo2 className="size-3.5" />
@@ -293,6 +390,8 @@ function Header() {
               tool === "select" ? "bg-accent text-accent-fg" : "bg-surface",
             )}
             onClick={() => setTool("select")}
+            aria-pressed={tool === "select"}
+            aria-label="Select"
           >
             Select
           </button>
@@ -300,6 +399,8 @@ function Header() {
             type="button"
             className={cn("h-10 rounded-md px-3 text-sm", tool === "wire" ? "bg-accent text-accent-fg" : "bg-surface")}
             onClick={() => setTool("wire")}
+            aria-pressed={tool === "wire"}
+            aria-label="Wire"
           >
             <span className="inline-flex items-center gap-1.5">
               <Cable className="size-3.5" />
@@ -307,18 +408,34 @@ function Header() {
             </span>
           </button>
           <details className="relative">
-            <summary className="h-10 list-none rounded-md bg-surface px-3 text-sm cursor-pointer inline-flex items-center">
+            <summary
+              className="h-10 list-none rounded-md bg-surface px-3 text-sm cursor-pointer inline-flex items-center"
+              aria-label="More actions"
+            >
               More
             </summary>
             <div className="absolute right-0 z-20 mt-1 flex w-44 flex-col gap-1 rounded-md border border-border bg-bg p-2">
-              <button type="button" className="h-10 rounded-md bg-surface px-3 text-sm" onClick={duplicateSelected}>
+              <button
+                type="button"
+                className="h-10 rounded-md bg-surface px-3 text-sm"
+                onClick={duplicateSelected}
+                aria-label="Duplicate selected part"
+              >
                 Duplicate
               </button>
-              <button type="button" className="h-10 rounded-md bg-surface px-3 text-sm" onClick={deleteSelected}>
+              <button
+                type="button"
+                className="h-10 rounded-md bg-surface px-3 text-sm"
+                onClick={deleteSelected}
+                aria-label="Delete selected part or wire"
+              >
                 Delete
               </button>
-              <label className="h-10 rounded-md bg-surface px-3 text-sm inline-flex items-center gap-1.5 cursor-pointer">
-                <FolderOpen className="size-3.5" />
+              <label
+                className="h-10 rounded-md bg-surface px-3 text-sm inline-flex items-center gap-1.5 cursor-pointer"
+                aria-label="Open project file"
+              >
+                <FolderOpen className="size-3.5" aria-hidden="true" />
                 Open
                 <input
                   type="file"
@@ -338,19 +455,27 @@ function Header() {
                   }}
                 />
               </label>
-              <button type="button" className="h-10 rounded-md bg-surface px-3 text-sm" onClick={newProject}>
+              <button
+                type="button"
+                className="h-10 rounded-md bg-surface px-3 text-sm"
+                onClick={newProject}
+                aria-label="New project"
+              >
                 New
               </button>
               <button
                 type="button"
                 className={cn("h-10 rounded-md px-3 text-sm", jsonOpen ? "bg-accent text-accent-fg" : "bg-surface")}
                 onClick={() => setJsonOpen(!jsonOpen)}
+                aria-pressed={jsonOpen}
+                aria-label="Toggle project JSON"
               >
                 JSON
               </button>
               <button
                 type="button"
                 className="h-10 rounded-md bg-surface px-3 text-sm"
+                aria-label="Download JSON"
                 onClick={() =>
                   downloadText(
                     `${project.name.replace(/\s+/g, "-").toLowerCase()}.json`,
@@ -364,6 +489,7 @@ function Header() {
               <button
                 type="button"
                 className="h-10 rounded-md bg-surface px-3 text-sm"
+                aria-label="Download SVG"
                 onClick={() =>
                   downloadText(
                     `${project.name.replace(/\s+/g, "-").toLowerCase()}.svg`,
@@ -377,6 +503,7 @@ function Header() {
               <button
                 type="button"
                 className="h-10 rounded-md bg-surface px-3 text-sm"
+                aria-label="Download PNG"
                 onClick={() => downloadPng(`${project.name.replace(/\s+/g, "-").toLowerCase()}.png`, project)}
               >
                 PNG
@@ -384,11 +511,17 @@ function Header() {
               <button
                 type="button"
                 className="h-10 rounded-md bg-surface px-3 text-sm"
+                aria-label="Copy share link"
                 onClick={() => {
-                  const url = `${window.location.origin}${window.location.pathname}#c=${encodeShare(project)}`;
-                  void copyText(url).then((ok) => {
-                    setToast(ok ? { tone: "ok", text: "Copied" } : { tone: "bad", text: "Could not copy the link." });
-                  });
+                  void encodeShare(project)
+                    .then((token) => {
+                      const url = `${window.location.origin}${window.location.pathname}#c=${token}`;
+                      return copyText(url);
+                    })
+                    .then((ok) => {
+                      setToast(ok ? { tone: "ok", text: "Copied" } : { tone: "bad", text: "Could not copy the link." });
+                    })
+                    .catch(() => setToast({ tone: "bad", text: "Could not copy the link." }));
                 }}
               >
                 Copy link
@@ -419,6 +552,9 @@ function PartsPane() {
   const setPendingDef = useCrumb((s) => s.setPendingDef);
   const wireColor = useCrumb((s) => s.wireColor);
   const setWireColor = useCrumb((s) => s.setWireColor);
+  const placed = useCrumb((s) => s.project.parts);
+  const selected = useCrumb((s) => s.selected);
+  const setSelected = useCrumb((s) => s.setSelected);
   const parts = useMemo(() => {
     const found = searchParts(q);
     if (klass === "all") return found;
@@ -433,6 +569,7 @@ function PartsPane() {
           value={q}
           onChange={(e) => setQ(e.target.value)}
           placeholder="Search parts"
+          aria-label="Search parts"
           className="mt-2 h-10 w-full rounded-md border border-border bg-surface px-3 text-sm text-fg"
         />
         <div className="mt-3 flex flex-wrap gap-2">
@@ -440,6 +577,7 @@ function PartsPane() {
             type="button"
             className={cn("h-10 rounded-md px-3 text-sm", klass === "all" ? "bg-accent text-accent-fg" : "bg-surface")}
             onClick={() => setKlass("all")}
+            aria-pressed={klass === "all"}
           >
             All
           </button>
@@ -449,6 +587,7 @@ function PartsPane() {
               type="button"
               className={cn("h-10 rounded-md px-3 text-sm", klass === cls ? "bg-accent text-accent-fg" : "bg-surface")}
               onClick={() => setKlass(cls)}
+              aria-pressed={klass === cls}
             >
               {CLASS_LABEL[cls]}
             </button>
@@ -462,7 +601,8 @@ function PartsPane() {
             <button
               key={c}
               type="button"
-              aria-label={`Wire ${c}`}
+              aria-label={`Wire color ${c}`}
+              aria-pressed={wireColor === c}
               className={cn("size-7 rounded-full border border-border", wireColor === c && "ring-2 ring-accent")}
               style={{ background: c }}
               onClick={() => setWireColor(c)}
@@ -470,12 +610,49 @@ function PartsPane() {
           ))}
         </div>
       </div>
-      <ul className="flex flex-col gap-1">
+      <div>
+        <p id="board-parts-label" className="text-xs font-medium uppercase tracking-wide text-muted">
+          On the board
+        </p>
+        <ul className="mt-2 flex flex-col gap-1" aria-labelledby="board-parts-label">
+          {placed.length === 0 && <li className="px-1 text-sm text-muted">Nothing placed yet</li>}
+          {placed.map((part) => {
+            const def = getPart(part.def);
+            const active = selected === part.id;
+            return (
+              <li key={part.id}>
+                <button
+                  type="button"
+                  data-board-part=""
+                  aria-pressed={active}
+                  aria-label={`${part.id}, ${def?.name ?? part.def}. Select, then press Delete to remove.`}
+                  onFocus={() => setSelected(part.id)}
+                  onClick={() => setSelected(part.id)}
+                  className={cn(
+                    "flex w-full flex-col items-start rounded-md px-3 py-2 text-left",
+                    active ? "bg-accent text-accent-fg" : "bg-surface hover:bg-surface-hover",
+                  )}
+                >
+                  <span className="text-sm">
+                    {part.id} · {def?.name ?? part.def}
+                  </span>
+                  <span className={cn("text-xs", active ? "text-accent-fg/80" : "text-muted")}>
+                    Select, then Delete to remove
+                  </span>
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+      <ul className="flex flex-col gap-1" aria-label="Catalog parts">
         {parts.length === 0 && <li className="px-1 text-sm text-muted">No parts in this group</li>}
         {parts.map((part) => (
           <li key={part.id}>
             <button
               type="button"
+              aria-pressed={pendingDef === part.id}
+              aria-label={`Place ${part.name}`}
               onClick={() => setPendingDef(part.id)}
               className={cn(
                 "flex w-full flex-col items-start rounded-md px-3 py-2 text-left",

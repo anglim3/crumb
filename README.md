@@ -23,6 +23,26 @@
 
 <p align="center"><sub>The 555 blinker example, rendered by Crumb — same SVG the editor and CLI produce.</sub></p>
 
+## Editor
+
+<p align="center">
+  <img src="docs/editor-example.jpg" alt="Crumb editor showing the 555 blinker on a half-size breadboard" width="720" />
+</p>
+
+<p align="center">
+  <img src="docs/editor-net.jpg" alt="The same board with the supply net highlighted" width="720" />
+</p>
+
+<p align="center">
+  <img src="docs/editor-place.jpg" alt="Placing a resistor between two holes on the breadboard" width="720" />
+</p>
+
+<p align="center">
+  <img src="docs/editor.gif" alt="Editor sequence: the 555 example, a highlighted net, then placing a resistor" width="720" />
+</p>
+
+<p align="center"><sub>Opening an example, highlighting a net, and placing a part.</sub></p>
+
 ---
 
 Crumb is a **layout tool**, not a simulator. It draws the holes, strips, and jumpers you will use at the bench. It will yell if two parts share a hole or if VCC meets GND. It will not compute LED current.
@@ -35,6 +55,14 @@ Crumb is a **layout tool**, not a simulator. It draws the holes, strips, and jum
 - Short detection, build steps, BOM, JSON / SVG / PNG export, share links
 - Local MCP server using the same validator as the editor
 - SVG CLI with no `npm install`
+
+## Limits and known gaps
+
+- Layout only. Crumb checks shared holes and shorts. It does not simulate the circuit.
+- The parts catalog is fixed. A part that is not listed stays off the board as a module.
+- `nano` and `nano-esp32` are different boards. `nano-esp32` is the Arduino Nano ESP32 (ABX00083): pin 1 is D12 and sits in column f. `nano` is the classic Nano.
+- There is no cloud sync and no live collaboration. A share link is a copy of the layout in the URL.
+- The library is stored in this browser only.
 
 ## Quick start
 
@@ -81,8 +109,14 @@ npm run deploy
 | File | What it is |
 | --- | --- |
 | [`examples/555-blinker.json`](examples/555-blinker.json) | Astable 555 + LED |
+| [`examples/button-led.json`](examples/button-led.json) | Button, resistor, and LED |
+| [`examples/lm358-amplifier.json`](examples/lm358-amplifier.json) | LM358 non-inverting amplifier |
+| [`examples/74hc595-leds.json`](examples/74hc595-leds.json) | 74HC595 with eight LEDs |
+| [`examples/attiny85-blink.json`](examples/attiny85-blink.json) | ATtiny85 blink on PB0 |
+| [`examples/esp32-led.json`](examples/esp32-led.json) | ESP32 DevKit and an LED |
+| [`examples/pico-button.json`](examples/pico-button.json) | Pico with a button |
+| [`examples/uno-dht22.json`](examples/uno-dht22.json) | Uno module and a DHT22 |
 | [`examples/homekit-blinds.json`](examples/homekit-blinds.json) | Nano ESP32 + TMC2208 + NEMA 17 + limit switch |
-| [`src/lib/crumb/examples.ts`](src/lib/crumb/examples.ts) | Button LED, Uno + DHT22, ESP32 LED, Pico button |
 
 The blinds bench jumpers the barrel jack (`m1.pos` / `m1.neg`) onto the lower RP / RM half (12 V; not jumped across the mid-board split) and the stepper coils onto the TMC2208 taps. LP is 3V3 from the Nano ESP32 and is jumped across the split so TMC VIO can share it. Use catalog id `nano-esp32`, not `nano`.
 
@@ -154,6 +188,10 @@ DIP pin 1 sits on the left strip (`a`–`e`). The body crosses the gutter.
 Catalog ids live in [`src/lib/crumb/catalog.ts`](src/lib/crumb/catalog.ts). Keep [`mcp/catalog.json`](mcp/catalog.json) in sync when you add parts.
 
 </details>
+
+## Catalog sources
+
+The part catalog is hand-maintained in [`src/lib/crumb/catalog.ts`](src/lib/crumb/catalog.ts). [`mcp/catalog.json`](mcp/catalog.json) is a copy for the MCP server — regenerate it when the catalog changes. Pin names are labels for the drawn package, taken from common datasheets. They are not an electrical model. Check the datasheet before you build. Do not use `nano` for a Nano ESP32.
 
 ## Repo map
 

@@ -3,7 +3,7 @@ import { test } from "node:test";
 import { applyBoot, libraryAutosave } from "./boot.ts";
 import { EXAMPLE_555 } from "./examples.ts";
 import { emptyLibrary, upsertLibrary } from "./library.ts";
-import { encodeShare } from "./mutate.ts";
+import { encodeShare } from "./share.ts";
 import { useCrumb } from "./store.ts";
 import type { Project } from "./types.ts";
 
@@ -29,12 +29,12 @@ function named(name: string): Project {
   return { ...EXAMPLE_555, name };
 }
 
-test("#c= boot preserves the saved library until an explicit save", () => {
+test("#c= boot preserves the saved library until an explicit save", async () => {
   resetEditor();
   const saved = upsertLibrary(emptyLibrary(), named("Bench copy"), null, 1);
   const storedLibrary = JSON.stringify(saved);
   const share = named("Shared from a friend");
-  applyBoot(`#c=${encodeShare(share)}`, {
+  await applyBoot(`#c=${await encodeShare(share)}`, {
     projectRaw: JSON.stringify(named("Session draft")),
     libraryRaw: storedLibrary,
   });
@@ -63,14 +63,14 @@ test("#c= boot preserves the saved library until an explicit save", () => {
   assert.ok(file.entries.some((entry) => entry.project.name === "Shared, edited"));
 });
 
-test("invalid #c= hash preserves the library and the project", () => {
+test("invalid #c= hash preserves the library and the project", async () => {
   resetEditor();
   const library = {
     ...upsertLibrary(emptyLibrary(), named("Keep this library"), null, 1),
     activeId: null,
   };
   const session = named("Keep this project");
-  applyBoot("#c=%%%not-a-share%%%", {
+  await applyBoot("#c=%%%not-a-share%%%", {
     projectRaw: JSON.stringify(session),
     libraryRaw: JSON.stringify(library),
   });
@@ -93,9 +93,9 @@ test("invalid #c= hash preserves the library and the project", () => {
   assert.equal(JSON.parse(JSON.stringify(state.project)).name, "Keep this project");
 });
 
-test("a share does not migrate the previous session into an empty library", () => {
+test("a share does not migrate the previous session into an empty library", async () => {
   resetEditor();
-  applyBoot(`#c=${encodeShare(named("Just visiting"))}`, {
+  await applyBoot(`#c=${await encodeShare(named("Just visiting"))}`, {
     projectRaw: JSON.stringify(named("Old session")),
     libraryRaw: JSON.stringify(emptyLibrary()),
   });
@@ -103,4 +103,36 @@ test("a share does not migrate the previous session into an empty library", () =
   assert.equal(state.project.name, "Just visiting");
   assert.equal(state.library.entries.length, 0);
   assert.equal(libraryAutosave(state.library, state.project, state.holdLibrary), null);
+});
+
+test("legacy base64 #c= payload still holds the library", async () => {
+  resetEditor();
+  const share = named("Older link — café");
+  const legacy = btoa(unescape(encodeURIComponent(JSON.stringify(share))));
+  const library = upsertLibrary(emptyLibrary(), named("Keep this library"), null, 1);
+  await applyBoot(`#c=${legacy}`, {
+    projectRaw: JSON.stringify(named("Session draft")),
+    libraryRaw: JSON.stringify(library),
+  });
+  const state = useCrumb.getState();
+  assert.equal(state.project.name, "Older link — café");
+  assert.equal(state.holdLibrary, true);
+  assert.equal(state.library.activeId, null);
+  assert.equal(state.library.entries.length, 1);
+  assert.equal(libraryAutosave(state.library, state.project, state.holdLibrary), null);
+});
+
+test("a broken v2 share does not replace the saved project", async () => {
+  resetEditor();
+  const library = { ...upsertLibrary(emptyLibrary(), named("Keep this library"), null, 1), activeId: null };
+  await applyBoot("#c=v2.!!!", {
+    projectRaw: JSON.stringify(named("Keep this project")),
+    libraryRaw: JSON.stringify(library),
+  });
+  const state = useCrumb.getState();
+  assert.equal(state.project.name, "Keep this project");
+  assert.equal(state.holdLibrary, false);
+  assert.equal(state.library.entries.length, 1);
+  assert.equal(state.library.entries[0]?.project.name, "Keep this library");
+  assert.equal(libraryAutosave(state.library, state.project, state.holdLibrary) === null, false);
 });

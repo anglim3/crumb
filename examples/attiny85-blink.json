@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "name": "ATtiny85 blink",
+  "board": "half",
+  "parts": [
+    { "kind": "dip", "id": "u1", "def": "attiny85", "anchor": "10-e" },
+    { "kind": "leaded", "id": "r1", "def": "resistor", "from": "10-a", "to": "LP-8", "value": "10k" },
+    { "kind": "leaded", "id": "r2", "def": "resistor", "from": "13-j", "to": "16-j", "value": "330Ω" },
+    { "kind": "leaded", "id": "d1", "def": "led", "from": "16-h", "to": "18-h" }
+  ],
+  "wires": [
+    { "id": "w1", "from": "u1.VCC", "to": "LP-10", "color": "#c45c4a" },
+    { "id": "w2", "from": "u1.GND", "to": "LM-13", "color": "#2b2b2b" },
+    { "id": "w3", "from": "LM-13", "to": "RM-13", "color": "#2b2b2b" },
+    { "id": "w4", "from": "RM-15", "to": "RM-16", "color": "#2b2b2b" },
+    { "id": "w5", "from": "18-h", "to": "RM-18", "color": "#2b2b2b" }
+  ]
+}
