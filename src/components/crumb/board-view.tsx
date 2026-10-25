@@ -45,13 +45,25 @@ export function BoardView() {
   return (
     <div className="relative h-full min-h-0 overflow-auto bg-bench max-lg:h-auto">
       <div className="pointer-events-none absolute right-2 top-2 z-10 flex gap-2 print:hidden">
-        <button type="button" className="pointer-events-auto h-10 rounded-md bg-surface px-3 text-sm" onClick={() => setZoom((z) => Math.max(0.5, +(z - 0.2).toFixed(2)))}>
+        <button
+          type="button"
+          className="pointer-events-auto h-10 rounded-md bg-surface px-3 text-sm"
+          onClick={() => setZoom((z) => Math.max(0.5, +(z - 0.2).toFixed(2)))}
+        >
           −
         </button>
-        <button type="button" className="pointer-events-auto h-10 rounded-md bg-surface px-3 text-sm" onClick={() => setZoom(1)}>
+        <button
+          type="button"
+          className="pointer-events-auto h-10 rounded-md bg-surface px-3 text-sm"
+          onClick={() => setZoom(1)}
+        >
           {Math.round(zoom * 100)}%
         </button>
-        <button type="button" className="pointer-events-auto h-10 rounded-md bg-surface px-3 text-sm" onClick={() => setZoom((z) => Math.min(2.4, +(z + 0.2).toFixed(2)))}>
+        <button
+          type="button"
+          className="pointer-events-auto h-10 rounded-md bg-surface px-3 text-sm"
+          onClick={() => setZoom((z) => Math.min(2.4, +(z + 0.2).toFixed(2)))}
+        >
           +
         </button>
       </div>
@@ -197,13 +209,7 @@ export function BoardView() {
                 r={MODULE_PIN_R}
                 opacity={holeOpacity(focus, pin.ref)}
                 className={
-                  shorted.has(pin.ref)
-                    ? "fill-bad"
-                    : isFrom
-                      ? "fill-hole-active"
-                      : on
-                        ? "fill-hole-lit"
-                        : "fill-hole"
+                  shorted.has(pin.ref) ? "fill-bad" : isFrom ? "fill-hole-active" : on ? "fill-hole-lit" : "fill-hole"
                 }
                 stroke="#c9b896"
                 strokeWidth="0.8"
@@ -317,10 +323,22 @@ function RailStrip({
     <g>
       <rect x={xP} y={y} width={PITCH * 0.84} height={h} rx="4" className="fill-rail-plus" />
       <rect x={xM} y={y} width={PITCH * 0.84} height={h} rx="4" className="fill-rail-minus" />
-      <text x={xP + PITCH * 0.42} y={y - 3} textAnchor="middle" className="fill-ink-soft font-mono" style={{ fontSize: 8 }}>
+      <text
+        x={xP + PITCH * 0.42}
+        y={y - 3}
+        textAnchor="middle"
+        className="fill-ink-soft font-mono"
+        style={{ fontSize: 8 }}
+      >
         +
       </text>
-      <text x={xM + PITCH * 0.42} y={y - 3} textAnchor="middle" className="fill-ink-soft font-mono" style={{ fontSize: 8 }}>
+      <text
+        x={xM + PITCH * 0.42}
+        y={y - 3}
+        textAnchor="middle"
+        className="fill-ink-soft font-mono"
+        style={{ fontSize: 8 }}
+      >
         −
       </text>
     </g>
@@ -458,7 +476,11 @@ function ModuleCard({
   const labelAnchor = part.slot === 0 ? "end" : "start";
   const labelX = card.pins[0] ? (part.slot === 0 ? card.pins[0].x - 8 : card.pins[0].x + 8) : card.x + 10;
   return (
-    <g transform={dRow ? `translate(0 ${dRow * PITCH})` : undefined} onPointerDown={onPointerDown} className="cursor-grab">
+    <g
+      transform={dRow ? `translate(0 ${dRow * PITCH})` : undefined}
+      onPointerDown={onPointerDown}
+      className="cursor-grab"
+    >
       <rect
         x={card.x}
         y={card.y}
@@ -497,4 +519,3 @@ function ModuleCard({
     </g>
   );
 }
-

@@ -108,7 +108,10 @@ export function leadedMarkup(opts: {
     const bands = ["#c45c4a", "#2b2b2b", "#c9a227", "#8a5a2b"];
     const bandW = (hw * 2) / 9;
     const bandRects = bands
-      .map((c, i) => `<rect x="${x + bandW * (1.4 + i * 1.5)}" y="${y + 0.6}" width="${bandW}" height="${hh * 2 - 1.2}" fill="${c}"/>`)
+      .map(
+        (c, i) =>
+          `<rect x="${x + bandW * (1.4 + i * 1.5)}" y="${y + 0.6}" width="${bandW}" height="${hh * 2 - 1.2}" fill="${c}"/>`,
+      )
       .join("");
     return [
       metal,

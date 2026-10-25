@@ -22,14 +22,24 @@ export function validateProject(project: Project): Issue[] {
   for (const part of project.parts) {
     const def = getPart(part.def);
     if (!def) {
-      issues.push({ level: "error", code: "unknown-part", message: `Unknown part "${part.def}"`, refs: [part.id] });
+      issues.push({
+        level: "error",
+        code: "unknown-part",
+        message: `Unknown part "${part.def}"`,
+        refs: [part.id],
+      });
       continue;
     }
     if (part.kind === "dip") {
       const count = def.dipPins ?? 0;
       const pin1 = parseHole(part.anchor);
       if (!pin1 || pin1.kind !== "terminal") {
-        issues.push({ level: "error", code: "bad-anchor", message: `${part.id}: pin 1 must be a terminal hole like 10-e`, refs: [part.id] });
+        issues.push({
+          level: "error",
+          code: "bad-anchor",
+          message: `${part.id}: pin 1 must be a terminal hole like 10-e`,
+          refs: [part.id],
+        });
         continue;
       }
       if (pin1.col !== "e" && !(def.dipMirror && pin1.col === "f")) {
@@ -57,11 +67,21 @@ export function validateProject(project: Project): Issue[] {
       const from = parseHole(part.from);
       const to = parseHole(part.to);
       if (!from || !to) {
-        issues.push({ level: "error", code: "bad-leads", message: `${part.id} has an invalid hole`, refs: [part.id] });
+        issues.push({
+          level: "error",
+          code: "bad-leads",
+          message: `${part.id} has an invalid hole`,
+          refs: [part.id],
+        });
         continue;
       }
       if (!holeInBounds(project, from) || !holeInBounds(project, to)) {
-        issues.push({ level: "error", code: "off-board", message: `${part.id} is off the board`, refs: [part.id] });
+        issues.push({
+          level: "error",
+          code: "off-board",
+          message: `${part.id} is off the board`,
+          refs: [part.id],
+        });
       }
       for (const hole of leadHoles(part)) addOcc(hole, part.id);
     }
@@ -106,7 +126,12 @@ export function validateProject(project: Project): Issue[] {
   for (const wire of project.wires) {
     const key = [wire.from, wire.to].sort().join("|");
     if (endpoints.has(key)) {
-      issues.push({ level: "warn", code: "dup-wire", message: `Duplicate jumper ${wire.from} ↔ ${wire.to}`, refs: [wire.id] });
+      issues.push({
+        level: "warn",
+        code: "dup-wire",
+        message: `Duplicate jumper ${wire.from} ↔ ${wire.to}`,
+        refs: [wire.id],
+      });
     }
     endpoints.add(key);
   }

@@ -16,7 +16,7 @@ export type Short = {
 };
 
 const PLUS = /^(vcc|vdd|vin|v\+|avcc|5v|3v3|3\.3v|\+vs|\+|pos)$/i;
-const MINUS = /^(gnd|vss|vee|agnd|v\-|\-|neg)$/i;
+const MINUS = /^(gnd|vss|vee|agnd|v-|-|neg)$/i;
 
 function pinPolarity(label: string): "plus" | "minus" | null {
   const t = label.trim();

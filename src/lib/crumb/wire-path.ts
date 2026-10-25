@@ -36,10 +36,7 @@ function corridorKey(w: WireGeom): string {
   if (Math.abs(w.ay - w.by) < AXIS_TOL) {
     return `h:${Math.round(w.ay)}`;
   }
-  const endpoints = [
-    `${Math.round(w.ax)},${Math.round(w.ay)}`,
-    `${Math.round(w.bx)},${Math.round(w.by)}`,
-  ].sort();
+  const endpoints = [`${Math.round(w.ax)},${Math.round(w.ay)}`, `${Math.round(w.bx)},${Math.round(w.by)}`].sort();
   return `e:${endpoints.join("|")}`;
 }
 

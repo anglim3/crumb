@@ -10,7 +10,19 @@ import {
   removeLibrary,
   upsertLibrary,
 } from "./library.ts";
-import { addWire, leadHoles, parseProject, placeDip, placeLeadedHoles, placeModule, removePart, removeWire, setBoard, updatePart, movePart } from "./mutate.ts";
+import {
+  addWire,
+  leadHoles,
+  parseProject,
+  placeDip,
+  placeLeadedHoles,
+  placeModule,
+  removePart,
+  removeWire,
+  setBoard,
+  updatePart,
+  movePart,
+} from "./mutate.ts";
 import type { BoardSize, PlacedPart, Project } from "./types.ts";
 
 export type Tool = "select" | "place" | "wire";
@@ -244,7 +256,14 @@ export const useCrumb = create<CrumbState>((set, get) => {
         return;
       }
       if (part.kind === "leaded") {
-        commit(placeLeadedHoles(s.project, part.def, leadHoles(part).map((h) => bump(h, 2)), part.value));
+        commit(
+          placeLeadedHoles(
+            s.project,
+            part.def,
+            leadHoles(part).map((h) => bump(h, 2)),
+            part.value,
+          ),
+        );
         return;
       }
       commit(placeModule(s.project, part.def, part.slot, part.offsetRow + 5));
@@ -315,24 +334,30 @@ export const useCrumb = create<CrumbState>((set, get) => {
       });
     },
     newProject: () => {
-      commit({ ...EMPTY_PROJECT, name: "Untitled" }, {
-        library: { ...get().library, activeId: null },
-        selected: null,
-        wireFrom: null,
-        placeClicks: [],
-      });
+      commit(
+        { ...EMPTY_PROJECT, name: "Untitled" },
+        {
+          library: { ...get().library, activeId: null },
+          selected: null,
+          wireFrom: null,
+          placeClicks: [],
+        },
+      );
     },
     deleteLibraryEntry: (id) => {
       const s = get();
       const library = removeLibrary(s.library, id);
       if (s.library.activeId === id) {
-        commit({ ...EMPTY_PROJECT, name: "Untitled" }, {
-          library,
-          holdLibrary: false,
-          selected: null,
-          wireFrom: null,
-          placeClicks: [],
-        });
+        commit(
+          { ...EMPTY_PROJECT, name: "Untitled" },
+          {
+            library,
+            holdLibrary: false,
+            selected: null,
+            wireFrom: null,
+            placeClicks: [],
+          },
+        );
         return;
       }
       set({ library, holdLibrary: false });

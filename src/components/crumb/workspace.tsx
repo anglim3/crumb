@@ -125,7 +125,9 @@ export function Workspace() {
             </p>
             <p className="font-mono tabular-nums">
               {shorts.length > 0 ? (
-                <span className="text-bad">{shorts.length} short{shorts.length === 1 ? "" : "s"}</span>
+                <span className="text-bad">
+                  {shorts.length} short{shorts.length === 1 ? "" : "s"}
+                </span>
               ) : (
                 <>
                   {project.parts.length} parts · {project.wires.length} wires
@@ -168,7 +170,11 @@ function Header() {
   const deleteLibraryEntry = useCrumb((s) => s.deleteLibraryEntry);
   const [toast, setToast] = useState<{ tone: "ok" | "bad"; text: string } | null>(null);
   const exampleMatch = EXAMPLES.find((e) => e.name === project.name && !library.activeId);
-  const pickerValue = library.activeId ? `user:${library.activeId}` : exampleMatch ? `ex:${exampleMatch.name}` : "draft";
+  const pickerValue = library.activeId
+    ? `user:${library.activeId}`
+    : exampleMatch
+      ? `ex:${exampleMatch.name}`
+      : "draft";
 
   useEffect(() => {
     if (!toast) return;
@@ -178,184 +184,230 @@ function Header() {
 
   return (
     <>
-    <header className="flex flex-wrap items-center gap-3 border-b border-border px-4 py-3 print:hidden">
-      <div className="min-w-0 flex-1">
-        <p className="font-display text-xl leading-none tracking-tight">Crumb</p>
-        <input
-          className="mt-1 h-8 w-full max-w-56 rounded-md border border-border bg-surface px-2 text-xs text-fg"
-          value={project.name}
-          onChange={(e) => setName(e.target.value)}
-          aria-label="Project name"
-        />
-      </div>
-      <label className="flex items-center gap-2 text-xs text-muted">
-        Board
-        <select
-          className="h-10 rounded-md border border-border bg-surface px-2 text-fg"
-          value={project.board}
-          onChange={(e) => changeBoard(e.target.value as BoardSize)}
-        >
-          {(Object.keys(BOARD_SPECS) as BoardSize[]).map((size) => (
-            <option key={size} value={size}>
-              {BOARD_SPECS[size].label}
-            </option>
-          ))}
-        </select>
-      </label>
-      <label className="flex items-center gap-2 text-xs text-muted">
-        Project
-        <select
-          className="h-10 max-w-52 rounded-md border border-border bg-surface px-2 text-fg"
-          value={pickerValue}
-          onChange={(e) => {
-            const value = e.target.value;
-            if (value === "draft") return;
-            if (value.startsWith("ex:")) openExample(value.slice(3));
-            if (value.startsWith("user:")) openLibraryEntry(value.slice(5));
-          }}
-        >
-          <option value="draft">{library.activeId ? "—" : project.name || "Untitled draft"}</option>
-          <optgroup label="Examples">
-            {EXAMPLES.map((ex) => (
-              <option key={ex.name} value={`ex:${ex.name}`}>
-                {ex.name}
+      <header className="flex flex-wrap items-center gap-3 border-b border-border px-4 py-3 print:hidden">
+        <div className="min-w-0 flex-1">
+          <p className="font-display text-xl leading-none tracking-tight">Crumb</p>
+          <input
+            className="mt-1 h-8 w-full max-w-56 rounded-md border border-border bg-surface px-2 text-xs text-fg"
+            value={project.name}
+            onChange={(e) => setName(e.target.value)}
+            aria-label="Project name"
+          />
+        </div>
+        <label className="flex items-center gap-2 text-xs text-muted">
+          Board
+          <select
+            className="h-10 rounded-md border border-border bg-surface px-2 text-fg"
+            value={project.board}
+            onChange={(e) => changeBoard(e.target.value as BoardSize)}
+          >
+            {(Object.keys(BOARD_SPECS) as BoardSize[]).map((size) => (
+              <option key={size} value={size}>
+                {BOARD_SPECS[size].label}
               </option>
             ))}
-          </optgroup>
-          <optgroup label="My projects">
-            {library.entries.length === 0 && (
-              <option value="draft" disabled>
-                None saved yet
-              </option>
-            )}
-            {library.entries.map((entry) => (
-              <option key={entry.id} value={`user:${entry.id}`}>
-                {entry.project.name || entry.id}
-              </option>
-            ))}
-          </optgroup>
-        </select>
-      </label>
-      <button type="button" className="h-10 rounded-md bg-surface px-3 text-sm" onClick={saveProject} title="Save to this browser">
-        <span className="inline-flex items-center gap-1.5">
-          <Save className="size-3.5" />
-          Save
-        </span>
-      </button>
-      {library.activeId && (
+          </select>
+        </label>
+        <label className="flex items-center gap-2 text-xs text-muted">
+          Project
+          <select
+            className="h-10 max-w-52 rounded-md border border-border bg-surface px-2 text-fg"
+            value={pickerValue}
+            onChange={(e) => {
+              const value = e.target.value;
+              if (value === "draft") return;
+              if (value.startsWith("ex:")) openExample(value.slice(3));
+              if (value.startsWith("user:")) openLibraryEntry(value.slice(5));
+            }}
+          >
+            <option value="draft">{library.activeId ? "—" : project.name || "Untitled draft"}</option>
+            <optgroup label="Examples">
+              {EXAMPLES.map((ex) => (
+                <option key={ex.name} value={`ex:${ex.name}`}>
+                  {ex.name}
+                </option>
+              ))}
+            </optgroup>
+            <optgroup label="My projects">
+              {library.entries.length === 0 && (
+                <option value="draft" disabled>
+                  None saved yet
+                </option>
+              )}
+              {library.entries.map((entry) => (
+                <option key={entry.id} value={`user:${entry.id}`}>
+                  {entry.project.name || entry.id}
+                </option>
+              ))}
+            </optgroup>
+          </select>
+        </label>
         <button
           type="button"
           className="h-10 rounded-md bg-surface px-3 text-sm"
-          title="Delete saved project"
-          onClick={() => deleteLibraryEntry(library.activeId!)}
-        >
-          <Trash2 className="size-3.5" />
-        </button>
-      )}
-      <div className="flex flex-wrap gap-2">
-        <button type="button" className="h-10 rounded-md bg-surface px-3 text-sm disabled:opacity-40" onClick={undo} disabled={!past.length}>
-          <span className="inline-flex items-center gap-1.5">
-            <Undo2 className="size-3.5" />
-            Undo
-          </span>
-        </button>
-        <button type="button" className="h-10 rounded-md bg-surface px-3 text-sm disabled:opacity-40" onClick={redo} disabled={!future.length}>
-          <span className="inline-flex items-center gap-1.5">
-            <Redo2 className="size-3.5" />
-            Redo
-          </span>
-        </button>
-        <button
-          type="button"
-          className={cn("h-10 rounded-md px-3 text-sm", tool === "select" ? "bg-accent text-accent-fg" : "bg-surface")}
-          onClick={() => setTool("select")}
-        >
-          Select
-        </button>
-        <button
-          type="button"
-          className={cn("h-10 rounded-md px-3 text-sm", tool === "wire" ? "bg-accent text-accent-fg" : "bg-surface")}
-          onClick={() => setTool("wire")}
+          onClick={saveProject}
+          title="Save to this browser"
         >
           <span className="inline-flex items-center gap-1.5">
-            <Cable className="size-3.5" />
-            Wire
+            <Save className="size-3.5" />
+            Save
           </span>
         </button>
-        <details className="relative">
-          <summary className="h-10 list-none rounded-md bg-surface px-3 text-sm cursor-pointer inline-flex items-center">
-            More
-          </summary>
-          <div className="absolute right-0 z-20 mt-1 flex w-44 flex-col gap-1 rounded-md border border-border bg-bg p-2">
-            <button type="button" className="h-10 rounded-md bg-surface px-3 text-sm" onClick={duplicateSelected}>
-              Duplicate
-            </button>
-            <button type="button" className="h-10 rounded-md bg-surface px-3 text-sm" onClick={deleteSelected}>
-              Delete
-            </button>
-            <label className="h-10 rounded-md bg-surface px-3 text-sm inline-flex items-center gap-1.5 cursor-pointer">
-              <FolderOpen className="size-3.5" />
-              Open
-              <input
-                type="file"
-                accept="application/json,.json"
-                className="sr-only"
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  e.target.value = "";
-                  if (!file) return;
-                  file
-                    .text()
-                    .then((text) => {
-                      const err = loadJson(text);
-                      if (err) setToast({ tone: "bad", text: err });
-                    })
-                    .catch(() => setToast({ tone: "bad", text: "Could not read that file." }));
-                }}
-              />
-            </label>
-            <button type="button" className="h-10 rounded-md bg-surface px-3 text-sm" onClick={newProject}>
-              New
-            </button>
-            <button type="button" className={cn("h-10 rounded-md px-3 text-sm", jsonOpen ? "bg-accent text-accent-fg" : "bg-surface")} onClick={() => setJsonOpen(!jsonOpen)}>
-              JSON
-            </button>
-            <button type="button" className="h-10 rounded-md bg-surface px-3 text-sm" onClick={() => downloadText(`${project.name.replace(/\s+/g, "-").toLowerCase()}.json`, JSON.stringify(project, null, 2), "application/json")}>
-              .json
-            </button>
-            <button type="button" className="h-10 rounded-md bg-surface px-3 text-sm" onClick={() => downloadText(`${project.name.replace(/\s+/g, "-").toLowerCase()}.svg`, renderProjectSvg(project), "image/svg+xml")}>
-              SVG
-            </button>
-            <button type="button" className="h-10 rounded-md bg-surface px-3 text-sm" onClick={() => downloadPng(`${project.name.replace(/\s+/g, "-").toLowerCase()}.png`, project)}>
-              PNG
-            </button>
-            <button
-              type="button"
-              className="h-10 rounded-md bg-surface px-3 text-sm"
-              onClick={() => {
-                const url = `${window.location.origin}${window.location.pathname}#c=${encodeShare(project)}`;
-                void copyText(url).then((ok) => {
-                  setToast(ok ? { tone: "ok", text: "Copied" } : { tone: "bad", text: "Could not copy the link." });
-                });
-              }}
-            >
-              Copy link
-            </button>
-          </div>
-        </details>
-      </div>
-    </header>
-    {toast && (
-      <div
-        role="status"
-        className={cn(
-          "fixed bottom-4 left-1/2 z-30 -translate-x-1/2 rounded-md border border-border bg-surface px-4 py-2 text-sm",
-          toast.tone === "bad" ? "text-bad" : "text-fg",
+        {library.activeId && (
+          <button
+            type="button"
+            className="h-10 rounded-md bg-surface px-3 text-sm"
+            title="Delete saved project"
+            onClick={() => deleteLibraryEntry(library.activeId!)}
+          >
+            <Trash2 className="size-3.5" />
+          </button>
         )}
-      >
-        {toast.text}
-      </div>
-    )}
+        <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            className="h-10 rounded-md bg-surface px-3 text-sm disabled:opacity-40"
+            onClick={undo}
+            disabled={!past.length}
+          >
+            <span className="inline-flex items-center gap-1.5">
+              <Undo2 className="size-3.5" />
+              Undo
+            </span>
+          </button>
+          <button
+            type="button"
+            className="h-10 rounded-md bg-surface px-3 text-sm disabled:opacity-40"
+            onClick={redo}
+            disabled={!future.length}
+          >
+            <span className="inline-flex items-center gap-1.5">
+              <Redo2 className="size-3.5" />
+              Redo
+            </span>
+          </button>
+          <button
+            type="button"
+            className={cn(
+              "h-10 rounded-md px-3 text-sm",
+              tool === "select" ? "bg-accent text-accent-fg" : "bg-surface",
+            )}
+            onClick={() => setTool("select")}
+          >
+            Select
+          </button>
+          <button
+            type="button"
+            className={cn("h-10 rounded-md px-3 text-sm", tool === "wire" ? "bg-accent text-accent-fg" : "bg-surface")}
+            onClick={() => setTool("wire")}
+          >
+            <span className="inline-flex items-center gap-1.5">
+              <Cable className="size-3.5" />
+              Wire
+            </span>
+          </button>
+          <details className="relative">
+            <summary className="h-10 list-none rounded-md bg-surface px-3 text-sm cursor-pointer inline-flex items-center">
+              More
+            </summary>
+            <div className="absolute right-0 z-20 mt-1 flex w-44 flex-col gap-1 rounded-md border border-border bg-bg p-2">
+              <button type="button" className="h-10 rounded-md bg-surface px-3 text-sm" onClick={duplicateSelected}>
+                Duplicate
+              </button>
+              <button type="button" className="h-10 rounded-md bg-surface px-3 text-sm" onClick={deleteSelected}>
+                Delete
+              </button>
+              <label className="h-10 rounded-md bg-surface px-3 text-sm inline-flex items-center gap-1.5 cursor-pointer">
+                <FolderOpen className="size-3.5" />
+                Open
+                <input
+                  type="file"
+                  accept="application/json,.json"
+                  className="sr-only"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    e.target.value = "";
+                    if (!file) return;
+                    file
+                      .text()
+                      .then((text) => {
+                        const err = loadJson(text);
+                        if (err) setToast({ tone: "bad", text: err });
+                      })
+                      .catch(() => setToast({ tone: "bad", text: "Could not read that file." }));
+                  }}
+                />
+              </label>
+              <button type="button" className="h-10 rounded-md bg-surface px-3 text-sm" onClick={newProject}>
+                New
+              </button>
+              <button
+                type="button"
+                className={cn("h-10 rounded-md px-3 text-sm", jsonOpen ? "bg-accent text-accent-fg" : "bg-surface")}
+                onClick={() => setJsonOpen(!jsonOpen)}
+              >
+                JSON
+              </button>
+              <button
+                type="button"
+                className="h-10 rounded-md bg-surface px-3 text-sm"
+                onClick={() =>
+                  downloadText(
+                    `${project.name.replace(/\s+/g, "-").toLowerCase()}.json`,
+                    JSON.stringify(project, null, 2),
+                    "application/json",
+                  )
+                }
+              >
+                .json
+              </button>
+              <button
+                type="button"
+                className="h-10 rounded-md bg-surface px-3 text-sm"
+                onClick={() =>
+                  downloadText(
+                    `${project.name.replace(/\s+/g, "-").toLowerCase()}.svg`,
+                    renderProjectSvg(project),
+                    "image/svg+xml",
+                  )
+                }
+              >
+                SVG
+              </button>
+              <button
+                type="button"
+                className="h-10 rounded-md bg-surface px-3 text-sm"
+                onClick={() => downloadPng(`${project.name.replace(/\s+/g, "-").toLowerCase()}.png`, project)}
+              >
+                PNG
+              </button>
+              <button
+                type="button"
+                className="h-10 rounded-md bg-surface px-3 text-sm"
+                onClick={() => {
+                  const url = `${window.location.origin}${window.location.pathname}#c=${encodeShare(project)}`;
+                  void copyText(url).then((ok) => {
+                    setToast(ok ? { tone: "ok", text: "Copied" } : { tone: "bad", text: "Could not copy the link." });
+                  });
+                }}
+              >
+                Copy link
+              </button>
+            </div>
+          </details>
+        </div>
+      </header>
+      {toast && (
+        <div
+          role="status"
+          className={cn(
+            "fixed bottom-4 left-1/2 z-30 -translate-x-1/2 rounded-md border border-border bg-surface px-4 py-2 text-sm",
+            toast.tone === "bad" ? "text-bad" : "text-fg",
+          )}
+        >
+          {toast.text}
+        </div>
+      )}
     </>
   );
 }
@@ -386,10 +438,7 @@ function PartsPane() {
         <div className="mt-3 flex flex-wrap gap-2">
           <button
             type="button"
-            className={cn(
-              "h-10 rounded-md px-3 text-sm",
-              klass === "all" ? "bg-accent text-accent-fg" : "bg-surface",
-            )}
+            className={cn("h-10 rounded-md px-3 text-sm", klass === "all" ? "bg-accent text-accent-fg" : "bg-surface")}
             onClick={() => setKlass("all")}
           >
             All
@@ -398,10 +447,7 @@ function PartsPane() {
             <button
               key={cls}
               type="button"
-              className={cn(
-                "h-10 rounded-md px-3 text-sm",
-                klass === cls ? "bg-accent text-accent-fg" : "bg-surface",
-              )}
+              className={cn("h-10 rounded-md px-3 text-sm", klass === cls ? "bg-accent text-accent-fg" : "bg-surface")}
               onClick={() => setKlass(cls)}
             >
               {CLASS_LABEL[cls]}
@@ -572,7 +618,10 @@ function Inspector({
         ) : (
           <ul className="mt-2 flex flex-col gap-2">
             {issues.map((issue, i) => (
-              <li key={`${issue.code}-${i}`} className={issue.level === "error" ? "text-sm text-bad" : "text-sm text-warn"}>
+              <li
+                key={`${issue.code}-${i}`}
+                className={issue.level === "error" ? "text-sm text-bad" : "text-sm text-warn"}
+              >
                 {issue.message}
               </li>
             ))}

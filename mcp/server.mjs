@@ -146,11 +146,7 @@ function load(path = defaultPath) {
 function save(project, path = defaultPath) {
   const file = projectPath(path);
   const data = JSON.stringify(project, null, 2) + "\n";
-  const flags =
-    constants.O_WRONLY |
-    constants.O_CREAT |
-    constants.O_TRUNC |
-    (constants.O_NOFOLLOW ?? 0);
+  const flags = constants.O_WRONLY | constants.O_CREAT | constants.O_TRUNC | (constants.O_NOFOLLOW ?? 0);
   let fd;
   try {
     fd = openSync(file, flags, 0o644);

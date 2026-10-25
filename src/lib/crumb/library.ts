@@ -37,7 +37,8 @@ export function parseLibrary(raw: unknown): LibraryFile {
       /* skip bad entry */
     }
   }
-  const activeId = typeof data.activeId === "string" && entries.some((e) => e.id === data.activeId) ? data.activeId : null;
+  const activeId =
+    typeof data.activeId === "string" && entries.some((e) => e.id === data.activeId) ? data.activeId : null;
   return { version: 1, activeId, entries };
 }
 
