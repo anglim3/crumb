@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Security
+
+- Hosted responses send `Cache-Control: public, max-age=0, must-revalidate, no-transform`, so the edge does not rewrite HTML. Revalidation is unchanged, and the Content-Security-Policy stays strict
+
 ## 0.1.0
 
 First public release of the breadboard editor.

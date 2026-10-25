@@ -28,7 +28,7 @@
     "preview": "vite preview",
     "deploy": "npm run build && wrangler deploy",
     "deploy:dry-run": "npm run build && wrangler deploy --dry-run",
-    "test": "node --experimental-strip-types --test src/lib/crumb/*.test.ts mcp/*.test.mjs",
+    "test": "node --experimental-strip-types --test src/lib/crumb/*.test.ts mcp/*.test.mjs scripts/*.test.mjs",
     "lint": "eslint . && prettier --check ."
   },
   "dependencies": {
