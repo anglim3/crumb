@@ -110,14 +110,6 @@ export function parseProject(raw: unknown): Project {
   return doc;
 }
 
-export function encodeShare(project: Project): string {
-  return btoa(unescape(encodeURIComponent(JSON.stringify(project))));
-}
-
-export function decodeShare(payload: string): Project {
-  return parseProject(JSON.parse(decodeURIComponent(escape(atob(payload)))));
-}
-
 function prefixFor(defId: string): string {
   const def = getPart(defId);
   if (def?.class === "led") return "d";

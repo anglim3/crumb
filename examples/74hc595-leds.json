@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "name": "74HC595 LED chain",
+  "board": "half",
+  "parts": [
+    { "kind": "dip", "id": "u1", "def": "74hc595", "anchor": "6-e" },
+    { "kind": "leaded", "id": "r1", "def": "resistor", "from": "6-a", "to": "16-a", "value": "330Ω" },
+    { "kind": "leaded", "id": "d1", "def": "led", "from": "16-c", "to": "17-c" },
+    { "kind": "leaded", "id": "r2", "def": "resistor", "from": "7-a", "to": "18-a", "value": "330Ω" },
+    { "kind": "leaded", "id": "d2", "def": "led", "from": "18-c", "to": "19-c" },
+    { "kind": "leaded", "id": "r3", "def": "resistor", "from": "8-a", "to": "20-a", "value": "330Ω" },
+    { "kind": "leaded", "id": "d3", "def": "led", "from": "20-c", "to": "21-c" },
+    { "kind": "leaded", "id": "r4", "def": "resistor", "from": "9-a", "to": "22-a", "value": "330Ω" },
+    { "kind": "leaded", "id": "d4", "def": "led", "from": "22-c", "to": "23-c" },
+    { "kind": "leaded", "id": "r5", "def": "resistor", "from": "10-a", "to": "24-a", "value": "330Ω" },
+    { "kind": "leaded", "id": "d5", "def": "led", "from": "24-c", "to": "25-c" },
+    { "kind": "leaded", "id": "r6", "def": "resistor", "from": "11-a", "to": "26-a", "value": "330Ω" },
+    { "kind": "leaded", "id": "d6", "def": "led", "from": "26-c", "to": "27-c" },
+    { "kind": "leaded", "id": "r7", "def": "resistor", "from": "12-a", "to": "28-a", "value": "330Ω" },
+    { "kind": "leaded", "id": "d7", "def": "led", "from": "28-c", "to": "29-c" },
+    { "kind": "leaded", "id": "r8", "def": "resistor", "from": "7-j", "to": "28-j", "value": "330Ω" },
+    { "kind": "leaded", "id": "d8", "def": "led", "from": "28-h", "to": "30-h" }
+  ],
+  "wires": [
+    { "id": "w1", "from": "u1.VCC", "to": "LP-6", "color": "#c45c4a" },
+    { "id": "w2", "from": "u1.GND", "to": "LM-13", "color": "#2b2b2b" },
+    { "id": "w3", "from": "u1.OE", "to": "LM-9", "color": "#2b2b2b" },
+    { "id": "w4", "from": "u1.SRCLR", "to": "LP-12", "color": "#c45c4a" },
+    { "id": "w5", "from": "LM-15", "to": "LM-16", "color": "#2b2b2b" },
+    { "id": "w6", "from": "RM-15", "to": "RM-16", "color": "#2b2b2b" },
+    { "id": "w7", "from": "LM-13", "to": "RM-13", "color": "#2b2b2b" },
+    { "id": "w8", "from": "17-c", "to": "LM-17", "color": "#2b2b2b" },
+    { "id": "w9", "from": "19-c", "to": "LM-19", "color": "#2b2b2b" },
+    { "id": "w10", "from": "21-c", "to": "LM-21", "color": "#2b2b2b" },
+    { "id": "w11", "from": "23-c", "to": "LM-23", "color": "#2b2b2b" },
+    { "id": "w12", "from": "25-c", "to": "LM-25", "color": "#2b2b2b" },
+    { "id": "w13", "from": "27-c", "to": "LM-27", "color": "#2b2b2b" },
+    { "id": "w14", "from": "29-c", "to": "LM-29", "color": "#2b2b2b" },
+    { "id": "w15", "from": "30-h", "to": "RM-30", "color": "#2b2b2b" }
+  ]
+}

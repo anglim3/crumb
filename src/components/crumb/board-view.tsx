@@ -12,9 +12,26 @@ import type { HoleRef, Project, TerminalCol } from "@/lib/crumb/types";
 import { computeWireLanes, jumperPath, wireGeomsFromProject } from "@/lib/crumb/wire-path";
 import { leadHoles } from "@/lib/crumb/mutate";
 import { leadedMarkup } from "@/lib/crumb/part-draw";
-import { useMemo, useState, type PointerEvent as ReactPointerEvent } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 
 const COLS: TerminalCol[] = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j"];
+const MIN_ZOOM = 0.5;
+const MAX_ZOOM = 2.4;
+const PAN_SLOP = 8;
+
+function clampZoom(value: number): number {
+  if (value < MIN_ZOOM) return MIN_ZOOM;
+  if (value > MAX_ZOOM) return MAX_ZOOM;
+  return value;
+}
+
+function holeFill(id: string, kind: HoleRef["kind"] | "module", shorted: Set<string>, wireFrom: string | null, lit: Set<string>): string {
+  if (shorted.has(id)) return "fill-bad crumb-hole-short";
+  if (wireFrom === id) return "fill-hole-active";
+  if (lit.has(id)) return "fill-hole-lit crumb-hole-lit";
+  if (kind === "rail") return "fill-hole-rail";
+  return "fill-hole";
+}
 
 export function BoardView() {
   const project = useCrumb((s) => s.project);
@@ -41,26 +58,224 @@ export function BoardView() {
   const hoverNet = hoverHole ? netForHole(nets, hoverHole) : undefined;
   const lit = new Set([...(activeNet?.holes ?? []), ...(hoverNet?.holes ?? [])]);
   const [zoom, setZoom] = useState(1);
+  const [pane, setPane] = useState({ w: 800, h: 560 });
+  const frameRef = useRef<HTMLDivElement>(null);
+  const scrollerRef = useRef<HTMLDivElement>(null);
+  const zoomRef = useRef(zoom);
+  const anchorRef = useRef<{ scrollLeft: number; scrollTop: number } | null>(null);
+  const pointers = useRef(new Map<number, { x: number; y: number }>());
+  const panRef = useRef<{ id: number; x: number; y: number; sl: number; st: number; moved: boolean } | null>(null);
+  const pinchRef = useRef<{ dist: number; zoom: number; midX: number; midY: number; scrollLeft: number; scrollTop: number } | null>(null);
+  const suppressClick = useRef(false);
+  const fit = Math.min(pane.w / geom.width, pane.h / geom.height) * 0.96;
+  const displayW = Math.max(1, geom.width * fit * zoom);
+  const displayH = Math.max(1, geom.height * fit * zoom);
+
+  useEffect(() => {
+    const frame = frameRef.current;
+    if (!frame) return;
+    const apply = () => {
+      const rect = frame.getBoundingClientRect();
+      setPane({ w: Math.max(1, rect.width), h: Math.max(1, rect.height) });
+    };
+    apply();
+    const observer = new ResizeObserver(apply);
+    observer.observe(frame);
+    return () => observer.disconnect();
+  }, []);
+
+  useLayoutEffect(() => {
+    const anchor = anchorRef.current;
+    const el = scrollerRef.current;
+    if (!anchor || !el) return;
+    anchorRef.current = null;
+    el.scrollLeft = anchor.scrollLeft;
+    el.scrollTop = anchor.scrollTop;
+  }, [zoom]);
+
+  useEffect(() => {
+    const el = scrollerRef.current;
+    if (!el) return;
+    const onWheel = (event: WheelEvent) => {
+      event.preventDefault();
+      let delta = event.deltaY;
+      if (event.deltaMode === 1) delta *= 16;
+      else if (event.deltaMode === 2) delta *= el.clientHeight;
+      const gain = event.ctrlKey ? 0.01 : 0.0016;
+      const prev = zoomRef.current;
+      const next = clampZoom(prev * Math.exp(-delta * gain));
+      zoomAt(next, event.clientX, event.clientY);
+    };
+    el.addEventListener("wheel", onWheel, { passive: false });
+    return () => el.removeEventListener("wheel", onWheel);
+  }, []);
+
+  const zoomAt = (next: number, clientX: number, clientY: number) => {
+    const el = scrollerRef.current;
+    const prev = zoomRef.current;
+    const clamped = clampZoom(next);
+    if (!el || clamped === prev) return;
+    const rect = el.getBoundingClientRect();
+    const ox = clientX - rect.left;
+    const oy = clientY - rect.top;
+    const ratio = clamped / prev;
+    anchorRef.current = {
+      scrollLeft: (ox + el.scrollLeft) * ratio - ox,
+      scrollTop: (oy + el.scrollTop) * ratio - oy,
+    };
+    zoomRef.current = clamped;
+    setZoom(clamped);
+  };
+
+  const stepZoom = (delta: number) => {
+    const el = scrollerRef.current;
+    const rect = el?.getBoundingClientRect();
+    const x = rect ? rect.left + rect.width / 2 : 0;
+    const y = rect ? rect.top + rect.height / 2 : 0;
+    zoomAt(+(zoomRef.current + delta).toFixed(2), x, y);
+  };
+
+  const resetZoom = () => {
+    zoomRef.current = 1;
+    const el = scrollerRef.current;
+    if (zoom === 1 && el) {
+      el.scrollLeft = 0;
+      el.scrollTop = 0;
+      return;
+    }
+    anchorRef.current = { scrollLeft: 0, scrollTop: 0 };
+    setZoom(1);
+  };
+
+  const onPointerDownCapture = (event: ReactPointerEvent<HTMLDivElement>) => {
+    pointers.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
+    if (pointers.current.size < 2) return;
+    suppressClick.current = true;
+    panRef.current = null;
+    const pts = [...pointers.current.values()];
+    const el = scrollerRef.current;
+    pinchRef.current = {
+      dist: Math.max(1, Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y)),
+      zoom: zoomRef.current,
+      midX: (pts[0].x + pts[1].x) / 2,
+      midY: (pts[0].y + pts[1].y) / 2,
+      scrollLeft: el?.scrollLeft ?? 0,
+      scrollTop: el?.scrollTop ?? 0,
+    };
+    event.stopPropagation();
+  };
+
+  const onPointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
+    if (event.button === 1) event.preventDefault();
+    if (pointers.current.size !== 1) return;
+    const el = scrollerRef.current;
+    if (!el) return;
+    const mouse = event.pointerType === "mouse";
+    if (mouse && event.button !== 0 && event.button !== 1) return;
+    if (mouse && event.button === 0) {
+      const tag = (event.target as Element | null)?.tagName.toLowerCase();
+      if (tag === "circle" || tag === "path" || tag === "text" || tag === "g") return;
+    }
+    panRef.current = {
+      id: event.pointerId,
+      x: event.clientX,
+      y: event.clientY,
+      sl: el.scrollLeft,
+      st: el.scrollTop,
+      moved: false,
+    };
+  };
+
+  const onPointerMove = (event: ReactPointerEvent<HTMLDivElement>) => {
+    if (pointers.current.has(event.pointerId)) {
+      pointers.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
+    }
+    const el = scrollerRef.current;
+    if (pointers.current.size >= 2 && pinchRef.current && el) {
+      const pts = [...pointers.current.values()];
+      const dist = Math.max(1, Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y));
+      const midX = (pts[0].x + pts[1].x) / 2;
+      const midY = (pts[0].y + pts[1].y) / 2;
+      const pinch = pinchRef.current;
+      const next = clampZoom(pinch.zoom * (dist / pinch.dist));
+      const rect = el.getBoundingClientRect();
+      const ratio = next / pinch.zoom;
+      const scrollLeft = (pinch.midX - rect.left + pinch.scrollLeft) * ratio - (midX - rect.left);
+      const scrollTop = (pinch.midY - rect.top + pinch.scrollTop) * ratio - (midY - rect.top);
+      if (next !== zoomRef.current) {
+        anchorRef.current = { scrollLeft, scrollTop };
+        zoomRef.current = next;
+        setZoom(next);
+      } else {
+        el.scrollLeft = scrollLeft;
+        el.scrollTop = scrollTop;
+      }
+      return;
+    }
+    const pan = panRef.current;
+    if (!pan || pan.id !== event.pointerId || !el) return;
+    const dx = event.clientX - pan.x;
+    const dy = event.clientY - pan.y;
+    if (!pan.moved && Math.hypot(dx, dy) < PAN_SLOP) return;
+    if (!pan.moved) {
+      pan.moved = true;
+      suppressClick.current = true;
+      el.setPointerCapture(event.pointerId);
+    }
+    el.scrollLeft = pan.sl - dx;
+    el.scrollTop = pan.st - dy;
+  };
+
+  const endPointer = (event: ReactPointerEvent<HTMLDivElement>) => {
+    pointers.current.delete(event.pointerId);
+    if (panRef.current?.id === event.pointerId) {
+      if (panRef.current.moved) suppressClick.current = true;
+      panRef.current = null;
+    }
+    if (pointers.current.size < 2) pinchRef.current = null;
+  };
 
   return (
-    <div className="relative h-full min-h-0 overflow-auto bg-bench max-lg:h-auto">
+    <div ref={frameRef} className="relative h-full min-h-[280px] bg-bench" role="region" aria-label={`${spec.label} solderless breadboard. Columns a to e on a row are one strip, f to j are another.`}>
+      <p id="board-keyboard-help" className="sr-only">
+        Use the catalog to place a part. Choose a part under On the board and press Delete to remove it. The scroll wheel zooms. Drag to pan.
+      </p>
       <div className="pointer-events-none absolute right-2 top-2 z-10 flex gap-2 print:hidden">
-        <button type="button" className="pointer-events-auto h-10 rounded-md bg-surface px-3 text-sm" onClick={() => setZoom((z) => Math.max(0.5, +(z - 0.2).toFixed(2)))}>
+        <button type="button" className="pointer-events-auto h-10 rounded-md bg-surface px-3 text-sm" aria-label="Zoom out" onClick={() => stepZoom(-0.2)}>
           −
         </button>
-        <button type="button" className="pointer-events-auto h-10 rounded-md bg-surface px-3 text-sm" onClick={() => setZoom(1)}>
+        <button type="button" className="pointer-events-auto h-10 rounded-md bg-surface px-3 text-sm" aria-label="Reset zoom" title="Reset zoom" onClick={resetZoom}>
           {Math.round(zoom * 100)}%
         </button>
-        <button type="button" className="pointer-events-auto h-10 rounded-md bg-surface px-3 text-sm" onClick={() => setZoom((z) => Math.min(2.4, +(z + 0.2).toFixed(2)))}>
+        <button type="button" className="pointer-events-auto h-10 rounded-md bg-surface px-3 text-sm" aria-label="Zoom in" onClick={() => stepZoom(0.2)}>
           +
         </button>
       </div>
+      <div
+        ref={scrollerRef}
+        className="crumb-board absolute inset-0 overflow-auto"
+        style={{ touchAction: "none" }}
+        aria-describedby="board-keyboard-help"
+        onPointerDownCapture={onPointerDownCapture}
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={endPointer}
+        onPointerCancel={endPointer}
+        onAuxClick={(event) => event.preventDefault()}
+        onClickCapture={(event) => {
+          if (!suppressClick.current) return;
+          event.preventDefault();
+          event.stopPropagation();
+          suppressClick.current = false;
+        }}
+      >
       <svg
         viewBox={`0 0 ${geom.width} ${geom.height}`}
-        className="mx-auto block w-auto max-lg:h-auto max-lg:w-full"
-        style={{ height: `${Math.max(40, zoom * 100)}%`, maxWidth: "none" }}
-        role="img"
-        aria-label={`${spec.label} breadboard`}
+        width={displayW}
+        height={displayH}
+        className="block"
+        role="group"
+        aria-label={`${spec.label} breadboard, ${spec.rows} rows`}
       >
         <rect width={geom.width} height={geom.height} rx="8" className="fill-bench" />
         <rect x={geom.boardX} y="0" width={geom.boardWidth} height={board.height} rx="14" className="fill-board" />
@@ -105,8 +320,6 @@ export function BoardView() {
         {allHoles(spec.rows).map((hole) => {
           const id = holeId(hole);
           const { x, y } = geom.holeXY(hole);
-          const on = lit.has(id);
-          const isFrom = wireFrom === id;
           return (
             <circle
               key={id}
@@ -114,17 +327,7 @@ export function BoardView() {
               cy={y}
               r={HOLE_R}
               opacity={holeOpacity(focus, id)}
-              className={
-                shorted.has(id)
-                  ? "fill-bad"
-                  : isFrom
-                    ? "fill-hole-active"
-                    : on
-                      ? "fill-hole-lit"
-                      : hole.kind === "rail"
-                        ? "fill-hole-rail"
-                        : "fill-hole"
-              }
+              className={holeFill(id, hole.kind, shorted, wireFrom, lit)}
               onMouseEnter={() => {
                 setHoverHole(id);
                 const net = netForHole(nets, id);
@@ -187,8 +390,6 @@ export function BoardView() {
           if (part.kind !== "module") return null;
           const card = moduleCardGeom(project, part, geom);
           return card.pins.map((pin) => {
-            const on = lit.has(pin.ref);
-            const isFrom = wireFrom === pin.ref;
             return (
               <circle
                 key={pin.ref}
@@ -196,15 +397,7 @@ export function BoardView() {
                 cy={pin.y}
                 r={MODULE_PIN_R}
                 opacity={holeOpacity(focus, pin.ref)}
-                className={
-                  shorted.has(pin.ref)
-                    ? "fill-bad"
-                    : isFrom
-                      ? "fill-hole-active"
-                      : on
-                        ? "fill-hole-lit"
-                        : "fill-hole"
-                }
+                className={holeFill(pin.ref, "module", shorted, wireFrom, lit)}
                 stroke="#c9b896"
                 strokeWidth="0.8"
                 onMouseEnter={() => {
@@ -223,6 +416,7 @@ export function BoardView() {
           });
         })}
       </svg>
+      </div>
     </div>
   );
 }
@@ -252,6 +446,7 @@ function RubberBand({
       className="stroke-hole-active"
       strokeWidth="1.6"
       strokeDasharray="4 3"
+      style={{ pointerEvents: "none" }}
     />
   );
 }
@@ -351,6 +546,7 @@ function DipBody({
   return (
     <g
       className="cursor-grab"
+      style={{ touchAction: "none" }}
       transform={dRow ? `translate(0 ${dRow * PITCH})` : undefined}
       onPointerDown={onPointerDown}
       onClick={() => setSelected(partId)}
@@ -420,6 +616,7 @@ function LeadedBody({
   return (
     <g
       className="cursor-grab"
+      style={{ touchAction: "none" }}
       transform={dRow ? `translate(0 ${dRow * PITCH})` : undefined}
       onPointerDown={onPointerDown}
       onClick={() => setSelected(partId)}
@@ -458,7 +655,7 @@ function ModuleCard({
   const labelAnchor = part.slot === 0 ? "end" : "start";
   const labelX = card.pins[0] ? (part.slot === 0 ? card.pins[0].x - 8 : card.pins[0].x + 8) : card.x + 10;
   return (
-    <g transform={dRow ? `translate(0 ${dRow * PITCH})` : undefined} onPointerDown={onPointerDown} className="cursor-grab">
+    <g transform={dRow ? `translate(0 ${dRow * PITCH})` : undefined} onPointerDown={onPointerDown} className="cursor-grab" style={{ touchAction: "none" }}>
       <rect
         x={card.x}
         y={card.y}

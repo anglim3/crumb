@@ -39,6 +39,10 @@
   [role="button"]:not(:disabled) {
     cursor: pointer;
   }
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
   html,
   body,
   #root {
@@ -47,5 +51,46 @@
     background: var(--color-bg);
     color: var(--color-fg);
     font-family: var(--font-sans);
+  }
+}
+
+.crumb-board {
+  touch-action: none;
+  overscroll-behavior: contain;
+}
+
+@keyframes crumb-glow {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 0.4px #9ec3db);
+  }
+  50% {
+    filter: drop-shadow(0 0 2.6px #9ec3db);
+  }
+}
+
+@keyframes crumb-short-glow {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 0.4px #c9897a);
+  }
+  50% {
+    filter: drop-shadow(0 0 2.8px #c9897a);
+  }
+}
+
+.crumb-hole-lit {
+  animation: crumb-glow 1.8s ease-in-out infinite;
+}
+
+.crumb-hole-short {
+  animation: crumb-short-glow 1.2s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .crumb-hole-lit,
+  .crumb-hole-short {
+    animation: none;
+    filter: none;
   }
 }

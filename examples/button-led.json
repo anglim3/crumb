@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "name": "Button LED",
+  "board": "mini",
+  "parts": [
+    { "kind": "leaded", "id": "sw1", "def": "button", "from": "5-a", "to": "8-a" },
+    { "kind": "leaded", "id": "r1", "def": "resistor", "from": "8-c", "to": "11-c", "value": "330Ω" },
+    { "kind": "leaded", "id": "d1", "def": "led", "from": "11-e", "to": "13-e" }
+  ],
+  "wires": [
+    { "id": "w1", "from": "5-a", "to": "LP-5", "color": "#c45c4a" },
+    { "id": "w2", "from": "13-e", "to": "LM-13", "color": "#2b2b2b" }
+  ]
+}
