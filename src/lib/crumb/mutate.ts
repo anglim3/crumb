@@ -110,12 +110,30 @@ export function parseProject(raw: unknown): Project {
   return doc;
 }
 
+function bytesToBinary(bytes: Uint8Array): string {
+  let binary = "";
+  const chunk = 0x8000;
+  for (let i = 0; i < bytes.length; i += chunk) {
+    binary += String.fromCharCode(...bytes.subarray(i, i + chunk));
+  }
+  return binary;
+}
+
+/**
+ * Share links are base64 of UTF-8 JSON. That is the same byte layout the old
+ * `btoa(unescape(encodeURIComponent(...)))` helper produced, so existing `#c=`
+ * links still decode.
+ */
 export function encodeShare(project: Project): string {
-  return btoa(unescape(encodeURIComponent(JSON.stringify(project))));
+  return btoa(bytesToBinary(new TextEncoder().encode(JSON.stringify(project))));
 }
 
 export function decodeShare(payload: string): Project {
-  return parseProject(JSON.parse(decodeURIComponent(escape(atob(payload)))));
+  const binary = atob(payload);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i += 1) bytes[i] = binary.charCodeAt(i);
+  const text = new TextDecoder("utf-8", { fatal: true }).decode(bytes);
+  return parseProject(JSON.parse(text));
 }
 
 function prefixFor(defId: string): string {

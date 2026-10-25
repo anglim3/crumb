@@ -45,7 +45,8 @@ export type CrumbState = {
   patchSelected: (patch: Partial<PlacedPart>) => void;
   undo: () => void;
   redo: () => void;
-  loadJson: (raw: string) => void;
+  /** Returns an error message when `raw` is not a Crumb project file. */
+  loadJson: (raw: string) => string | null;
   setName: (name: string) => void;
   duplicateSelected: () => void;
   moveSelected: (dRow: number) => void;
@@ -210,11 +211,18 @@ export const useCrumb = create<CrumbState>((set, get) => {
       });
     },
     loadJson: (raw) => {
+      let data: unknown;
       try {
-        const project = parseProject(JSON.parse(raw));
-        commit(project, { selected: null, jsonOpen: false });
+        data = JSON.parse(raw);
       } catch {
-        /* ignore bad files */
+        return "That file is not valid JSON.";
+      }
+      try {
+        const project = parseProject(data);
+        commit(project, { selected: null, jsonOpen: false });
+        return null;
+      } catch (err) {
+        return err instanceof Error ? err.message : "Could not open that file.";
       }
     },
     setName: (name) => {

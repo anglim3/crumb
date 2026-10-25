@@ -3,11 +3,12 @@ import { CLASS_LABEL, CLASS_ORDER, getPart, searchParts } from "@/lib/crumb/cata
 import { EXAMPLES } from "@/lib/crumb/examples";
 import { applyBoot, libraryAutosave, PROJECT_KEY } from "@/lib/crumb/boot";
 import { LIBRARY_KEY } from "@/lib/crumb/library";
-import { encodeShare } from "@/lib/crumb/mutate";
+import { copyText } from "@/lib/crumb/clipboard";
+import { encodeShare, parseProject } from "@/lib/crumb/mutate";
 import { downloadPng, downloadText, renderProjectSvg } from "@/lib/crumb/render-svg";
 import { buildSteps } from "@/lib/crumb/steps";
 import { useCrumb, WIRE_COLORS } from "@/lib/crumb/store";
-import type { BoardSize, PartDef, Project } from "@/lib/crumb/types";
+import type { BoardSize, PartDef } from "@/lib/crumb/types";
 import { computeNets } from "@/lib/crumb/nets";
 import { detectShorts } from "@/lib/crumb/shorts";
 import { validateProject } from "@/lib/crumb/validate";
@@ -31,6 +32,7 @@ export function Workspace() {
   const shorts = useMemo(() => detectShorts(project), [project]);
   const steps = useMemo(() => buildSteps(project), [project]);
   const [hydrated, setHydrated] = useState(false);
+  const [storageBanner, setStorageBanner] = useState<string | null>(null);
   const holdLibrary = useCrumb((s) => s.holdLibrary);
 
   useEffect(() => {
@@ -56,8 +58,9 @@ export function Workspace() {
       localStorage.setItem(PROJECT_KEY, JSON.stringify(project));
       const libraryJson = libraryAutosave(library, project, holdLibrary);
       if (libraryJson != null) localStorage.setItem(LIBRARY_KEY, libraryJson);
+      setStorageBanner(null);
     } catch {
-      /* ignore */
+      setStorageBanner("Autosave failed. This board stays in this tab until the browser can store it again.");
     }
   }, [project, library, hydrated, holdLibrary]);
   useEffect(() => {
@@ -93,6 +96,11 @@ export function Workspace() {
   }, [cancelPending, deleteSelected, undo, redo]);
   return (
     <div className="flex min-h-dvh flex-col bg-bg text-fg lg:h-dvh lg:overflow-hidden">
+      {storageBanner && (
+        <p role="alert" className="border-b border-border bg-surface px-4 py-2 text-sm text-bad">
+          {storageBanner}
+        </p>
+      )}
       <Header />
       <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
         <aside className="order-2 max-h-[42vh] overflow-y-auto border-t border-border print:hidden lg:order-1 lg:max-h-none lg:min-h-0 lg:w-72 lg:border-r lg:border-t-0">
@@ -139,7 +147,6 @@ export function Workspace() {
 
 function Header() {
   const project = useCrumb((s) => s.project);
-  const setProject = useCrumb((s) => s.setProject);
   const changeBoard = useCrumb((s) => s.changeBoard);
   const tool = useCrumb((s) => s.tool);
   const setTool = useCrumb((s) => s.setTool);
@@ -159,10 +166,18 @@ function Header() {
   const openExample = useCrumb((s) => s.openExample);
   const newProject = useCrumb((s) => s.newProject);
   const deleteLibraryEntry = useCrumb((s) => s.deleteLibraryEntry);
+  const [toast, setToast] = useState<{ tone: "ok" | "bad"; text: string } | null>(null);
   const exampleMatch = EXAMPLES.find((e) => e.name === project.name && !library.activeId);
   const pickerValue = library.activeId ? `user:${library.activeId}` : exampleMatch ? `ex:${exampleMatch.name}` : "draft";
 
+  useEffect(() => {
+    if (!toast) return;
+    const id = window.setTimeout(() => setToast(null), 2400);
+    return () => window.clearTimeout(id);
+  }, [toast]);
+
   return (
+    <>
     <header className="flex flex-wrap items-center gap-3 border-b border-border px-4 py-3 print:hidden">
       <div className="min-w-0 flex-1">
         <p className="font-display text-xl leading-none tracking-tight">Crumb</p>
@@ -287,9 +302,15 @@ function Header() {
                 className="sr-only"
                 onChange={(e) => {
                   const file = e.target.files?.[0];
-                  if (!file) return;
-                  file.text().then((text) => loadJson(text)).catch(() => undefined);
                   e.target.value = "";
+                  if (!file) return;
+                  file
+                    .text()
+                    .then((text) => {
+                      const err = loadJson(text);
+                      if (err) setToast({ tone: "bad", text: err });
+                    })
+                    .catch(() => setToast({ tone: "bad", text: "Could not read that file." }));
                 }}
               />
             </label>
@@ -313,7 +334,9 @@ function Header() {
               className="h-10 rounded-md bg-surface px-3 text-sm"
               onClick={() => {
                 const url = `${window.location.origin}${window.location.pathname}#c=${encodeShare(project)}`;
-                void navigator.clipboard.writeText(url);
+                void copyText(url).then((ok) => {
+                  setToast(ok ? { tone: "ok", text: "Copied" } : { tone: "bad", text: "Could not copy the link." });
+                });
               }}
             >
               Copy link
@@ -322,6 +345,18 @@ function Header() {
         </details>
       </div>
     </header>
+    {toast && (
+      <div
+        role="status"
+        className={cn(
+          "fixed bottom-4 left-1/2 z-30 -translate-x-1/2 rounded-md border border-border bg-surface px-4 py-2 text-sm",
+          toast.tone === "bad" ? "text-bad" : "text-fg",
+        )}
+      >
+        {toast.text}
+      </div>
+    )}
+    </>
   );
 }
 
@@ -602,12 +637,11 @@ function Inspector({
             onChange={(e) => {
               setDraft(e.target.value);
               try {
-                const parsed = JSON.parse(e.target.value) as Project;
-                if (parsed.version !== 1 || !parsed.parts || !parsed.wires) throw new Error("Not a Crumb file");
-                setProject(parsed);
+                setProject(parseProject(JSON.parse(e.target.value)));
                 setJsonErr(null);
               } catch (err) {
-                setJsonErr(err instanceof Error ? err.message : "Invalid JSON");
+                if (err instanceof SyntaxError) setJsonErr("Invalid JSON");
+                else setJsonErr(err instanceof Error ? err.message : "Invalid JSON");
               }
             }}
           />
