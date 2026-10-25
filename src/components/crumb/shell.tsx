@@ -216,6 +216,17 @@ function Kbd({ children }: { children: string }) {
 export function AppFooter() {
   return (
     <footer className="flex shrink-0 flex-wrap items-center gap-x-4 gap-y-1 border-t border-border px-4 py-2 text-xs text-muted print:hidden">
+      <p className="basis-full">
+        Vibe-coded: built mostly by prompting an AI and reviewing the output.{" "}
+        <a
+          className="hover:text-fg hover:underline"
+          href="https://github.com/anglim3/crumb/blob/main/README.md#how-this-was-made"
+          target="_blank"
+          rel="noreferrer"
+        >
+          How this was made
+        </a>
+      </p>
       <a
         className="hover:text-fg hover:underline"
         href="https://github.com/anglim3/crumb"

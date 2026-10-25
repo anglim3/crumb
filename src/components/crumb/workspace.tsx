@@ -1,6 +1,6 @@
 import { BOARD_SPECS } from "@/lib/crumb/board";
 import { CLASS_LABEL, CLASS_ORDER, getPart, searchParts } from "@/lib/crumb/catalog";
-import { EXAMPLES } from "@/lib/crumb/examples";
+import { EXAMPLES, readExampleLink } from "@/lib/crumb/examples";
 import { applyBoot, libraryAutosave, PROJECT_KEY } from "@/lib/crumb/boot";
 import { LIBRARY_KEY } from "@/lib/crumb/library";
 import { copyText } from "@/lib/crumb/clipboard";
@@ -70,7 +70,13 @@ export function Workspace() {
       } catch {
         /* ignore */
       }
-      if (!cancelled) setHydrated(true);
+      if (cancelled) return;
+      const link = readExampleLink(window.location.search);
+      if (link.name && !useCrumb.getState().holdLibrary) useCrumb.getState().openExample(link.name);
+      if (link.search !== window.location.search) {
+        window.history.replaceState(null, "", `${window.location.pathname}${link.search}${window.location.hash}`);
+      }
+      setHydrated(true);
     })();
     return () => {
       cancelled = true;

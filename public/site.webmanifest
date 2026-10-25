@@ -1,7 +1,7 @@
 {
   "name": "Crumb",
   "short_name": "Crumb",
-  "description": "Solderless breadboard layouts you can build. Holes, jumpers, and short checks — not a circuit simulator.",
+  "description": "Online breadboard diagram maker. Crumb is a breadboard layout tool: solderless holes, jumpers, and short checks in the browser. It is not a breadboard simulator.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

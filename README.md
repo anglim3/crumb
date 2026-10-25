@@ -17,6 +17,10 @@
   <img src="https://img.shields.io/badge/demo-crumb.janglim.cloud-3d6b8a?style=flat-square&labelColor=1c1814" alt="Demo" />
 </p>
 
+## How this was made
+
+Crumb was vibe-coded: built mostly by prompting an AI and reviewing the output. Tests, CI, a dependency audit, and a security review are the safeguards around that work. Expect rough edges. If something is wrong or unclear, please [file an issue](https://github.com/anglim3/crumb/issues).
+
 <p align="center">
   <img src="docs/555-blinker.svg" alt="NE555 blinker laid out on a half-size breadboard" width="560" />
 </p>
@@ -75,7 +79,7 @@ npm install
 npm run dev
 ```
 
-Open [http://localhost:5173](http://localhost:5173). The dev server listens on localhost; set `CRUMB_DEV_HOST` if you need another interface. Pick an example, place parts, draw jumpers. Layouts autosave. A `#c=…` hash loads a shared project without replacing saved projects until you save.
+Open [http://localhost:5173](http://localhost:5173). The dev server listens on localhost; set `CRUMB_DEV_HOST` if you need another interface. Pick an example, place parts, draw jumpers. Layouts autosave. A `#c=…` hash loads a shared project without replacing saved projects until you save. A short guide is on the site at [/how-it-works/](https://crumb.janglim.cloud/how-it-works/).
 
 **CLI** — no install
 
@@ -102,9 +106,11 @@ Rebuild and deploy that site from this repo:
 npm run deploy
 ```
 
-[`wrangler.jsonc`](wrangler.jsonc) serves the Vite build (`./dist`) as a Workers static SPA (`not_found_handling: single-page-application`), so share links (`#c=…`) resolve to `index.html`. [`public/_headers`](public/_headers) is copied into that bundle and sets the response headers, including Content-Security-Policy. The custom domain is `crumb.janglim.cloud`. No Cloudflare account id is stored in the repo — authenticate with `wrangler login` or `CLOUDFLARE_API_TOKEN`. `npm run deploy:dry-run` checks the asset bundle without publishing.
+[`wrangler.jsonc`](wrangler.jsonc) serves the Vite build (`./dist`) as a Workers static SPA (`not_found_handling: single-page-application`), so share links (`#c=…`) resolve to `index.html`. `/examples/` and `/how-it-works/` are extra HTML files in that build, so those addresses serve the pages. Any other unknown path still falls back to `index.html`. [`public/_headers`](public/_headers) is copied into that bundle and sets the response headers, including Content-Security-Policy. The custom domain is `crumb.janglim.cloud`. No Cloudflare account id is stored in the repo — authenticate with `wrangler login` or `CLOUDFLARE_API_TOKEN`. `npm run deploy:dry-run` checks the asset bundle without publishing.
 
 ## Examples
+
+The same layouts are listed at [/examples/](https://crumb.janglim.cloud/examples/). Each link there opens that board in the editor.
 
 | File | What it is |
 | --- | --- |
@@ -202,7 +208,8 @@ The part catalog is hand-maintained in [`src/lib/crumb/catalog.ts`](src/lib/crum
 | `src/main.tsx` | Vite entry |
 | `mcp/server.mjs` | MCP adapter |
 | `scripts/crumb-svg.mjs` | CLI render |
-| `examples/` | Known-good boards |
+| `examples/` | Known-good boards, and the crawlable gallery page |
+| `how-it-works/index.html` | Crawlable guide |
 
 ## Contributing
 

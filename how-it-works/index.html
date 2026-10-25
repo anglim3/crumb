@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>How the breadboard layout tool works — Crumb</title>
+    <meta
+      name="description"
+      content="How to place parts, wire holes, share a link, and export a diagram in Crumb, a breadboard layout tool and online breadboard diagram maker. Not a breadboard simulator."
+    />
+    <link rel="canonical" href="https://crumb.janglim.cloud/how-it-works/" />
+    <meta name="theme-color" content="#14110e" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <meta property="og:title" content="How the breadboard layout tool works — Crumb" />
+    <meta
+      property="og:description"
+      content="How to place parts, wire holes, share a link, and export a diagram in Crumb, a breadboard layout tool and online breadboard diagram maker. Not a breadboard simulator."
+    />
+    <meta property="og:image" content="https://crumb.janglim.cloud/og.png" />
+    <meta property="og:url" content="https://crumb.janglim.cloud/how-it-works/" />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="How the breadboard layout tool works — Crumb" />
+    <meta
+      name="twitter:description"
+      content="How to place parts, wire holes, share a link, and export a diagram in Crumb, a breadboard layout tool and online breadboard diagram maker. Not a breadboard simulator."
+    />
+    <meta name="twitter:image" content="https://crumb.janglim.cloud/og.png" />
+    <link rel="stylesheet" href="/src/fonts.css" />
+    <link rel="stylesheet" href="/src/styles.css" />
+  </head>
+  <body class="site-page">
+    <div class="mx-auto flex min-h-dvh w-full max-w-3xl flex-col px-6 py-8">
+      <header class="flex flex-wrap items-baseline justify-between gap-3 border-b border-border pb-4">
+        <a href="/" class="font-display text-xl leading-none tracking-tight">Crumb</a>
+        <nav aria-label="Site" class="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted">
+          <a class="hover:text-fg hover:underline" href="/">Editor</a>
+          <a class="hover:text-fg hover:underline" href="/examples/">Examples</a>
+          <a class="text-fg underline" href="/how-it-works/" aria-current="page">How it works</a>
+        </nav>
+      </header>
+      <main class="mt-8 flex-1">
+        <h1 class="font-display text-3xl leading-none tracking-tight">How it works</h1>
+        <p class="mt-4">
+          Crumb is a breadboard layout tool. It draws the solderless board you will build: the holes, the strips, and
+          the jumpers. It checks that two parts do not share a hole and that power does not meet ground. It does not
+          simulate the circuit. If you were looking for a breadboard simulator, this is the diagram of the board, not a
+          model of the voltages.
+        </p>
+        <p class="mt-3 text-muted">
+          The editor runs in the browser. Layouts stay in this browser until you save them into its library or copy a
+          share link. There is no account and no cloud copy.
+        </p>
+
+        <section class="mt-8">
+          <h2 class="font-display text-xl leading-tight">Placing parts</h2>
+          <p class="mt-3">
+            Open the <a class="underline" href="/">editor</a> and pick a part from the list. A click, or Enter on a
+            keyboard, starts placement. The status line tells you which hole comes next.
+          </p>
+          <p class="mt-3">
+            A DIP chip needs one click: the hole for pin 1. Pin 1 sits on the left strip, column e, and the body crosses
+            the gutter. The Nano ESP32 is the exception — its pin 1 is D12 and sits in column f.
+            <span class="font-mono">nano</span> and <span class="font-mono">nano-esp32</span> are different boards. The
+            ESP32 part is the 30-pin DevKit, not a 38-pin DevKitC.
+          </p>
+          <p class="mt-3">
+            A leaded part needs a click for every lead. A resistor or LED uses two holes. A three-pin part also needs
+            the middle hole. A four-pin part needs one more. Hole addresses look like
+            <span class="font-mono">10-e</span> for row 10, column e.
+          </p>
+          <p class="mt-3">
+            With Select active, drag a part to move it by rows. Delete removes the selected part or wire. Undo is Ctrl
+            Z, or Command Z on a Mac. Press ? in the editor for the full shortcut list.
+          </p>
+        </section>
+
+        <section class="mt-8">
+          <h2 class="font-display text-xl leading-tight">Wiring</h2>
+          <p class="mt-3">
+            Choose Wire, or press W. Click the start hole, then the end hole. A second click on the start hole cancels
+            that jumper. You can also start a wire from a placed pin such as
+            <span class="font-mono">u1.VCC</span> or an off-board module pin such as
+            <span class="font-mono">m1.pos</span>.
+          </p>
+          <p class="mt-3">
+            Columns a–e on a row are already one strip. Columns f–j are another. The gutter between e and f keeps them
+            apart, so a jumper is what joins the two sides. Hover a hole to light every hole on its net.
+          </p>
+          <p class="mt-3">
+            <span class="font-mono">LP</span> and <span class="font-mono">LM</span> are the left positive and ground
+            rails. <span class="font-mono">RP</span> and <span class="font-mono">RM</span> are the right rails. Power
+            jumpers are red. Ground jumpers are black. Half-size and full-size boards split each rail at the middle. If
+            the two halves should be the same net, add a jumper across the split. Mini boards do not split the rails.
+          </p>
+          <p class="mt-3">
+            A short is marked when a positive rail meets a ground rail, when a part’s supply pin and ground pin land on
+            the same net, or when both leads of a resistor, LED, or similar part sit on one strip. Tying two signal pins
+            together on purpose, such as a timer’s trigger and threshold, is not treated as a short.
+          </p>
+        </section>
+
+        <section class="mt-8">
+          <h2 class="font-display text-xl leading-tight">Sharing a link</h2>
+          <p class="mt-3">
+            Copy link puts the whole layout in the address, after <span class="font-mono">#c=</span>. Send that URL to
+            someone else and their editor opens the same board.
+          </p>
+          <p class="mt-3">
+            Opening a share link does not replace the projects already saved in that browser. The shared board is a view
+            until you save it. Save writes it into this browser’s library. There is no live collaboration: the link is a
+            copy of the layout at the moment it was copied.
+          </p>
+        </section>
+
+        <section class="mt-8">
+          <h2 class="font-display text-xl leading-tight">Export</h2>
+          <p class="mt-3">
+            The editor can download the layout as JSON, SVG, or PNG. JSON is the project file: the board size, the
+            parts, and the wires. SVG is the drawing of that board. PNG is a picture of the same drawing.
+          </p>
+          <p class="mt-3">
+            The command-line renderer writes that same SVG from a project file, with no install. The files under
+            <span class="font-mono">examples/</span> are known-good layouts in that JSON shape. The
+            <a class="underline" href="/examples/">examples page</a> opens each of them in the editor.
+          </p>
+        </section>
+      </main>
+      <footer class="mt-12 border-t border-border pt-4 text-xs text-muted">
+        <p>
+          Vibe-coded: built mostly by prompting an AI and reviewing the output.
+          <a
+            class="hover:text-fg hover:underline"
+            href="https://github.com/anglim3/crumb/blob/main/README.md#how-this-was-made"
+            >How this was made</a
+          >
+        </p>
+      </footer>
+    </div>
+  </body>
+</html>
