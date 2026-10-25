@@ -10,7 +10,7 @@
 
 ### Security
 
-- Hosted responses send `Cache-Control: public, max-age=0, must-revalidate, no-transform`, so the edge does not rewrite HTML. Revalidation is unchanged, and the Content-Security-Policy stays strict
+- Hosted HTML, including paths served by the single-page fallback, sends `Cache-Control: public, max-age=0, must-revalidate, no-transform`, so the edge does not rewrite those documents. `/assets/*` and the other static files send `public, max-age=0, must-revalidate` without `no-transform`, so edge compression can apply. The Content-Security-Policy stays strict
 
 ## 0.1.0
 
