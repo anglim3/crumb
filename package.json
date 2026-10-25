@@ -2,6 +2,25 @@
   "name": "crumb",
   "private": true,
   "version": "0.1.0",
+  "description": "Solderless breadboard layouts a person can build, with a browser editor, short checks, and a local MCP server.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/anglim3/crumb.git"
+  },
+  "homepage": "https://crumb.janglim.cloud",
+  "bugs": {
+    "url": "https://github.com/anglim3/crumb/issues"
+  },
+  "keywords": [
+    "breadboard",
+    "electronics",
+    "layout",
+    "mcp"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
   "type": "module",
   "scripts": {
     "dev": "vite",
