@@ -31,15 +31,7 @@ export type ModulePin = {
 
 export type HoleRef = TerminalHole | RailHole | ModulePin;
 
-export type PartClass =
-  | "dip"
-  | "passive"
-  | "led"
-  | "switch"
-  | "button"
-  | "power"
-  | "sensor"
-  | "module";
+export type PartClass = "dip" | "passive" | "led" | "switch" | "button" | "power" | "sensor" | "module";
 
 export type PartPin = {
   id: string;

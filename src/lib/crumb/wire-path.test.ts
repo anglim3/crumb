@@ -36,7 +36,6 @@ test("vertical wires in the same column get distinct paths", () => {
   assert.notEqual(paths[0], paths[2]);
 
   for (const [i, w] of wires.entries()) {
-    const lane = lanes.get(w.id)!;
     const path = paths[i]!;
     assert.ok(path.startsWith(`M ${w.ax} ${w.ay}`));
     assert.ok(path.endsWith(`${w.bx} ${w.by}`));

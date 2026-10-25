@@ -3,11 +3,12 @@ import { CLASS_LABEL, CLASS_ORDER, getPart, searchParts } from "@/lib/crumb/cata
 import { EXAMPLES } from "@/lib/crumb/examples";
 import { applyBoot, libraryAutosave, PROJECT_KEY } from "@/lib/crumb/boot";
 import { LIBRARY_KEY } from "@/lib/crumb/library";
-import { encodeShare } from "@/lib/crumb/mutate";
+import { copyText } from "@/lib/crumb/clipboard";
+import { encodeShare, parseProject } from "@/lib/crumb/mutate";
 import { downloadPng, downloadText, renderProjectSvg } from "@/lib/crumb/render-svg";
 import { buildSteps } from "@/lib/crumb/steps";
 import { useCrumb, WIRE_COLORS } from "@/lib/crumb/store";
-import type { BoardSize, PartDef, Project } from "@/lib/crumb/types";
+import type { BoardSize, PartDef } from "@/lib/crumb/types";
 import { computeNets } from "@/lib/crumb/nets";
 import { detectShorts } from "@/lib/crumb/shorts";
 import { validateProject } from "@/lib/crumb/validate";
@@ -31,6 +32,7 @@ export function Workspace() {
   const shorts = useMemo(() => detectShorts(project), [project]);
   const steps = useMemo(() => buildSteps(project), [project]);
   const [hydrated, setHydrated] = useState(false);
+  const [storageBanner, setStorageBanner] = useState<string | null>(null);
   const holdLibrary = useCrumb((s) => s.holdLibrary);
 
   useEffect(() => {
@@ -56,8 +58,9 @@ export function Workspace() {
       localStorage.setItem(PROJECT_KEY, JSON.stringify(project));
       const libraryJson = libraryAutosave(library, project, holdLibrary);
       if (libraryJson != null) localStorage.setItem(LIBRARY_KEY, libraryJson);
+      setStorageBanner(null);
     } catch {
-      /* ignore */
+      setStorageBanner("Autosave failed. This board stays in this tab until the browser can store it again.");
     }
   }, [project, library, hydrated, holdLibrary]);
   useEffect(() => {
@@ -93,6 +96,11 @@ export function Workspace() {
   }, [cancelPending, deleteSelected, undo, redo]);
   return (
     <div className="flex min-h-dvh flex-col bg-bg text-fg lg:h-dvh lg:overflow-hidden">
+      {storageBanner && (
+        <p role="alert" className="border-b border-border bg-surface px-4 py-2 text-sm text-bad">
+          {storageBanner}
+        </p>
+      )}
       <Header />
       <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
         <aside className="order-2 max-h-[42vh] overflow-y-auto border-t border-border print:hidden lg:order-1 lg:max-h-none lg:min-h-0 lg:w-72 lg:border-r lg:border-t-0">
@@ -117,7 +125,9 @@ export function Workspace() {
             </p>
             <p className="font-mono tabular-nums">
               {shorts.length > 0 ? (
-                <span className="text-bad">{shorts.length} short{shorts.length === 1 ? "" : "s"}</span>
+                <span className="text-bad">
+                  {shorts.length} short{shorts.length === 1 ? "" : "s"}
+                </span>
               ) : (
                 <>
                   {project.parts.length} parts · {project.wires.length} wires
@@ -139,7 +149,6 @@ export function Workspace() {
 
 function Header() {
   const project = useCrumb((s) => s.project);
-  const setProject = useCrumb((s) => s.setProject);
   const changeBoard = useCrumb((s) => s.changeBoard);
   const tool = useCrumb((s) => s.tool);
   const setTool = useCrumb((s) => s.setTool);
@@ -159,169 +168,247 @@ function Header() {
   const openExample = useCrumb((s) => s.openExample);
   const newProject = useCrumb((s) => s.newProject);
   const deleteLibraryEntry = useCrumb((s) => s.deleteLibraryEntry);
+  const [toast, setToast] = useState<{ tone: "ok" | "bad"; text: string } | null>(null);
   const exampleMatch = EXAMPLES.find((e) => e.name === project.name && !library.activeId);
-  const pickerValue = library.activeId ? `user:${library.activeId}` : exampleMatch ? `ex:${exampleMatch.name}` : "draft";
+  const pickerValue = library.activeId
+    ? `user:${library.activeId}`
+    : exampleMatch
+      ? `ex:${exampleMatch.name}`
+      : "draft";
+
+  useEffect(() => {
+    if (!toast) return;
+    const id = window.setTimeout(() => setToast(null), 2400);
+    return () => window.clearTimeout(id);
+  }, [toast]);
 
   return (
-    <header className="flex flex-wrap items-center gap-3 border-b border-border px-4 py-3 print:hidden">
-      <div className="min-w-0 flex-1">
-        <p className="font-display text-xl leading-none tracking-tight">Crumb</p>
-        <input
-          className="mt-1 h-8 w-full max-w-56 rounded-md border border-border bg-surface px-2 text-xs text-fg"
-          value={project.name}
-          onChange={(e) => setName(e.target.value)}
-          aria-label="Project name"
-        />
-      </div>
-      <label className="flex items-center gap-2 text-xs text-muted">
-        Board
-        <select
-          className="h-10 rounded-md border border-border bg-surface px-2 text-fg"
-          value={project.board}
-          onChange={(e) => changeBoard(e.target.value as BoardSize)}
-        >
-          {(Object.keys(BOARD_SPECS) as BoardSize[]).map((size) => (
-            <option key={size} value={size}>
-              {BOARD_SPECS[size].label}
-            </option>
-          ))}
-        </select>
-      </label>
-      <label className="flex items-center gap-2 text-xs text-muted">
-        Project
-        <select
-          className="h-10 max-w-52 rounded-md border border-border bg-surface px-2 text-fg"
-          value={pickerValue}
-          onChange={(e) => {
-            const value = e.target.value;
-            if (value === "draft") return;
-            if (value.startsWith("ex:")) openExample(value.slice(3));
-            if (value.startsWith("user:")) openLibraryEntry(value.slice(5));
-          }}
-        >
-          <option value="draft">{library.activeId ? "—" : project.name || "Untitled draft"}</option>
-          <optgroup label="Examples">
-            {EXAMPLES.map((ex) => (
-              <option key={ex.name} value={`ex:${ex.name}`}>
-                {ex.name}
+    <>
+      <header className="flex flex-wrap items-center gap-3 border-b border-border px-4 py-3 print:hidden">
+        <div className="min-w-0 flex-1">
+          <p className="font-display text-xl leading-none tracking-tight">Crumb</p>
+          <input
+            className="mt-1 h-8 w-full max-w-56 rounded-md border border-border bg-surface px-2 text-xs text-fg"
+            value={project.name}
+            onChange={(e) => setName(e.target.value)}
+            aria-label="Project name"
+          />
+        </div>
+        <label className="flex items-center gap-2 text-xs text-muted">
+          Board
+          <select
+            className="h-10 rounded-md border border-border bg-surface px-2 text-fg"
+            value={project.board}
+            onChange={(e) => changeBoard(e.target.value as BoardSize)}
+          >
+            {(Object.keys(BOARD_SPECS) as BoardSize[]).map((size) => (
+              <option key={size} value={size}>
+                {BOARD_SPECS[size].label}
               </option>
             ))}
-          </optgroup>
-          <optgroup label="My projects">
-            {library.entries.length === 0 && (
-              <option value="draft" disabled>
-                None saved yet
-              </option>
-            )}
-            {library.entries.map((entry) => (
-              <option key={entry.id} value={`user:${entry.id}`}>
-                {entry.project.name || entry.id}
-              </option>
-            ))}
-          </optgroup>
-        </select>
-      </label>
-      <button type="button" className="h-10 rounded-md bg-surface px-3 text-sm" onClick={saveProject} title="Save to this browser">
-        <span className="inline-flex items-center gap-1.5">
-          <Save className="size-3.5" />
-          Save
-        </span>
-      </button>
-      {library.activeId && (
+          </select>
+        </label>
+        <label className="flex items-center gap-2 text-xs text-muted">
+          Project
+          <select
+            className="h-10 max-w-52 rounded-md border border-border bg-surface px-2 text-fg"
+            value={pickerValue}
+            onChange={(e) => {
+              const value = e.target.value;
+              if (value === "draft") return;
+              if (value.startsWith("ex:")) openExample(value.slice(3));
+              if (value.startsWith("user:")) openLibraryEntry(value.slice(5));
+            }}
+          >
+            <option value="draft">{library.activeId ? "—" : project.name || "Untitled draft"}</option>
+            <optgroup label="Examples">
+              {EXAMPLES.map((ex) => (
+                <option key={ex.name} value={`ex:${ex.name}`}>
+                  {ex.name}
+                </option>
+              ))}
+            </optgroup>
+            <optgroup label="My projects">
+              {library.entries.length === 0 && (
+                <option value="draft" disabled>
+                  None saved yet
+                </option>
+              )}
+              {library.entries.map((entry) => (
+                <option key={entry.id} value={`user:${entry.id}`}>
+                  {entry.project.name || entry.id}
+                </option>
+              ))}
+            </optgroup>
+          </select>
+        </label>
         <button
           type="button"
           className="h-10 rounded-md bg-surface px-3 text-sm"
-          title="Delete saved project"
-          onClick={() => deleteLibraryEntry(library.activeId!)}
-        >
-          <Trash2 className="size-3.5" />
-        </button>
-      )}
-      <div className="flex flex-wrap gap-2">
-        <button type="button" className="h-10 rounded-md bg-surface px-3 text-sm disabled:opacity-40" onClick={undo} disabled={!past.length}>
-          <span className="inline-flex items-center gap-1.5">
-            <Undo2 className="size-3.5" />
-            Undo
-          </span>
-        </button>
-        <button type="button" className="h-10 rounded-md bg-surface px-3 text-sm disabled:opacity-40" onClick={redo} disabled={!future.length}>
-          <span className="inline-flex items-center gap-1.5">
-            <Redo2 className="size-3.5" />
-            Redo
-          </span>
-        </button>
-        <button
-          type="button"
-          className={cn("h-10 rounded-md px-3 text-sm", tool === "select" ? "bg-accent text-accent-fg" : "bg-surface")}
-          onClick={() => setTool("select")}
-        >
-          Select
-        </button>
-        <button
-          type="button"
-          className={cn("h-10 rounded-md px-3 text-sm", tool === "wire" ? "bg-accent text-accent-fg" : "bg-surface")}
-          onClick={() => setTool("wire")}
+          onClick={saveProject}
+          title="Save to this browser"
         >
           <span className="inline-flex items-center gap-1.5">
-            <Cable className="size-3.5" />
-            Wire
+            <Save className="size-3.5" />
+            Save
           </span>
         </button>
-        <details className="relative">
-          <summary className="h-10 list-none rounded-md bg-surface px-3 text-sm cursor-pointer inline-flex items-center">
-            More
-          </summary>
-          <div className="absolute right-0 z-20 mt-1 flex w-44 flex-col gap-1 rounded-md border border-border bg-bg p-2">
-            <button type="button" className="h-10 rounded-md bg-surface px-3 text-sm" onClick={duplicateSelected}>
-              Duplicate
-            </button>
-            <button type="button" className="h-10 rounded-md bg-surface px-3 text-sm" onClick={deleteSelected}>
-              Delete
-            </button>
-            <label className="h-10 rounded-md bg-surface px-3 text-sm inline-flex items-center gap-1.5 cursor-pointer">
-              <FolderOpen className="size-3.5" />
-              Open
-              <input
-                type="file"
-                accept="application/json,.json"
-                className="sr-only"
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (!file) return;
-                  file.text().then((text) => loadJson(text)).catch(() => undefined);
-                  e.target.value = "";
+        {library.activeId && (
+          <button
+            type="button"
+            className="h-10 rounded-md bg-surface px-3 text-sm"
+            title="Delete saved project"
+            onClick={() => deleteLibraryEntry(library.activeId!)}
+          >
+            <Trash2 className="size-3.5" />
+          </button>
+        )}
+        <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            className="h-10 rounded-md bg-surface px-3 text-sm disabled:opacity-40"
+            onClick={undo}
+            disabled={!past.length}
+          >
+            <span className="inline-flex items-center gap-1.5">
+              <Undo2 className="size-3.5" />
+              Undo
+            </span>
+          </button>
+          <button
+            type="button"
+            className="h-10 rounded-md bg-surface px-3 text-sm disabled:opacity-40"
+            onClick={redo}
+            disabled={!future.length}
+          >
+            <span className="inline-flex items-center gap-1.5">
+              <Redo2 className="size-3.5" />
+              Redo
+            </span>
+          </button>
+          <button
+            type="button"
+            className={cn(
+              "h-10 rounded-md px-3 text-sm",
+              tool === "select" ? "bg-accent text-accent-fg" : "bg-surface",
+            )}
+            onClick={() => setTool("select")}
+          >
+            Select
+          </button>
+          <button
+            type="button"
+            className={cn("h-10 rounded-md px-3 text-sm", tool === "wire" ? "bg-accent text-accent-fg" : "bg-surface")}
+            onClick={() => setTool("wire")}
+          >
+            <span className="inline-flex items-center gap-1.5">
+              <Cable className="size-3.5" />
+              Wire
+            </span>
+          </button>
+          <details className="relative">
+            <summary className="h-10 list-none rounded-md bg-surface px-3 text-sm cursor-pointer inline-flex items-center">
+              More
+            </summary>
+            <div className="absolute right-0 z-20 mt-1 flex w-44 flex-col gap-1 rounded-md border border-border bg-bg p-2">
+              <button type="button" className="h-10 rounded-md bg-surface px-3 text-sm" onClick={duplicateSelected}>
+                Duplicate
+              </button>
+              <button type="button" className="h-10 rounded-md bg-surface px-3 text-sm" onClick={deleteSelected}>
+                Delete
+              </button>
+              <label className="h-10 rounded-md bg-surface px-3 text-sm inline-flex items-center gap-1.5 cursor-pointer">
+                <FolderOpen className="size-3.5" />
+                Open
+                <input
+                  type="file"
+                  accept="application/json,.json"
+                  className="sr-only"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    e.target.value = "";
+                    if (!file) return;
+                    file
+                      .text()
+                      .then((text) => {
+                        const err = loadJson(text);
+                        if (err) setToast({ tone: "bad", text: err });
+                      })
+                      .catch(() => setToast({ tone: "bad", text: "Could not read that file." }));
+                  }}
+                />
+              </label>
+              <button type="button" className="h-10 rounded-md bg-surface px-3 text-sm" onClick={newProject}>
+                New
+              </button>
+              <button
+                type="button"
+                className={cn("h-10 rounded-md px-3 text-sm", jsonOpen ? "bg-accent text-accent-fg" : "bg-surface")}
+                onClick={() => setJsonOpen(!jsonOpen)}
+              >
+                JSON
+              </button>
+              <button
+                type="button"
+                className="h-10 rounded-md bg-surface px-3 text-sm"
+                onClick={() =>
+                  downloadText(
+                    `${project.name.replace(/\s+/g, "-").toLowerCase()}.json`,
+                    JSON.stringify(project, null, 2),
+                    "application/json",
+                  )
+                }
+              >
+                .json
+              </button>
+              <button
+                type="button"
+                className="h-10 rounded-md bg-surface px-3 text-sm"
+                onClick={() =>
+                  downloadText(
+                    `${project.name.replace(/\s+/g, "-").toLowerCase()}.svg`,
+                    renderProjectSvg(project),
+                    "image/svg+xml",
+                  )
+                }
+              >
+                SVG
+              </button>
+              <button
+                type="button"
+                className="h-10 rounded-md bg-surface px-3 text-sm"
+                onClick={() => downloadPng(`${project.name.replace(/\s+/g, "-").toLowerCase()}.png`, project)}
+              >
+                PNG
+              </button>
+              <button
+                type="button"
+                className="h-10 rounded-md bg-surface px-3 text-sm"
+                onClick={() => {
+                  const url = `${window.location.origin}${window.location.pathname}#c=${encodeShare(project)}`;
+                  void copyText(url).then((ok) => {
+                    setToast(ok ? { tone: "ok", text: "Copied" } : { tone: "bad", text: "Could not copy the link." });
+                  });
                 }}
-              />
-            </label>
-            <button type="button" className="h-10 rounded-md bg-surface px-3 text-sm" onClick={newProject}>
-              New
-            </button>
-            <button type="button" className={cn("h-10 rounded-md px-3 text-sm", jsonOpen ? "bg-accent text-accent-fg" : "bg-surface")} onClick={() => setJsonOpen(!jsonOpen)}>
-              JSON
-            </button>
-            <button type="button" className="h-10 rounded-md bg-surface px-3 text-sm" onClick={() => downloadText(`${project.name.replace(/\s+/g, "-").toLowerCase()}.json`, JSON.stringify(project, null, 2), "application/json")}>
-              .json
-            </button>
-            <button type="button" className="h-10 rounded-md bg-surface px-3 text-sm" onClick={() => downloadText(`${project.name.replace(/\s+/g, "-").toLowerCase()}.svg`, renderProjectSvg(project), "image/svg+xml")}>
-              SVG
-            </button>
-            <button type="button" className="h-10 rounded-md bg-surface px-3 text-sm" onClick={() => downloadPng(`${project.name.replace(/\s+/g, "-").toLowerCase()}.png`, project)}>
-              PNG
-            </button>
-            <button
-              type="button"
-              className="h-10 rounded-md bg-surface px-3 text-sm"
-              onClick={() => {
-                const url = `${window.location.origin}${window.location.pathname}#c=${encodeShare(project)}`;
-                void navigator.clipboard.writeText(url);
-              }}
-            >
-              Copy link
-            </button>
-          </div>
-        </details>
-      </div>
-    </header>
+              >
+                Copy link
+              </button>
+            </div>
+          </details>
+        </div>
+      </header>
+      {toast && (
+        <div
+          role="status"
+          className={cn(
+            "fixed bottom-4 left-1/2 z-30 -translate-x-1/2 rounded-md border border-border bg-surface px-4 py-2 text-sm",
+            toast.tone === "bad" ? "text-bad" : "text-fg",
+          )}
+        >
+          {toast.text}
+        </div>
+      )}
+    </>
   );
 }
 
@@ -351,10 +438,7 @@ function PartsPane() {
         <div className="mt-3 flex flex-wrap gap-2">
           <button
             type="button"
-            className={cn(
-              "h-10 rounded-md px-3 text-sm",
-              klass === "all" ? "bg-accent text-accent-fg" : "bg-surface",
-            )}
+            className={cn("h-10 rounded-md px-3 text-sm", klass === "all" ? "bg-accent text-accent-fg" : "bg-surface")}
             onClick={() => setKlass("all")}
           >
             All
@@ -363,10 +447,7 @@ function PartsPane() {
             <button
               key={cls}
               type="button"
-              className={cn(
-                "h-10 rounded-md px-3 text-sm",
-                klass === cls ? "bg-accent text-accent-fg" : "bg-surface",
-              )}
+              className={cn("h-10 rounded-md px-3 text-sm", klass === cls ? "bg-accent text-accent-fg" : "bg-surface")}
               onClick={() => setKlass(cls)}
             >
               {CLASS_LABEL[cls]}
@@ -537,7 +618,10 @@ function Inspector({
         ) : (
           <ul className="mt-2 flex flex-col gap-2">
             {issues.map((issue, i) => (
-              <li key={`${issue.code}-${i}`} className={issue.level === "error" ? "text-sm text-bad" : "text-sm text-warn"}>
+              <li
+                key={`${issue.code}-${i}`}
+                className={issue.level === "error" ? "text-sm text-bad" : "text-sm text-warn"}
+              >
                 {issue.message}
               </li>
             ))}
@@ -602,12 +686,11 @@ function Inspector({
             onChange={(e) => {
               setDraft(e.target.value);
               try {
-                const parsed = JSON.parse(e.target.value) as Project;
-                if (parsed.version !== 1 || !parsed.parts || !parsed.wires) throw new Error("Not a Crumb file");
-                setProject(parsed);
+                setProject(parseProject(JSON.parse(e.target.value)));
                 setJsonErr(null);
               } catch (err) {
-                setJsonErr(err instanceof Error ? err.message : "Invalid JSON");
+                if (err instanceof SyntaxError) setJsonErr("Invalid JSON");
+                else setJsonErr(err instanceof Error ? err.message : "Invalid JSON");
               }
             }}
           />

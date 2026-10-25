@@ -132,7 +132,10 @@ export function occupiedHoles(project: Project): Map<string, string> {
 }
 
 export function nextPartId(parts: PlacedPart[], prefix: string): string {
-  return nextId(parts.map((p) => p.id), prefix);
+  return nextId(
+    parts.map((p) => p.id),
+    prefix,
+  );
 }
 
 export const COL_INDEX: Record<TerminalCol, number> = {

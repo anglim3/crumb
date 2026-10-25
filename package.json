@@ -2,6 +2,25 @@
   "name": "crumb",
   "private": true,
   "version": "0.1.0",
+  "description": "Solderless breadboard layouts a person can build, with a browser editor, short checks, and a local MCP server.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/anglim3/crumb.git"
+  },
+  "homepage": "https://crumb.janglim.cloud",
+  "bugs": {
+    "url": "https://github.com/anglim3/crumb/issues"
+  },
+  "keywords": [
+    "breadboard",
+    "electronics",
+    "layout",
+    "mcp"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -9,9 +28,13 @@
     "preview": "vite preview",
     "deploy": "npm run build && wrangler deploy",
     "deploy:dry-run": "npm run build && wrangler deploy --dry-run",
-    "test": "node --experimental-strip-types --test src/lib/crumb/*.test.ts mcp/*.test.mjs"
+    "test": "node --experimental-strip-types --test src/lib/crumb/*.test.ts mcp/*.test.mjs",
+    "lint": "eslint . && prettier --check ."
   },
   "dependencies": {
+    "@fontsource/fraunces": "^5.3.0",
+    "@fontsource/ibm-plex-mono": "^5.3.0",
+    "@fontsource/source-sans-3": "^5.3.1",
     "clsx": "^2.1.1",
     "lucide-react": "^0.510.0",
     "react": "^19.1.0",
@@ -19,15 +42,25 @@
     "tailwind-merge": "^3.3.1",
     "zustand": "^5.0.8"
   },
+  "overrides": {
+    "undici": "7.30.1"
+  },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@tailwindcss/vite": "^4.1.13",
     "@types/node": "^22.20.4",
     "@types/react": "^19.1.13",
     "@types/react-dom": "^19.1.9",
     "@vitejs/plugin-react": "^5.0.2",
+    "eslint": "^10.13.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "globals": "^17.13.0",
+    "prettier": "^3.9.10",
     "tailwindcss": "^4.1.13",
     "typescript": "^5.9.2",
-    "vite": "^7.3.6",
-    "wrangler": "^4.145.0"
+    "typescript-eslint": "^8.72.0",
+    "vite": "^7.3.7",
+    "wrangler": "^4.152.0"
   }
 }

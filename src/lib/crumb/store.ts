@@ -10,7 +10,19 @@ import {
   removeLibrary,
   upsertLibrary,
 } from "./library.ts";
-import { addWire, leadHoles, parseProject, placeDip, placeLeadedHoles, placeModule, removePart, removeWire, setBoard, updatePart, movePart } from "./mutate.ts";
+import {
+  addWire,
+  leadHoles,
+  parseProject,
+  placeDip,
+  placeLeadedHoles,
+  placeModule,
+  removePart,
+  removeWire,
+  setBoard,
+  updatePart,
+  movePart,
+} from "./mutate.ts";
 import type { BoardSize, PlacedPart, Project } from "./types.ts";
 
 export type Tool = "select" | "place" | "wire";
@@ -45,7 +57,8 @@ export type CrumbState = {
   patchSelected: (patch: Partial<PlacedPart>) => void;
   undo: () => void;
   redo: () => void;
-  loadJson: (raw: string) => void;
+  /** Returns an error message when `raw` is not a Crumb project file. */
+  loadJson: (raw: string) => string | null;
   setName: (name: string) => void;
   duplicateSelected: () => void;
   moveSelected: (dRow: number) => void;
@@ -210,11 +223,18 @@ export const useCrumb = create<CrumbState>((set, get) => {
       });
     },
     loadJson: (raw) => {
+      let data: unknown;
       try {
-        const project = parseProject(JSON.parse(raw));
-        commit(project, { selected: null, jsonOpen: false });
+        data = JSON.parse(raw);
       } catch {
-        /* ignore bad files */
+        return "That file is not valid JSON.";
+      }
+      try {
+        const project = parseProject(data);
+        commit(project, { selected: null, jsonOpen: false });
+        return null;
+      } catch (err) {
+        return err instanceof Error ? err.message : "Could not open that file.";
       }
     },
     setName: (name) => {
@@ -236,7 +256,14 @@ export const useCrumb = create<CrumbState>((set, get) => {
         return;
       }
       if (part.kind === "leaded") {
-        commit(placeLeadedHoles(s.project, part.def, leadHoles(part).map((h) => bump(h, 2)), part.value));
+        commit(
+          placeLeadedHoles(
+            s.project,
+            part.def,
+            leadHoles(part).map((h) => bump(h, 2)),
+            part.value,
+          ),
+        );
         return;
       }
       commit(placeModule(s.project, part.def, part.slot, part.offsetRow + 5));
@@ -307,24 +334,30 @@ export const useCrumb = create<CrumbState>((set, get) => {
       });
     },
     newProject: () => {
-      commit({ ...EMPTY_PROJECT, name: "Untitled" }, {
-        library: { ...get().library, activeId: null },
-        selected: null,
-        wireFrom: null,
-        placeClicks: [],
-      });
+      commit(
+        { ...EMPTY_PROJECT, name: "Untitled" },
+        {
+          library: { ...get().library, activeId: null },
+          selected: null,
+          wireFrom: null,
+          placeClicks: [],
+        },
+      );
     },
     deleteLibraryEntry: (id) => {
       const s = get();
       const library = removeLibrary(s.library, id);
       if (s.library.activeId === id) {
-        commit({ ...EMPTY_PROJECT, name: "Untitled" }, {
-          library,
-          holdLibrary: false,
-          selected: null,
-          wireFrom: null,
-          placeClicks: [],
-        });
+        commit(
+          { ...EMPTY_PROJECT, name: "Untitled" },
+          {
+            library,
+            holdLibrary: false,
+            selected: null,
+            wireFrom: null,
+            placeClicks: [],
+          },
+        );
         return;
       }
       set({ library, holdLibrary: false });

@@ -42,12 +42,7 @@ export function dipSilkFontSize(caption: string): number {
   return caption.length > 4 ? 4.5 : 5.5;
 }
 
-export function dipMarkup(
-  project: Project,
-  part: PlacedDip,
-  geom: BoardGeom,
-  opts?: { selected?: boolean },
-): string {
+export function dipMarkup(project: Project, part: PlacedDip, geom: BoardGeom, opts?: { selected?: boolean }): string {
   const def = getPart(part.def);
   const count = def?.dipPins ?? 8;
   const bounds = dipBounds(geom, part, count);
