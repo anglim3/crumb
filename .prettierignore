@@ -4,6 +4,6 @@ dist
 package-lock.json
 mcp/catalog.json
 docs
-examples
+examples/*.json
 # Hand-written docs and example boards stay as authored.
 *.md

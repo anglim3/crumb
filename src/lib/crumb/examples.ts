@@ -53,3 +53,33 @@ export const EXAMPLE_NOTES: Record<string, string> = {
   "Uno + DHT22": "Uno module and a DHT22",
   "HomeKit blinds": "Nano ESP32, TMC2208, NEMA 17, and a limit switch",
 };
+
+/** Query slugs for `/?example=`, one per file in `examples/`. */
+export const EXAMPLE_SLUGS: Record<string, string> = {
+  "555-blinker": "555 blinker",
+  "button-led": "Button LED",
+  "lm358-amplifier": "LM358 amplifier",
+  "74hc595-leds": "74HC595 LED chain",
+  "attiny85-blink": "ATtiny85 blink",
+  "esp32-led": "ESP32 LED",
+  "pico-button": "Pico button",
+  "uno-dht22": "Uno + DHT22",
+  "homekit-blinds": "HomeKit blinds",
+};
+
+export function exampleNameForSlug(slug: string): string | null {
+  return EXAMPLE_SLUGS[slug] ?? null;
+}
+
+/** Read `example` from a search string. Other parameters stay; `example` is dropped. */
+export function readExampleLink(search: string): { name: string | null; search: string } {
+  const params = new URLSearchParams(search.startsWith("?") ? search.slice(1) : search);
+  if (!params.has("example")) return { name: null, search };
+  const slug = params.get("example");
+  params.delete("example");
+  const rest = params.toString();
+  return {
+    name: slug ? exampleNameForSlug(slug) : null,
+    search: rest ? `?${rest}` : "",
+  };
+}

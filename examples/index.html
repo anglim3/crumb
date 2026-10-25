@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Example breadboard layouts — Crumb</title>
+    <meta
+      name="description"
+      content="Example solderless layouts for the Crumb breadboard layout tool. Open a 555 blinker, an ESP32 LED, and other boards in this online breadboard diagram maker."
+    />
+    <link rel="canonical" href="https://crumb.janglim.cloud/examples/" />
+    <meta name="theme-color" content="#14110e" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <meta property="og:title" content="Example breadboard layouts — Crumb" />
+    <meta
+      property="og:description"
+      content="Example solderless layouts for the Crumb breadboard layout tool. Open a 555 blinker, an ESP32 LED, and other boards in this online breadboard diagram maker."
+    />
+    <meta property="og:image" content="https://crumb.janglim.cloud/og.png" />
+    <meta property="og:url" content="https://crumb.janglim.cloud/examples/" />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Example breadboard layouts — Crumb" />
+    <meta
+      name="twitter:description"
+      content="Example solderless layouts for the Crumb breadboard layout tool. Open a 555 blinker, an ESP32 LED, and other boards in this online breadboard diagram maker."
+    />
+    <meta name="twitter:image" content="https://crumb.janglim.cloud/og.png" />
+    <link rel="stylesheet" href="/src/fonts.css" />
+    <link rel="stylesheet" href="/src/styles.css" />
+  </head>
+  <body class="site-page">
+    <div class="mx-auto flex min-h-dvh w-full max-w-3xl flex-col px-6 py-8">
+      <header class="flex flex-wrap items-baseline justify-between gap-3 border-b border-border pb-4">
+        <a href="/" class="font-display text-xl leading-none tracking-tight">Crumb</a>
+        <nav aria-label="Site" class="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted">
+          <a class="hover:text-fg hover:underline" href="/">Editor</a>
+          <a class="text-fg underline" href="/examples/" aria-current="page">Examples</a>
+          <a class="hover:text-fg hover:underline" href="/how-it-works/">How it works</a>
+        </nav>
+      </header>
+      <main class="mt-8 flex-1">
+        <h1 class="font-display text-3xl leading-none tracking-tight">Example breadboard layouts</h1>
+        <p class="mt-4">
+          These are the layouts that ship with Crumb, a breadboard layout tool for solderless boards. Open one to copy
+          it into the editor. Rewiring that copy does not change the file in the repository.
+        </p>
+        <p class="mt-3 text-muted">
+          Each board draws the holes, strips, and jumpers you would use at the bench, and the editor checks for shared
+          holes and shorts. Crumb is an online breadboard diagram maker. It is not a breadboard simulator, and it will
+          not compute LED current.
+        </p>
+        <ul class="mt-8 flex flex-col gap-4">
+          <li class="rounded-lg border border-border bg-surface p-4">
+            <h2 class="font-display text-xl leading-tight">555 blinker</h2>
+            <p class="mt-2 text-sm text-muted">Astable NE555 flashing an LED</p>
+            <p class="mt-2 text-sm">
+              An NE555, a 1k resistor, a 10k resistor, a 10µF capacitor, a 330Ω resistor, and an LED on a half-size
+              board. Power and ground use the left rails.
+            </p>
+            <p class="mt-4">
+              <a
+                class="inline-flex h-10 items-center rounded-md bg-accent px-3 text-sm text-accent-fg"
+                href="/?example=555-blinker"
+                >Open 555 blinker in the editor</a
+              >
+            </p>
+          </li>
+          <li class="rounded-lg border border-border bg-surface p-4">
+            <h2 class="font-display text-xl leading-tight">Button LED</h2>
+            <p class="mt-2 text-sm text-muted">Button, resistor, and LED on a mini board</p>
+            <p class="mt-2 text-sm">
+              A button, a 330Ω resistor, and an LED. The button sits across the left strip and the LED returns to the
+              ground rail.
+            </p>
+            <p class="mt-4">
+              <a
+                class="inline-flex h-10 items-center rounded-md bg-accent px-3 text-sm text-accent-fg"
+                href="/?example=button-led"
+                >Open Button LED in the editor</a
+              >
+            </p>
+          </li>
+          <li class="rounded-lg border border-border bg-surface p-4">
+            <h2 class="font-display text-xl leading-tight">LM358 amplifier</h2>
+            <p class="mt-2 text-sm text-muted">Single-supply non-inverting stage, gain about 2</p>
+            <p class="mt-2 text-sm">
+              An LM358 with two 10k resistors, a 10k potentiometer, and a 100n capacitor on a half-size board.
+            </p>
+            <p class="mt-4">
+              <a
+                class="inline-flex h-10 items-center rounded-md bg-accent px-3 text-sm text-accent-fg"
+                href="/?example=lm358-amplifier"
+                >Open LM358 amplifier in the editor</a
+              >
+            </p>
+          </li>
+          <li class="rounded-lg border border-border bg-surface p-4">
+            <h2 class="font-display text-xl leading-tight">74HC595 LED chain</h2>
+            <p class="mt-2 text-sm text-muted">Shift register with eight LEDs</p>
+            <p class="mt-2 text-sm">
+              A 74HC595 and eight LED-and-resistor pairs on a half-size board. Each LED has its own 330Ω resistor.
+            </p>
+            <p class="mt-4">
+              <a
+                class="inline-flex h-10 items-center rounded-md bg-accent px-3 text-sm text-accent-fg"
+                href="/?example=74hc595-leds"
+                >Open 74HC595 LED chain in the editor</a
+              >
+            </p>
+          </li>
+          <li class="rounded-lg border border-border bg-surface p-4">
+            <h2 class="font-display text-xl leading-tight">ATtiny85 blink</h2>
+            <p class="mt-2 text-sm text-muted">Reset pull-up and an LED on PB0</p>
+            <p class="mt-2 text-sm">
+              An ATtiny85, a 10k reset pull-up, a 330Ω resistor, and an LED on a half-size board.
+            </p>
+            <p class="mt-4">
+              <a
+                class="inline-flex h-10 items-center rounded-md bg-accent px-3 text-sm text-accent-fg"
+                href="/?example=attiny85-blink"
+                >Open ATtiny85 blink in the editor</a
+              >
+            </p>
+          </li>
+          <li class="rounded-lg border border-border bg-surface p-4">
+            <h2 class="font-display text-xl leading-tight">ESP32 LED</h2>
+            <p class="mt-2 text-sm text-muted">30-pin ESP32 DevKit and an LED on IO2</p>
+            <p class="mt-2 text-sm">
+              The 30-pin DevKit, a 330Ω resistor, and an LED on a half-size board. This part is not a 38-pin DevKitC.
+            </p>
+            <p class="mt-4">
+              <a
+                class="inline-flex h-10 items-center rounded-md bg-accent px-3 text-sm text-accent-fg"
+                href="/?example=esp32-led"
+                >Open ESP32 LED in the editor</a
+              >
+            </p>
+          </li>
+          <li class="rounded-lg border border-border bg-surface p-4">
+            <h2 class="font-display text-xl leading-tight">Pico button</h2>
+            <p class="mt-2 text-sm text-muted">Pico with a pulled-up button</p>
+            <p class="mt-2 text-sm">A Pico, a button, and a 10k pull-up on a half-size board.</p>
+            <p class="mt-4">
+              <a
+                class="inline-flex h-10 items-center rounded-md bg-accent px-3 text-sm text-accent-fg"
+                href="/?example=pico-button"
+                >Open Pico button in the editor</a
+              >
+            </p>
+          </li>
+          <li class="rounded-lg border border-border bg-surface p-4">
+            <h2 class="font-display text-xl leading-tight">Uno + DHT22</h2>
+            <p class="mt-2 text-sm text-muted">Uno module and a DHT22</p>
+            <p class="mt-2 text-sm">
+              An Uno module beside the board, a DHT22 on the right strip, and a 10k pull-up, on a half-size board.
+            </p>
+            <p class="mt-4">
+              <a
+                class="inline-flex h-10 items-center rounded-md bg-accent px-3 text-sm text-accent-fg"
+                href="/?example=uno-dht22"
+                >Open Uno + DHT22 in the editor</a
+              >
+            </p>
+          </li>
+          <li class="rounded-lg border border-border bg-surface p-4">
+            <h2 class="font-display text-xl leading-tight">HomeKit blinds</h2>
+            <p class="mt-2 text-sm text-muted">Nano ESP32, TMC2208, NEMA 17, and a limit switch</p>
+            <p class="mt-2 text-sm">
+              A Nano ESP32, a TMC2208, a limit switch, a barrel jack, and a NEMA 17 on a half-size board. The jack feeds
+              the lower right rail, and that rail is not jumped across the middle split. The left positive rail is 3V3
+              from the Nano ESP32 and is jumped across the split so the driver can share it.
+            </p>
+            <p class="mt-4">
+              <a
+                class="inline-flex h-10 items-center rounded-md bg-accent px-3 text-sm text-accent-fg"
+                href="/?example=homekit-blinds"
+                >Open HomeKit blinds in the editor</a
+              >
+            </p>
+          </li>
+        </ul>
+        <p class="mt-8 text-sm text-muted">
+          Placement, wiring, share links, and export are covered in
+          <a class="text-fg underline" href="/how-it-works/">How it works</a>.
+        </p>
+      </main>
+      <footer class="mt-12 border-t border-border pt-4 text-xs text-muted">
+        <p>
+          Vibe-coded: built mostly by prompting an AI and reviewing the output.
+          <a
+            class="hover:text-fg hover:underline"
+            href="https://github.com/anglim3/crumb/blob/main/README.md#how-this-was-made"
+            >How this was made</a
+          >
+        </p>
+      </footer>
+    </div>
+  </body>
+</html>

@@ -1,4 +1,6 @@
 @import "tailwindcss";
+@source "../examples/index.html";
+@source "../how-it-works/index.html";
 
 @theme {
   --font-display: "Fraunces", "Times New Roman", serif;
@@ -93,4 +95,11 @@
     animation: none;
     filter: none;
   }
+}
+
+/* Static pages are documents, not the full-height editor shell. */
+html:has(body.site-page),
+body.site-page {
+  height: auto;
+  min-height: 100%;
 }
