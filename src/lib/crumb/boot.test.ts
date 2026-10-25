@@ -65,7 +65,10 @@ test("#c= boot preserves the saved library until an explicit save", async () => 
 
 test("invalid #c= hash preserves the library and the project", async () => {
   resetEditor();
-  const library = { ...upsertLibrary(emptyLibrary(), named("Keep this library"), null, 1), activeId: null };
+  const library = {
+    ...upsertLibrary(emptyLibrary(), named("Keep this library"), null, 1),
+    activeId: null,
+  };
   const session = named("Keep this project");
   await applyBoot("#c=%%%not-a-share%%%", {
     projectRaw: JSON.stringify(session),
@@ -80,7 +83,10 @@ test("invalid #c= hash preserves the library and the project", async () => {
   assert.equal(state.library.entries[0].project.name, "Keep this library");
 
   const written = libraryAutosave(state.library, state.project, state.holdLibrary);
-  const file = JSON.parse(written ?? "null") as { entries: { project: Project }[]; activeId: string | null };
+  const file = JSON.parse(written ?? "null") as {
+    entries: { project: Project }[];
+    activeId: string | null;
+  };
   assert.equal(file.entries.length, 1);
   assert.equal(file.entries[0].project.name, "Keep this library");
   assert.equal(file.activeId, null);

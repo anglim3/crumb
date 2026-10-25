@@ -1,12 +1,16 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { EXAMPLE_555 } from "./examples.ts";
-import { decodeShare, encodeShare } from "./share.ts";
+import { decodeShare, encodeLegacyShare, encodeShare } from "./share.ts";
 import type { Project, Wire } from "./types.ts";
 
 function legacyEncode(project: Project): string {
   return btoa(unescape(encodeURIComponent(JSON.stringify(project))));
 }
+
+// Byte layout of the previous btoa(unescape(encodeURIComponent(...))) encoder
+// for { version: 1, name: "Café 基板", board: "mini", parts: [], wires: [] }.
+const LEGACY_CAFE = "eyJ2ZXJzaW9uIjoxLCJuYW1lIjoiQ2Fmw6kg5Z+65p2/IiwiYm9hcmQiOiJtaW5pIiwicGFydHMiOltdLCJ3aXJlcyI6W119";
 
 test("v2 share round-trips unicode names", async () => {
   const project: Project = {
@@ -54,4 +58,34 @@ test("v2 and legacy tokens do not decode as each other", async () => {
   assert.notEqual(modern, legacy);
   assert.deepEqual(await decodeShare(modern), project);
   assert.deepEqual(await decodeShare(legacy), project);
+});
+
+test("encodeShare round-trips a project", async () => {
+  assert.deepEqual(await decodeShare(await encodeShare(EXAMPLE_555)), EXAMPLE_555);
+});
+
+test("the utf-8 helper matches a link written by the previous encoder", () => {
+  const project: Project = {
+    version: 1,
+    name: "Café 基板",
+    board: "mini",
+    parts: [],
+    wires: [],
+  };
+  assert.equal(encodeLegacyShare(project), LEGACY_CAFE);
+  assert.equal(legacyEncode(project), LEGACY_CAFE);
+});
+
+test("decodeShare reads a link written by the previous encoder", async () => {
+  const project = await decodeShare(LEGACY_CAFE);
+  assert.equal(project.name, "Café 基板");
+  assert.equal(project.board, "mini");
+  assert.deepEqual(project.parts, []);
+  assert.deepEqual(project.wires, []);
+  assert.equal(encodeLegacyShare(project), LEGACY_CAFE);
+});
+
+test("decodeShare rejects a payload that is not a project", async () => {
+  await assert.rejects(() => decodeShare(btoa("{}")));
+  await assert.rejects(() => decodeShare("%%%"));
 });

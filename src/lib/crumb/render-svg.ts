@@ -12,10 +12,7 @@ import { computeWireLanes, jumperPath, wireGeomsFromProject } from "./wire-path.
 const COLS: TerminalCol[] = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j"];
 
 function esc(value: string): string {
-  return value
-    .replace(/&/g, "\u0026amp;")
-    .replace(/</g, "\u0026lt;")
-    .replace(/"/g, "\u0026quot;");
+  return value.replace(/&/g, "\u0026amp;").replace(/</g, "\u0026lt;").replace(/"/g, "\u0026quot;");
 }
 
 function allHoles(rows: number): HoleRef[] {
@@ -35,7 +32,14 @@ function renderModuleCard(project: Project, partId: string, geom: ReturnType<typ
   const def = getPart(part.def);
   const card = moduleCardGeom(project, part, geom);
   const labelSide = part.slot === 0 ? "end" : "start";
-  const labelX = part.slot === 0 ? card.pins[0] ? card.pins[0].x - 8 : card.x + 8 : card.pins[0] ? card.pins[0].x + 8 : card.x + 22;
+  const labelX =
+    part.slot === 0
+      ? card.pins[0]
+        ? card.pins[0].x - 8
+        : card.x + 8
+      : card.pins[0]
+        ? card.pins[0].x + 8
+        : card.x + 22;
   const chunks = [
     `<rect x="${card.x}" y="${card.y}" width="${card.w}" height="${card.h}" rx="6" fill="#3d4a42" stroke="#1c1916" stroke-width="1.2"/>`,
     `<text x="${card.x + card.w / 2}" y="${card.y + 14}" text-anchor="middle" fill="#efe6d4" font-size="8" font-family="Georgia, serif">${esc(part.id)} ${esc(def?.name ?? part.def)}</text>`,

@@ -1,0 +1,36 @@
+name: New part
+description: Ask for a part in the catalog.
+title: "Part: "
+body:
+  - type: input
+    id: name
+    attributes:
+      label: Part name
+      placeholder: NE555
+    validations:
+      required: true
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Kind
+      description: Where the part sits.
+      options:
+        - DIP on the board
+        - Leaded part
+        - Off-board module
+    validations:
+      required: true
+  - type: textarea
+    id: pinout
+    attributes:
+      label: Pinout
+      description: Pin numbers and labels, and which pin is pin 1. For a module, list the pads.
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Why this part
+      description: A datasheet link or a short note on how it is used is enough.
+    validations:
+      required: false

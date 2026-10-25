@@ -87,6 +87,7 @@ node --experimental-strip-types scripts/crumb-svg.mjs examples/555-blinker.json 
 
 ```bash
 npm test
+npm run lint
 ```
 
 ## Demo
@@ -101,7 +102,7 @@ Rebuild and deploy that site from this repo:
 npm run deploy
 ```
 
-[`wrangler.jsonc`](wrangler.jsonc) serves the Vite build (`./dist`) as a Workers static SPA (`not_found_handling: single-page-application`), so share links (`#c=…`) resolve to `index.html`. The custom domain is `crumb.janglim.cloud`. No Cloudflare account id is stored in the repo — authenticate with `wrangler login` or `CLOUDFLARE_API_TOKEN`. `npm run deploy:dry-run` checks the asset bundle without publishing.
+[`wrangler.jsonc`](wrangler.jsonc) serves the Vite build (`./dist`) as a Workers static SPA (`not_found_handling: single-page-application`), so share links (`#c=…`) resolve to `index.html`. [`public/_headers`](public/_headers) is copied into that bundle and sets the response headers, including Content-Security-Policy. The custom domain is `crumb.janglim.cloud`. No Cloudflare account id is stored in the repo — authenticate with `wrangler login` or `CLOUDFLARE_API_TOKEN`. `npm run deploy:dry-run` checks the asset bundle without publishing.
 
 ## Examples
 
@@ -205,7 +206,7 @@ The part catalog is hand-maintained in [`src/lib/crumb/catalog.ts`](src/lib/crum
 
 ## Contributing
 
-Contributions are welcome. Read [AGENTS.md](AGENTS.md) for the breadboard geometry and how the editor, validator, and MCP server fit together. Change the core under `src/lib/crumb` first. Keep MCP thin.
+Contributions are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) for setup, checks, and how changes should land. Placement notes live in [AGENTS.md](AGENTS.md). Security reports go through [SECURITY.md](SECURITY.md).
 
 ## License
 

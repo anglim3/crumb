@@ -8,7 +8,12 @@ export function setBoard(project: Project, board: BoardSize): Project {
 }
 
 export function placeDip(project: Project, defId: string, anchor: string, id?: string): Project {
-  const pid = id ?? nextId(project.parts.map((p) => p.id), "u");
+  const pid =
+    id ??
+    nextId(
+      project.parts.map((p) => p.id),
+      "u",
+    );
   const part: PlacedPart = { kind: "dip", id: pid, def: defId, anchor };
   return { ...project, parts: [...project.parts.filter((p) => p.id !== pid), part] };
 }
@@ -23,14 +28,25 @@ export function placeLeaded(
   mid?: string,
   legs?: string[],
 ): Project {
-  const pid = id ?? nextId(project.parts.map((p) => p.id), prefixFor(defId));
+  const pid =
+    id ??
+    nextId(
+      project.parts.map((p) => p.id),
+      prefixFor(defId),
+    );
   const part: PlacedLeaded = { kind: "leaded", id: pid, def: defId, from, to, value };
   if (mid) part.mid = mid;
   if (legs?.length) part.legs = legs;
   return { ...project, parts: [...project.parts.filter((p) => p.id !== pid), part] };
 }
 
-export function placeLeadedHoles(project: Project, defId: string, holes: string[], value?: string, id?: string): Project {
+export function placeLeadedHoles(
+  project: Project,
+  defId: string,
+  holes: string[],
+  value?: string,
+  id?: string,
+): Project {
   const from = holes[0];
   const to = holes[holes.length - 1];
   const mid = holes.length >= 3 ? holes[1] : undefined;
@@ -39,7 +55,12 @@ export function placeLeadedHoles(project: Project, defId: string, holes: string[
 }
 
 export function placeModule(project: Project, defId: string, slot: 0 | 1, offsetRow: number, id?: string): Project {
-  const pid = id ?? nextId(project.parts.map((p) => p.id), "m");
+  const pid =
+    id ??
+    nextId(
+      project.parts.map((p) => p.id),
+      "m",
+    );
   const part: PlacedPart = { kind: "module", id: pid, def: defId, slot, offsetRow };
   return { ...project, parts: [...project.parts.filter((p) => p.id !== pid), part] };
 }
@@ -83,7 +104,12 @@ export function removePart(project: Project, id: string): Project {
 }
 
 export function addWire(project: Project, from: string, to: string, color: string, id?: string): Project {
-  const wid = id ?? nextId(project.wires.map((w) => w.id), "w");
+  const wid =
+    id ??
+    nextId(
+      project.wires.map((w) => w.id),
+      "w",
+    );
   const wire: Wire = { id: wid, from, to, color };
   return { ...project, wires: [...project.wires.filter((w) => w.id !== wid), wire] };
 }

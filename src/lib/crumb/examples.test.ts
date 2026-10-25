@@ -7,7 +7,9 @@ import { validateProject } from "./validate.ts";
 
 test("every examples/*.json is in the gallery and has no errors", () => {
   const dir = new URL("../../../examples/", import.meta.url);
-  const files = readdirSync(dir).filter((name) => name.endsWith(".json")).sort();
+  const files = readdirSync(dir)
+    .filter((name) => name.endsWith(".json"))
+    .sort();
   assert.ok(files.includes("homekit-blinds.json"));
   assert.ok(files.includes("lm358-amplifier.json"));
   assert.ok(files.includes("74hc595-leds.json"));

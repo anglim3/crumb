@@ -3,7 +3,14 @@ import { test } from "node:test";
 import { holeId, parseHole, parsePinRef } from "./holes.ts";
 import { dipPinCaption, dipPinHole, occupiedHoles, resolveEndpoint } from "./layout.ts";
 import { computeNets, netForHole } from "./nets.ts";
-import { EXAMPLE_555, EXAMPLE_BUTTON, EXAMPLE_ESP32, EXAMPLE_HOMEKIT_BLINDS, EXAMPLE_PICO, EMPTY_PROJECT } from "./examples.ts";
+import {
+  EXAMPLE_555,
+  EXAMPLE_BUTTON,
+  EXAMPLE_ESP32,
+  EXAMPLE_HOMEKIT_BLINDS,
+  EXAMPLE_PICO,
+  EMPTY_PROJECT,
+} from "./examples.ts";
 import { boardGeom, projectGeom } from "./geometry.ts";
 import { validateProject } from "./validate.ts";
 import { placeDip, addWire, placeLeaded, parseProject, movePart, placeLeadedHoles, placeModule } from "./mutate.ts";
@@ -60,8 +67,14 @@ test("button example validates on mini board", () => {
 });
 
 test("esp32 and pico examples validate", () => {
-  assert.deepEqual(validateProject(EXAMPLE_ESP32).filter((i) => i.level === "error"), []);
-  assert.deepEqual(validateProject(EXAMPLE_PICO).filter((i) => i.level === "error"), []);
+  assert.deepEqual(
+    validateProject(EXAMPLE_ESP32).filter((i) => i.level === "error"),
+    [],
+  );
+  assert.deepEqual(
+    validateProject(EXAMPLE_PICO).filter((i) => i.level === "error"),
+    [],
+  );
 });
 
 test("detects vcc-gnd rail short", () => {
@@ -92,7 +105,10 @@ test("intentional 555 trig-thresh tie is not a short", () => {
 test("3-pin regulator occupies mid hole", () => {
   const project = placeLeaded(EMPTY_PROJECT, "lm7805", "5-a", "7-a", undefined, "reg", "6-a");
   const holes = validateProject(project);
-  assert.deepEqual(holes.filter((i) => i.level === "error"), []);
+  assert.deepEqual(
+    holes.filter((i) => i.level === "error"),
+    [],
+  );
   const shorted = placeLeaded(EMPTY_PROJECT, "lm7805", "5-a", "5-c", undefined, "reg", "5-b");
   assert.ok(detectShorts(shorted).some((s) => s.kind === "lead-short"));
 });
@@ -112,7 +128,10 @@ test("movePart shifts a DIP down a row", () => {
 
 test("4-pin DHT occupies every lead", () => {
   const project = placeLeadedHoles(EMPTY_PROJECT, "dht22", ["20-j", "21-j", "22-j", "23-j"], undefined, "s1");
-  assert.deepEqual(validateProject(project).filter((i) => i.level === "error"), []);
+  assert.deepEqual(
+    validateProject(project).filter((i) => i.level === "error"),
+    [],
+  );
 });
 
 test("catalog includes core parts", () => {
@@ -210,10 +229,16 @@ test("tmc2208 SilentStepStick pin 1 is GND, pin 16 is DIR", () => {
 });
 
 test("homekit-blinds example validates", () => {
-  assert.deepEqual(validateProject(EXAMPLE_HOMEKIT_BLINDS).filter((i) => i.level === "error"), []);
+  assert.deepEqual(
+    validateProject(EXAMPLE_HOMEKIT_BLINDS).filter((i) => i.level === "error"),
+    [],
+  );
   const raw = JSON.parse(readFileSync(new URL("../../../examples/homekit-blinds.json", import.meta.url), "utf8"));
   const fromFile = parseProject(raw);
-  assert.deepEqual(validateProject(fromFile).filter((i) => i.level === "error"), []);
+  assert.deepEqual(
+    validateProject(fromFile).filter((i) => i.level === "error"),
+    [],
+  );
   assert.equal(fromFile.parts.find((p) => p.id === "u1")?.def, "nano-esp32");
   assert.equal(fromFile.parts.find((p) => p.id === "u2")?.def, "tmc2208");
   assert.ok(fromFile.parts.some((p) => p.def === "limit-switch-nc"));
@@ -241,10 +266,7 @@ test("homekit-blinds example validates", () => {
   assert.ok(fromFile.wires.some((w) => w.from === "m1.pos" || w.to === "m1.pos"));
   assert.ok(fromFile.wires.some((w) => w.from.startsWith("m2.") || w.to.startsWith("m2.")));
   assert.ok(
-    !fromFile.wires.some(
-      (w) =>
-        (w.from === "RP-15" && w.to === "RP-16") || (w.from === "RP-16" && w.to === "RP-15"),
-    ),
+    !fromFile.wires.some((w) => (w.from === "RP-15" && w.to === "RP-16") || (w.from === "RP-16" && w.to === "RP-15")),
     "12 V must stay on the lower RP half",
   );
   const nets = computeNets(fromFile);
@@ -281,9 +303,21 @@ test("mcp catalog.json mirrors src catalog", () => {
 
 test("resolves module pin refs by id and label", () => {
   const project = placeModule(EMPTY_PROJECT, "barrel-jack", 1, 4, "m1");
-  assert.deepEqual(resolveEndpoint(project, "m1.pos"), { kind: "module", partId: "m1", pin: "pos" });
-  assert.deepEqual(resolveEndpoint(project, "m1.POS"), { kind: "module", partId: "m1", pin: "pos" });
-  assert.deepEqual(resolveEndpoint(project, "m1.neg"), { kind: "module", partId: "m1", pin: "neg" });
+  assert.deepEqual(resolveEndpoint(project, "m1.pos"), {
+    kind: "module",
+    partId: "m1",
+    pin: "pos",
+  });
+  assert.deepEqual(resolveEndpoint(project, "m1.POS"), {
+    kind: "module",
+    partId: "m1",
+    pin: "pos",
+  });
+  assert.deepEqual(resolveEndpoint(project, "m1.neg"), {
+    kind: "module",
+    partId: "m1",
+    pin: "neg",
+  });
   assert.equal(resolveEndpoint(project, "m1.nope"), null);
   assert.equal(holeId(resolveEndpoint(project, "m1.pos")!), "m1.pos");
 });
@@ -306,7 +340,10 @@ test("any catalog module pin resolves; uno jumpers validate", () => {
   uno = addWire(uno, "m1.5v", "RP-8", "#c45c4a", "w5v");
   uno = addWire(uno, "m1.gnd", "RM-8", "#2b2b2b", "wgnd");
   uno = addWire(uno, "m1.d2", "10-j", "#3d6b8a", "wd2");
-  assert.deepEqual(validateProject(uno).filter((i) => i.level === "error"), []);
+  assert.deepEqual(
+    validateProject(uno).filter((i) => i.level === "error"),
+    [],
+  );
   const uno5v = resolveEndpoint(uno, "m1.5V");
   assert.equal(uno5v?.kind === "module" ? uno5v.pin : undefined, "5v");
   const svg = renderProjectSvg(uno);
@@ -337,7 +374,10 @@ test("board-to-module jumpers validate; unknown pins are dangling", () => {
   let project = placeModule(EMPTY_PROJECT, "barrel-jack", 1, 4, "m1");
   project = addWire(project, "m1.pos", "RP-10", "#c45c4a", "w1");
   project = addWire(project, "m1.neg", "RM-10", "#2b2b2b", "w2");
-  assert.deepEqual(validateProject(project).filter((i) => i.level === "error"), []);
+  assert.deepEqual(
+    validateProject(project).filter((i) => i.level === "error"),
+    [],
+  );
   const bad = addWire(project, "m1.missing", "10-a", "#3d6b8a", "wbad");
   assert.ok(validateProject(bad).some((i) => i.code === "dangling-wire"));
 });

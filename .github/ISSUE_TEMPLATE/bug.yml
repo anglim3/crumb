@@ -1,0 +1,36 @@
+name: Bug
+description: Something in the editor, checker, or MCP server is wrong.
+title: ""
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you saw, and what you expected instead.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1.
+        2.
+        3.
+    validations:
+      required: true
+  - type: textarea
+    id: board
+    attributes:
+      label: Project file
+      description: Paste the board JSON if the layout matters. Leave out anything private.
+    validations:
+      required: false
+  - type: input
+    id: env
+    attributes:
+      label: Environment
+      description: Browser, or the Node version for the MCP server or CLI.
+      placeholder: Firefox, Node 22
+    validations:
+      required: false

@@ -6,8 +6,8 @@ const V2_PREFIX = "v2.";
 
 /**
  * Share token for a project.
- * New links use deflate-raw with a `v2.` prefix. Older links are base64 JSON
- * and still decode.
+ * New links use deflate-raw with a `v2.` prefix. Older links are base64 of
+ * UTF-8 JSON and still decode.
  */
 export async function encodeShare(project: Project): Promise<string> {
   const json = new TextEncoder().encode(JSON.stringify(project));
@@ -23,7 +23,24 @@ export async function decodeShare(payload: string): Promise<Project> {
     const text = await new Response(stream).text();
     return parseProject(JSON.parse(text));
   }
-  return parseProject(JSON.parse(decodeURIComponent(escape(atob(payload)))));
+  return decodeLegacyShare(payload);
+}
+
+/**
+ * Base64 of UTF-8 JSON. Same byte layout as the previous
+ * `btoa(unescape(encodeURIComponent(...)))` encoder, so existing `#c=` links
+ * still match this helper.
+ */
+export function encodeLegacyShare(project: Project): string {
+  return btoa(bytesToBinary(new TextEncoder().encode(JSON.stringify(project))));
+}
+
+function decodeLegacyShare(payload: string): Project {
+  const binary = atob(payload);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i += 1) bytes[i] = binary.charCodeAt(i);
+  const text = new TextDecoder("utf-8", { fatal: true }).decode(bytes);
+  return parseProject(JSON.parse(text));
 }
 
 function blobFromBytes(bytes: Uint8Array): Blob {
@@ -32,10 +49,17 @@ function blobFromBytes(bytes: Uint8Array): Blob {
   return new Blob([copy]);
 }
 
+function bytesToBinary(bytes: Uint8Array): string {
+  let binary = "";
+  const chunk = 0x8000;
+  for (let i = 0; i < bytes.length; i += chunk) {
+    binary += String.fromCharCode(...bytes.subarray(i, i + chunk));
+  }
+  return binary;
+}
+
 function bytesToBase64Url(bytes: Uint8Array): string {
-  let bin = "";
-  for (const byte of bytes) bin += String.fromCharCode(byte);
-  return btoa(bin).replaceAll("+", "-").replaceAll("/", "_").replaceAll("=", "");
+  return btoa(bytesToBinary(bytes)).replaceAll("+", "-").replaceAll("/", "_").replaceAll("=", "");
 }
 
 function base64UrlToBytes(value: string): Uint8Array {
@@ -43,6 +67,6 @@ function base64UrlToBytes(value: string): Uint8Array {
   const b64 = value.replaceAll("-", "+").replaceAll("_", "/") + pad;
   const bin = atob(b64);
   const out = new Uint8Array(bin.length);
-  for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+  for (let i = 0; i < bin.length; i += 1) out[i] = bin.charCodeAt(i);
   return out;
 }

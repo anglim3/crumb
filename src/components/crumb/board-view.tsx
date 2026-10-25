@@ -25,7 +25,13 @@ function clampZoom(value: number): number {
   return value;
 }
 
-function holeFill(id: string, kind: HoleRef["kind"] | "module", shorted: Set<string>, wireFrom: string | null, lit: Set<string>): string {
+function holeFill(
+  id: string,
+  kind: HoleRef["kind"] | "module",
+  shorted: Set<string>,
+  wireFrom: string | null,
+  lit: Set<string>,
+): string {
   if (shorted.has(id)) return "fill-bad crumb-hole-short";
   if (wireFrom === id) return "fill-hole-active";
   if (lit.has(id)) return "fill-hole-lit crumb-hole-lit";
@@ -65,7 +71,14 @@ export function BoardView() {
   const anchorRef = useRef<{ scrollLeft: number; scrollTop: number } | null>(null);
   const pointers = useRef(new Map<number, { x: number; y: number }>());
   const panRef = useRef<{ id: number; x: number; y: number; sl: number; st: number; moved: boolean } | null>(null);
-  const pinchRef = useRef<{ dist: number; zoom: number; midX: number; midY: number; scrollLeft: number; scrollTop: number } | null>(null);
+  const pinchRef = useRef<{
+    dist: number;
+    zoom: number;
+    midX: number;
+    midY: number;
+    scrollLeft: number;
+    scrollTop: number;
+  } | null>(null);
   const suppressClick = useRef(false);
   const fit = Math.min(pane.w / geom.width, pane.h / geom.height) * 0.96;
   const displayW = Math.max(1, geom.width * fit * zoom);
@@ -236,18 +249,40 @@ export function BoardView() {
   };
 
   return (
-    <div ref={frameRef} className="relative h-full min-h-[280px] bg-bench" role="region" aria-label={`${spec.label} solderless breadboard. Columns a to e on a row are one strip, f to j are another.`}>
+    <div
+      ref={frameRef}
+      className="relative h-full min-h-[280px] bg-bench"
+      role="region"
+      aria-label={`${spec.label} solderless breadboard. Columns a to e on a row are one strip, f to j are another.`}
+    >
       <p id="board-keyboard-help" className="sr-only">
-        Use the catalog to place a part. Choose a part under On the board and press Delete to remove it. The scroll wheel zooms. Drag to pan.
+        Use the catalog to place a part. Choose a part under On the board and press Delete to remove it. The scroll
+        wheel zooms. Drag to pan.
       </p>
       <div className="pointer-events-none absolute right-2 top-2 z-10 flex gap-2 print:hidden">
-        <button type="button" className="pointer-events-auto h-10 rounded-md bg-surface px-3 text-sm" aria-label="Zoom out" onClick={() => stepZoom(-0.2)}>
+        <button
+          type="button"
+          className="pointer-events-auto h-10 rounded-md bg-surface px-3 text-sm"
+          aria-label="Zoom out"
+          onClick={() => stepZoom(-0.2)}
+        >
           −
         </button>
-        <button type="button" className="pointer-events-auto h-10 rounded-md bg-surface px-3 text-sm" aria-label="Reset zoom" title="Reset zoom" onClick={resetZoom}>
+        <button
+          type="button"
+          className="pointer-events-auto h-10 rounded-md bg-surface px-3 text-sm"
+          aria-label="Reset zoom"
+          title="Reset zoom"
+          onClick={resetZoom}
+        >
           {Math.round(zoom * 100)}%
         </button>
-        <button type="button" className="pointer-events-auto h-10 rounded-md bg-surface px-3 text-sm" aria-label="Zoom in" onClick={() => stepZoom(0.2)}>
+        <button
+          type="button"
+          className="pointer-events-auto h-10 rounded-md bg-surface px-3 text-sm"
+          aria-label="Zoom in"
+          onClick={() => stepZoom(0.2)}
+        >
           +
         </button>
       </div>
@@ -269,153 +304,153 @@ export function BoardView() {
           suppressClick.current = false;
         }}
       >
-      <svg
-        viewBox={`0 0 ${geom.width} ${geom.height}`}
-        width={displayW}
-        height={displayH}
-        className="block"
-        role="group"
-        aria-label={`${spec.label} breadboard, ${spec.rows} rows`}
-      >
-        <rect width={geom.width} height={geom.height} rx="8" className="fill-bench" />
-        <rect x={geom.boardX} y="0" width={geom.boardWidth} height={board.height} rx="14" className="fill-board" />
-        <rect
-          x={geom.boardX + 10}
-          y="10"
-          width={geom.boardWidth - 20}
-          height={board.height - 20}
-          rx="10"
-          className="fill-board-inner"
-        />
+        <svg
+          viewBox={`0 0 ${geom.width} ${geom.height}`}
+          width={displayW}
+          height={displayH}
+          className="block"
+          role="group"
+          aria-label={`${spec.label} breadboard, ${spec.rows} rows`}
+        >
+          <rect width={geom.width} height={geom.height} rx="8" className="fill-bench" />
+          <rect x={geom.boardX} y="0" width={geom.boardWidth} height={board.height} rx="14" className="fill-board" />
+          <rect
+            x={geom.boardX + 10}
+            y="10"
+            width={geom.boardWidth - 20}
+            height={board.height - 20}
+            rx="10"
+            className="fill-board-inner"
+          />
 
-        <RailStrip geom={geom} specRows={spec.rows} side="L" />
-        <RailStrip geom={geom} specRows={spec.rows} side="R" />
+          <RailStrip geom={geom} specRows={spec.rows} side="L" />
+          <RailStrip geom={geom} specRows={spec.rows} side="R" />
 
-        {Array.from({ length: spec.rows }, (_, i) => i + 1).map((row) => (
-          <text
-            key={`rn-${row}`}
-            x={(geom.colX("e") + geom.colX("f")) / 2}
-            y={geom.rowY(row) + 3}
-            textAnchor="middle"
-            className="fill-ink-faint font-mono"
-            style={{ fontSize: 7 }}
-          >
-            {row}
-          </text>
-        ))}
+          {Array.from({ length: spec.rows }, (_, i) => i + 1).map((row) => (
+            <text
+              key={`rn-${row}`}
+              x={(geom.colX("e") + geom.colX("f")) / 2}
+              y={geom.rowY(row) + 3}
+              textAnchor="middle"
+              className="fill-ink-faint font-mono"
+              style={{ fontSize: 7 }}
+            >
+              {row}
+            </text>
+          ))}
 
-        {COLS.map((col) => (
-          <text
-            key={`cn-${col}`}
-            x={geom.colX(col)}
-            y="22"
-            textAnchor="middle"
-            className="fill-ink-soft font-mono"
-            style={{ fontSize: 8 }}
-          >
-            {col}
-          </text>
-        ))}
+          {COLS.map((col) => (
+            <text
+              key={`cn-${col}`}
+              x={geom.colX(col)}
+              y="22"
+              textAnchor="middle"
+              className="fill-ink-soft font-mono"
+              style={{ fontSize: 8 }}
+            >
+              {col}
+            </text>
+          ))}
 
-        {allHoles(spec.rows).map((hole) => {
-          const id = holeId(hole);
-          const { x, y } = geom.holeXY(hole);
-          return (
-            <circle
-              key={id}
-              cx={x}
-              cy={y}
-              r={HOLE_R}
-              opacity={holeOpacity(focus, id)}
-              className={holeFill(id, hole.kind, shorted, wireFrom, lit)}
-              onMouseEnter={() => {
-                setHoverHole(id);
-                const net = netForHole(nets, id);
-                if (net) setHighlightNet(net.id);
-              }}
-              onMouseLeave={() => {
-                setHoverHole(null);
-                setHighlightNet(null);
-              }}
-              onClick={() => clickHole(id)}
-              style={{ cursor: "pointer" }}
-            />
-          );
-        })}
-
-        {project.parts.map((part) => (
-          <g key={part.id} opacity={itemOpacity(selected, part.id, selectable)}>
-            {part.kind === "leaded" ? (
-              <LeadedBody project={project} partId={part.id} geom={geom} />
-            ) : part.kind === "module" ? (
-              <ModuleCard project={project} partId={part.id} geom={geom} />
-            ) : (
-              <DipBody project={project} partId={part.id} geom={geom} />
-            )}
-          </g>
-        ))}
-
-        {project.wires.map((wire) => {
-          const w = wireGeoms.find((g) => g.id === wire.id);
-          if (!w) return null;
-          const lane = wireLanes.get(wire.id) ?? { lane: 0, count: 1 };
-          const a = resolveEndpoint(project, wire.from);
-          if (!a) return null;
-          const selectedWire = selected === wire.id;
-          const aId = holeId(a);
-          const shortWire = shorted.has(aId);
-          return (
-            <path
-              key={wire.id}
-              d={jumperPath(geom, w.ax, w.ay, w.bx, w.by, lane.lane, lane.count)}
-              fill="none"
-              stroke={shortWire ? "#c9897a" : wire.color}
-              strokeWidth={selectedWire || shortWire ? 3.4 : 2.4}
-              strokeLinecap="round"
-              opacity={itemOpacity(selected, wire.id, selectable)}
-              className="cursor-pointer"
-              onClick={(e) => {
-                e.stopPropagation();
-                setSelected(wire.id);
-              }}
-            />
-          );
-        })}
-
-        {wireFrom && hoverHole && wireFrom !== hoverHole && (
-          <RubberBand project={project} geom={geom} from={wireFrom} to={hoverHole} />
-        )}
-
-        {project.parts.map((part) => {
-          if (part.kind !== "module") return null;
-          const card = moduleCardGeom(project, part, geom);
-          return card.pins.map((pin) => {
+          {allHoles(spec.rows).map((hole) => {
+            const id = holeId(hole);
+            const { x, y } = geom.holeXY(hole);
             return (
               <circle
-                key={pin.ref}
-                cx={pin.x}
-                cy={pin.y}
-                r={MODULE_PIN_R}
-                opacity={holeOpacity(focus, pin.ref)}
-                className={holeFill(pin.ref, "module", shorted, wireFrom, lit)}
-                stroke="#c9b896"
-                strokeWidth="0.8"
+                key={id}
+                cx={x}
+                cy={y}
+                r={HOLE_R}
+                opacity={holeOpacity(focus, id)}
+                className={holeFill(id, hole.kind, shorted, wireFrom, lit)}
                 onMouseEnter={() => {
-                  setHoverHole(pin.ref);
-                  const net = netForHole(nets, pin.ref);
+                  setHoverHole(id);
+                  const net = netForHole(nets, id);
                   if (net) setHighlightNet(net.id);
                 }}
                 onMouseLeave={() => {
                   setHoverHole(null);
                   setHighlightNet(null);
                 }}
-                onClick={() => clickHole(pin.ref)}
+                onClick={() => clickHole(id)}
                 style={{ cursor: "pointer" }}
               />
             );
-          });
-        })}
-      </svg>
+          })}
+
+          {project.parts.map((part) => (
+            <g key={part.id} opacity={itemOpacity(selected, part.id, selectable)}>
+              {part.kind === "leaded" ? (
+                <LeadedBody project={project} partId={part.id} geom={geom} />
+              ) : part.kind === "module" ? (
+                <ModuleCard project={project} partId={part.id} geom={geom} />
+              ) : (
+                <DipBody project={project} partId={part.id} geom={geom} />
+              )}
+            </g>
+          ))}
+
+          {project.wires.map((wire) => {
+            const w = wireGeoms.find((g) => g.id === wire.id);
+            if (!w) return null;
+            const lane = wireLanes.get(wire.id) ?? { lane: 0, count: 1 };
+            const a = resolveEndpoint(project, wire.from);
+            if (!a) return null;
+            const selectedWire = selected === wire.id;
+            const aId = holeId(a);
+            const shortWire = shorted.has(aId);
+            return (
+              <path
+                key={wire.id}
+                d={jumperPath(geom, w.ax, w.ay, w.bx, w.by, lane.lane, lane.count)}
+                fill="none"
+                stroke={shortWire ? "#c9897a" : wire.color}
+                strokeWidth={selectedWire || shortWire ? 3.4 : 2.4}
+                strokeLinecap="round"
+                opacity={itemOpacity(selected, wire.id, selectable)}
+                className="cursor-pointer"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSelected(wire.id);
+                }}
+              />
+            );
+          })}
+
+          {wireFrom && hoverHole && wireFrom !== hoverHole && (
+            <RubberBand project={project} geom={geom} from={wireFrom} to={hoverHole} />
+          )}
+
+          {project.parts.map((part) => {
+            if (part.kind !== "module") return null;
+            const card = moduleCardGeom(project, part, geom);
+            return card.pins.map((pin) => {
+              return (
+                <circle
+                  key={pin.ref}
+                  cx={pin.x}
+                  cy={pin.y}
+                  r={MODULE_PIN_R}
+                  opacity={holeOpacity(focus, pin.ref)}
+                  className={holeFill(pin.ref, "module", shorted, wireFrom, lit)}
+                  stroke="#c9b896"
+                  strokeWidth="0.8"
+                  onMouseEnter={() => {
+                    setHoverHole(pin.ref);
+                    const net = netForHole(nets, pin.ref);
+                    if (net) setHighlightNet(net.id);
+                  }}
+                  onMouseLeave={() => {
+                    setHoverHole(null);
+                    setHighlightNet(null);
+                  }}
+                  onClick={() => clickHole(pin.ref)}
+                  style={{ cursor: "pointer" }}
+                />
+              );
+            });
+          })}
+        </svg>
       </div>
     </div>
   );
@@ -512,10 +547,22 @@ function RailStrip({
     <g>
       <rect x={xP} y={y} width={PITCH * 0.84} height={h} rx="4" className="fill-rail-plus" />
       <rect x={xM} y={y} width={PITCH * 0.84} height={h} rx="4" className="fill-rail-minus" />
-      <text x={xP + PITCH * 0.42} y={y - 3} textAnchor="middle" className="fill-ink-soft font-mono" style={{ fontSize: 8 }}>
+      <text
+        x={xP + PITCH * 0.42}
+        y={y - 3}
+        textAnchor="middle"
+        className="fill-ink-soft font-mono"
+        style={{ fontSize: 8 }}
+      >
         +
       </text>
-      <text x={xM + PITCH * 0.42} y={y - 3} textAnchor="middle" className="fill-ink-soft font-mono" style={{ fontSize: 8 }}>
+      <text
+        x={xM + PITCH * 0.42}
+        y={y - 3}
+        textAnchor="middle"
+        className="fill-ink-soft font-mono"
+        style={{ fontSize: 8 }}
+      >
         −
       </text>
     </g>
@@ -655,7 +702,12 @@ function ModuleCard({
   const labelAnchor = part.slot === 0 ? "end" : "start";
   const labelX = card.pins[0] ? (part.slot === 0 ? card.pins[0].x - 8 : card.pins[0].x + 8) : card.x + 10;
   return (
-    <g transform={dRow ? `translate(0 ${dRow * PITCH})` : undefined} onPointerDown={onPointerDown} className="cursor-grab" style={{ touchAction: "none" }}>
+    <g
+      transform={dRow ? `translate(0 ${dRow * PITCH})` : undefined}
+      onPointerDown={onPointerDown}
+      className="cursor-grab"
+      style={{ touchAction: "none" }}
+    >
       <rect
         x={card.x}
         y={card.y}
@@ -694,4 +746,3 @@ function ModuleCard({
     </g>
   );
 }
-
