@@ -8,6 +8,10 @@
 - Gallery links that open each shipped layout in the editor
 - Requests for `/examples` and `/how-it-works` without a trailing slash still reach those pages
 
+### Security
+
+- Hosted responses send `Cache-Control: public, max-age=0, must-revalidate, no-transform`, so the edge does not rewrite HTML. Revalidation is unchanged, and the Content-Security-Policy stays strict
+
 ## 0.1.0
 
 First public release of the breadboard editor.

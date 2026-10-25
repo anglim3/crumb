@@ -4,9 +4,16 @@
 # Fonts are self-hosted, so font-src does not name a third-party host.
 # The manifest, icons, and og.png are same-origin files, covered by default-src and img-src.
 # Share compression uses CompressionStream in the page and does not add a connect target.
+# A custom Cache-Control replaces the Workers static-asset default, so this
+# repeats `public, max-age=0, must-revalidate` and adds `no-transform`. That
+# directive asks the edge not to rewrite the body. `/*` covers `/`,
+# `/index.html`, and the single-page fallback. Hashed `/assets/*` files have
+# no separate immutable policy, so they keep the same revalidation value.
+# A second Cache-Control on the same path would be joined with a comma.
 /*
   Content-Security-Policy: default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob:; connect-src 'self'
   X-Content-Type-Options: nosniff
   Referrer-Policy: no-referrer
   Permissions-Policy: accelerometer=(), camera=(), display-capture=(), geolocation=(), gyroscope=(), microphone=(), payment=(), usb=()
   Strict-Transport-Security: max-age=31536000; includeSubDomains
+  Cache-Control: public, max-age=0, must-revalidate, no-transform
